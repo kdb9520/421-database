@@ -22,6 +22,7 @@ public class Main {
 
     public static void displayUsage() {
         System.out.println("USAGE: java Main <db loc> <page size> <buffer size>");
+        System.out.println("Hello world again!");
     }
 
 }
