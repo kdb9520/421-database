@@ -12,7 +12,19 @@ public class Table {
         return false;
     }
 
+    public boolean drop(){
+        return false;
+    }
+
+    public boolean alter(){
+        return false;
+    }
+
     public boolean writeToHardware(){
+        return false;
+    }
+
+    private boolean createPage(){
         return false;
     }
 
