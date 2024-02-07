@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class Catalog {
-    //todo - arraylists of table schemas (objects)
+    private ArrayList<Schema> schemas;
 }
