@@ -54,8 +54,17 @@ public class DDLParser {
         return true;
     }
 
-    public void dropTable() {
+    public void dropTable(String query) {
+        if(!query.contains("drop table")){
+            return;
+        }
 
+        String [] args = query.split(" ");
+        if(args.length > 3){
+            return;
+        }
+
+        String name = args[2];
     }
 
     public void alterTable(){
