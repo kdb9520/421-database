@@ -116,7 +116,7 @@ class DiskManager {
             // Move the file pointer to the correct position
             fos.getChannel().position(offset);
             // Write the page data to the file
-            fos.write(page.getPageData());
+            fos.write(page.serialize());
         } catch (IOException e) {
             // Handle the exception (e.g., log it or throw a runtime exception)
             e.printStackTrace();

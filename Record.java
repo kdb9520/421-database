@@ -39,4 +39,14 @@ public class Record {
         }
         return totalSize;
     }
+
+    public byte[] serialize() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'serialize'");
+    }
+
+    public static Record deserialize(byte[] recordBytes) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'deserialize'");
+    }
 }

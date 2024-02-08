@@ -1,4 +1,10 @@
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Page {
     public static final int PAGE_SIZE = 8;
@@ -14,6 +20,11 @@ public class Page {
 
 
     public Page(int pageNumber, byte[] pageData) {
+        //TODO Auto-generated constructor stub
+        
+    }
+
+    public Page(int pageNumber, ArrayList<Record> records) {
         //TODO Auto-generated constructor stub
         
     }
@@ -55,13 +66,54 @@ public class Page {
     }
 
 
-    public byte[] getPageData() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getPageData'");
-    }
-
-
     public int getPageNumber() {
         return this.pageNumber;
+    }
+
+    public byte[] serialize() throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream);
+
+        // Write page number
+        dataOutputStream.writeInt(pageNumber);
+
+        // Write number of records
+        dataOutputStream.writeInt(records.size());
+
+        // Write each record
+        for (Record record : records) {
+            byte[] recordBytes = record.serialize();
+            dataOutputStream.writeInt(recordBytes.length);
+            dataOutputStream.write(recordBytes);
+        }
+
+        dataOutputStream.close();
+        return byteArrayOutputStream.toByteArray();
+    }
+
+    public static Page deserialize(byte[] data) throws IOException {
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
+        DataInputStream dataInputStream = new DataInputStream(byteArrayInputStream);
+
+        // Read page number
+        int pageNumber = dataInputStream.readInt();
+
+        // Read number of records
+        int numRecords = dataInputStream.readInt();
+
+        // Read each record
+        List<Record> records = new ArrayList<>();
+        for (int i = 0; i < numRecords; i++) {
+            int recordLength = dataInputStream.readInt();
+            byte[] recordBytes = new byte[recordLength];
+            dataInputStream.readFully(recordBytes);
+            records.add(Record.deserialize(recordBytes));
+        }
+
+        dataInputStream.close();
+
+        // Create and return the Page object
+        Page page = new Page(pageNumber,new ArrayList<Record>(records) );
+        return page;
     }
 }
