@@ -25,6 +25,10 @@ public class Page {
         return true;
     }
 
+    public int getPageSize(){
+        return numRecords;
+    }
+
     public Page splitPage(){
 
         // Get from buffer manager a new blank page
@@ -46,5 +50,11 @@ public class Page {
     // Write page to hardware, saving the changes
     public void save(){
         return;
+    }
+
+
+    public byte[] getPageData() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getPageData'");
     }
 }

@@ -1,4 +1,6 @@
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,5 +61,17 @@ class DiskManager {
         // In a real scenario, this method would write the page data to disk
         // For simplicity, we just print the page data here
         System.out.println("Writing page " + pageNumber + " to disk: " + page);
+
+        try (FileOutputStream fos = new FileOutputStream("database.db", true)) {
+            // Calculate the offset where this page should be written
+            long offset = pageNumber * page.getPageSize();
+            // Move the file pointer to the correct position
+            fos.getChannel().position(offset);
+            // Write the page data to the file
+            fos.write(page.getPageData());
+        } catch (IOException e) {
+            // Handle the exception (e.g., log it or throw a runtime exception)
+            e.printStackTrace();
+        }
     }
 }
