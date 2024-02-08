@@ -94,7 +94,18 @@ public class Main {
     }
 
     public static void helpCommand() {
-        System.out.println("COMMANDS: ________");
+        System.out.println("COMMANDS: \n");
+        System.out.println("-----Utility Commands-----");
+        System.out.println("help;   -Displays all commands\nquit;   -Shutdown the database and application");
+        System.out.println("\n-----Schema Commands-----");
+        System.out.println("create table <name> ___MORE__;   -Creates new table in database");
+        System.out.println("drop table <name>;   -Drops the table in the database");
+        System.out.println("alter table <name> ____MORE___;  -Alters table with specified attributes");
+        System.out.println("\n-----Query Commands-----");
+        System.out.println("insert into <name> values <tuples>;");
+        System.out.println("display schema;");
+        System.out.println("display info <name>;");
+        System.out.println("select * from <name>;");
     }
 
     private static void shutdown(BufferManager bufferManager) {
