@@ -1,29 +1,31 @@
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Record {
-    private Map<Attribute, String> attributes;
+    private ArrayList<String> values;
+    TableSchema tableSchema = new TableSchema();
 
     public Record() {
-        this.attributes = new HashMap<>();
+        this.values = new ArrayList<>();
     }
 
     // Set the value of an attribute
-    public void setAttribute(Attribute attributeName, String value) {
-        attributes.put(attributeName, value);
+    public void setAttribute(String value) {
+        values.add(value);
     }
 
     // Get the value of an attribute
-    public String getAttribute(Attribute attributeName) {
-        return attributes.get(attributeName);
+    public String getAttribute(String attributeName) {
+        int index = tableSchema.findAttribute(attributeName);
+        return values.get(index);
     }
 
     // Get the value of an attribute
     public String deleteAttribute(String attributeName) {
-        for (Attribute a : attributes.keySet()) {
-            if (attributeName.equals(a.a_name)){
-               return attributes.remove(a);
-            }
+        int index = tableSchema.findAttribute(attributeName);
+        if (index != -1){
+            return values.remove(index);
         }
         return null;
     }
