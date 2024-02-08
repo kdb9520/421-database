@@ -3,7 +3,7 @@ import java.util.ArrayList;
 public class Page {
     int numRecords;
     ArrayList<Record> records;
-    nextPage = Page;
+    Page nextPage;
 
     public Page() {
         this.numRecords = 0;
@@ -14,11 +14,31 @@ public class Page {
 
     }
 
-    public ArrayList<Record> splitPage{
-        // Cut array in half, remove second half of values, return to Table class those values
-        int cutoffIndex = record.size() / 2 - 1;
-        ArrayList<Record> page2 = records.sublist(cutOffIndex,records.size()-1);
-        records = records.sublist(0, cutoffIndex);
-        return page2;
+    public boolean addRecord(Record r){
+        records.add(r);
+        return true;
+    }
+
+    public Page splitPage(){
+
+        // Get from buffer manager a new blank page
+        Page newPage = new Page();
+
+        // Cut array in half, remove second half of values, add second half of erecords to new page
+        int cutoffIndex = records.size() / 2 - 1;
+        ArrayList<Record> page2 = new ArrayList<>(records.subList(cutoffIndex, records.size()));
+         // Remove the second half of records from the current page
+         records.subList(cutoffIndex, records.size()).clear();
+
+         // Add the second half of records to the new page
+        newPage.records.addAll(page2);
+        return newPage;
+        // Ask buffer manager to create empty page then throw values into it
+
+    }
+
+    // Write page to hardware, saving the changes
+    public void save(){
+        return;
     }
 }
