@@ -3,7 +3,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class BufferManager {
-    private Map<Integer, byte[]> bufferPool; // Map page number to page data
+    private Map<Integer, Page> bufferPool; // Map page number to page data
     private int bufferSize; // Size of buffer pool
     private DiskManager diskManager; // A hypothetical class for disk operations
 
@@ -13,7 +13,7 @@ public class BufferManager {
         this.diskManager = diskManager;
     }
 
-    public byte[] getPage(int pageNumber) {
+    public Page getPage(int pageNumber) {
         if (bufferPool.containsKey(pageNumber)) {
             // Page is already in buffer pool
             return bufferPool.get(pageNumber);
@@ -25,16 +25,17 @@ public class BufferManager {
                 evictPage();
             }
             // Add the new page to buffer pool
-            bufferPool.put(pageNumber, pageData);
-            return pageData;
+            Page page = new Page(pageNumber, pageData);
+            bufferPool.put(pageNumber, page);
+            return page;
         }
     }
 
-    public void writePage(int pageNumber, byte[] pageData) {
+    public void writePage(int pageNumber, Page page) {
         // Write page to buffer pool
-        bufferPool.put(pageNumber, pageData);
+        bufferPool.put(pageNumber, page);
         // Write page to disk
-        diskManager.writePageToDisk(pageNumber, pageData);
+        diskManager.writePageToDisk(pageNumber, page);
     }
 
     private void evictPage() {
@@ -53,10 +54,10 @@ class DiskManager {
         return ("Page " + pageNumber).getBytes();
     }
 
-    public void writePageToDisk(int pageNumber, byte[] pageData) {
+    public void writePageToDisk(int pageNumber, Page page) {
         // Write page to disk (mock implementation)
         // In a real scenario, this method would write the page data to disk
         // For simplicity, we just print the page data here
-        System.out.println("Writing page " + pageNumber + " to disk: " + new String(pageData));
+        System.out.println("Writing page " + pageNumber + " to disk: " + page);
     }
 }

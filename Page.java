@@ -10,6 +10,12 @@ public class Page {
         this.records = new ArrayList<>();
     }
 
+
+    public Page(int pageNumber, byte[] pageData) {
+        //TODO Auto-generated constructor stub
+        
+    }
+
     public void dropAttribute(String a_name) {
 
     }
