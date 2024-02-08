@@ -1,5 +1,7 @@
 import java.util.ArrayList;
 
+import org.w3c.dom.Attr;
+
 public class TableSchema {
 
     Attribute primaryKey;
@@ -30,5 +32,14 @@ public class TableSchema {
         }
 
         this.attributes.add(a);
+    }
+
+    public int findAttribute(String attrName){
+        for (int i = 0; i < attributes.size(); i++){
+            if (attrName.equals(attributes.get(i).a_name)){
+                return i;
+            }
+        }
+        return -1;
     }
 }
