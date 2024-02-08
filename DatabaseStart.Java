@@ -3,9 +3,9 @@
 // Starts or creates the user specified database
 // Authors:
 
-public class DatabaseStart {
+public static class DatabaseStart {
     
-    public static int DatabaseStart (String databaseLocation, int pageSize, int bufferSize) {
+    public static int initiateDatabase (String databaseLocation, int pageSize, int bufferSize) {
 
         boolean success
         if (/* DB file exists */) {
