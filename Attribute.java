@@ -6,25 +6,34 @@ public class Attribute {
     boolean isUnique;
     String defaultValue;
 
-    public Attribute(String a_name, String a_type) {
+    public Attribute(String a_name, String a_type, String[] constraints) {
         this.a_name = a_name;
         this.a_type = a_type;
         this.isNotNull = false;
         this.isPrimaryKey = false;
         this.isUnique = false;
+        setConstraints(constraints);
         this.defaultValue = null;
     }
 
-    public void setNotNull(boolean val) {
-        this.isNotNull = val;
-    }
-
-    public void setPrimaryKey(boolean val) {
-        this.isPrimaryKey = val;
-    }
-
-    public void setUnique(boolean val) {
-        this.isUnique = val;
+    private void setConstraints(String[] constraints) {
+        for (String con : constraints) {
+            switch (con) {
+                case "PRIMARYKEY":
+                    this.isPrimaryKey = true;
+                    this.isNotNull = true;
+                    this.isUnique = true;
+                    break;
+                case "NOTNULL":
+                    this.isNotNull = true;
+                    break;
+                case "UNIQUE":
+                    this.isUnique = true;
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
     public void setDefaultValue(String dVal) {
