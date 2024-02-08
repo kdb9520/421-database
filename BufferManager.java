@@ -1,6 +1,10 @@
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,13 +25,12 @@ public class BufferManager {
             return bufferPool.get(pageNumber);
         } else {
             // Page is not in buffer pool, so read it from disk
-            byte[] pageData = diskManager.readPageFromDisk(pageNumber);
+            Page page = diskManager.readPageFromDisk(pageNumber);
             if (bufferPool.size() >= bufferSize) {
                 // Buffer pool is full, evict a page using some policy (e.g., LRU)
                 evictPage();
             }
             // Add the new page to buffer pool
-            Page page = new Page(pageNumber, pageData);
             bufferPool.put(pageNumber, page);
             return page;
         }
@@ -56,14 +59,49 @@ public class BufferManager {
         diskManager.writePageToDisk(firstPageNumber, removedPage);
         bufferPool.remove(firstPageNumber);
     }
+
+    public void purgeBuffer() {
+        // Iterate through all entries in the buffer pool
+        for (Map.Entry<Integer, Page> entry : bufferPool.entrySet()) {
+            int pageNumber = entry.getKey();
+            Page page = entry.getValue();
+            // Write the page to disk
+            diskManager.writePageToDisk(pageNumber, page);
+        }
+        // Clear the buffer pool
+        bufferPool.clear();
+    }
 }
 
 class DiskManager {
-    public byte[] readPageFromDisk(int pageNumber) {
-        // Read page from disk (mock implementation)
-        // In a real scenario, this method would read the page data from disk
-        // For simplicity, we just return some mock data here
-        return ("Page " + pageNumber).getBytes();
+    private String databaseFileName; // Name of the database file
+
+    public DiskManager(String databaseFileName) {
+        this.databaseFileName = databaseFileName;
+    }
+
+
+    public Page readPageFromDisk(int pageNumber) {
+        try (FileChannel fileChannel = FileChannel.open(Paths.get(databaseFileName), StandardOpenOption.READ)) {
+            // Calculate the position in the file where the page starts
+            long position = (long) pageNumber * Page.PAGE_SIZE;
+
+            // Allocate a ByteBuffer to hold the page data
+            ByteBuffer buffer = ByteBuffer.allocate(Page.PAGE_SIZE);
+
+            // Read the page data from the file into the buffer
+            fileChannel.read(buffer, position);
+
+            // Convert the ByteBuffer to a byte array
+            byte[] pageData = buffer.array();
+
+            // Create and return a new Page object
+            return new Page(pageNumber, pageData);
+        } catch (IOException e) {
+            // Handle the exception (e.g., log it or throw a runtime exception)
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public void writePageToDisk(int pageNumber, Page page) {
@@ -74,7 +112,7 @@ class DiskManager {
 
         try (FileOutputStream fos = new FileOutputStream("database.db", true)) {
             // Calculate the offset where this page should be written
-            long offset = pageNumber * page.getPageSize();
+            long offset = pageNumber * Page.PAGE_SIZE;
             // Move the file pointer to the correct position
             fos.getChannel().position(offset);
             // Write the page data to the file

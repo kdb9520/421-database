@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 
 public class Page {
+    public static final int PAGE_SIZE = 8;
     int numRecords;
     int pageNumber;
     ArrayList<Record> records;
