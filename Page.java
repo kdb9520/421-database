@@ -2,6 +2,7 @@ import java.util.ArrayList;
 
 public class Page {
     int numRecords;
+    int pageNumber;
     ArrayList<Record> records;
     Page nextPage;
 
@@ -56,5 +57,10 @@ public class Page {
     public byte[] getPageData() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getPageData'");
+    }
+
+
+    public int getPageNumber() {
+        return this.pageNumber;
     }
 }

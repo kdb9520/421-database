@@ -33,17 +33,27 @@ public class BufferManager {
         }
     }
 
-    public void writePage(int pageNumber, Page page) {
-        // Write page to buffer pool
-        bufferPool.put(pageNumber, page);
-        // Write page to disk
-        diskManager.writePageToDisk(pageNumber, page);
+    public void writePage(Page page) {
+        int pageNumber = page.getPageNumber();
+        if (bufferPool.containsKey(pageNumber)) {
+            // Page is already in the buffer pool, update its data
+            bufferPool.put(pageNumber, page);
+        } else {
+            // Page is not in the buffer pool, add it
+            if (bufferPool.size() >= bufferSize) {
+                // Buffer pool is full, evict a page using some policy (e.g., LRU)
+                evictPage();
+            }
+            bufferPool.put(pageNumber, page);
+        }
     }
 
     private void evictPage() {
         // Implementation of page eviction policy (e.g., LRU)
         // For simplicity, this example just removes the first page in the buffer pool
         int firstPageNumber = bufferPool.keySet().iterator().next();
+        Page removedPage = bufferPool.get(firstPageNumber);
+        diskManager.writePageToDisk(firstPageNumber, removedPage);
         bufferPool.remove(firstPageNumber);
     }
 }
