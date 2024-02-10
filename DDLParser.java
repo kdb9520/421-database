@@ -58,10 +58,12 @@ public class DDLParser {
             }
 
         }
-        Table table = new Table(tableName);
+        TableSchema tableSchema = new TableSchema();
         for(Attribute anAttribute : attributes){
-            table.addAttribute(anAttribute);
+            tableSchema.addAttribute(anAttribute);
         }
+
+        Catalog.updateCatalog(tableSchema);
 
     }
 
