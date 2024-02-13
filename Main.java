@@ -19,8 +19,8 @@ public class Main {
             // restart / create the database
             int started = DatabaseStart.initiateDatabase(dbLoc, pageSize, bufferSize);
 
-            DiskManager diskManager = new DiskManager(dbLoc);
-            BufferManager bufferManager = new BufferManager(bufferSize, diskManager)
+            StorageManager storageManager = new StorageManager(dbLoc);
+            BufferManager bufferManager = new BufferManager(bufferSize, storageManager)
 
             if (started == 1) {
                 Scanner scanner = new Scanner(System.in);
