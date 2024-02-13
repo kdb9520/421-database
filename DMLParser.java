@@ -16,8 +16,12 @@ public class DMLParser {
             insert(query);
         }
 
-        if (query.substring(0, 14).equals("display schema ")) {
+        else if (query.substring(0, 14).equals("display schema ")) {
             displaySchema(query.substring(14));
+        }
+
+        else if (query.substring(0, 12).equals("display info ")) {
+            displaySchema(query.substring(12));
         }
     }
 
@@ -29,8 +33,23 @@ public class DMLParser {
 
     }
 
-    private void displaySchema(String query) {
+    private boolean displaySchema(String tableName) {
 
+        Table table = bufferManager.getTable(tableName);
+        if (table != null) {
+
+            String dbLocation = bufferManager.getDatabaseLocation();
+
+            int pageSize = table.pages.getLast().getPageSize();
+
+            int bufferSize = bufferManager.getSize();
+           
+            String schema = "_";
+
+            System.out.println("Database Location: "+ dbLocation + "\nPage Size: " + pageSize + "\nBuffer Size: " + bufferSize + "Table Schema: " + schema);
+            return true;
+        }
+        return false;
     }
 
     private boolean displayInfo(String tableName) {
