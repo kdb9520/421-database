@@ -206,6 +206,9 @@ public class DDLParser {
 
     }
 
+    /**
+     * Writes catalog to hardware - theoretically on database shutdown
+     */
     public void writeCatalogToHardware(){
         Catalog.writeCatalog(this.tableSchemas);
     }
