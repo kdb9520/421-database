@@ -35,7 +35,7 @@ public class Page {
         }
     }
 
-    public <E> void addAttribute(E value) {
+    public void addAttribute(Object value) {
         for (Record record : this.records) {
             record.addAttribute(value);
         }

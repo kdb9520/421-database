@@ -1,10 +1,10 @@
-public class AttributeSchema<E> {
+public class AttributeSchema {
     String attrName;
     String attrType;
     boolean isNotNull;
     boolean isPrimaryKey;
     boolean isUnique;
-    E defaultValue;
+    Object defaultValue;
     
     public AttributeSchema(String attrName, String attrType, String[] constraints) {
         this.attrName = attrName;
@@ -16,7 +16,7 @@ public class AttributeSchema<E> {
         this.defaultValue = null;
     }
 
-    public AttributeSchema(String attrName, String attrType, String[] constraints, E dVal) {
+    public AttributeSchema(String attrName, String attrType, String[] constraints, Object dVal) {
         this.attrName = attrName;
         this.attrType = attrType;
         this.isNotNull = false;
@@ -46,7 +46,7 @@ public class AttributeSchema<E> {
         }
     }
 
-    public E getDefaultValue() {
+    public Object getDefaultValue() {
         return this.defaultValue;
     }
 
