@@ -29,8 +29,16 @@ public class Page {
         
     }
 
-    public void dropAttribute(String a_name) {
+    public void dropAttribute(int i) {
+        for (Record record : this.records) {
+            record.dropAttribute(i);
+        }
+    }
 
+    public <E> void addAttribute(E value) {
+        for (Record record : this.records) {
+            record.addAttribute(value);
+        }
     }
 
     public boolean addRecord(Record r){

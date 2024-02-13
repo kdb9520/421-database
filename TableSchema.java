@@ -15,9 +15,9 @@ public class TableSchema {
 
     public void dropAttribute(String attrName) {
         // remove an attribute and its data from the table
-        this.attributes.remove(findAttribute(attrName));
-
-        this.table.dropAttribute(attrName);
+        int i = findAttribute(attrName);
+        this.table.dropAttribute(i);
+        this.attributes.remove(i);
     }
 
     public void addAttribute(AttributeSchema a) {
