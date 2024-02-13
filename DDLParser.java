@@ -3,8 +3,9 @@ import java.util.Arrays;
 
 // todo make static
 public class DDLParser {
-
+    private ArrayList<TableSchema> tableSchemas;
     public DDLParser() {
+        this.tableSchemas = Catalog.readCatalog();
 
     }
 
@@ -63,7 +64,7 @@ public class DDLParser {
             tableSchema.addAttribute(anAttribute);
         }
 
-        Catalog.updateCatalog(tableSchema);
+        Catalog.updateCatalog(this.tableSchemas, tableSchema);
 
     }
 
