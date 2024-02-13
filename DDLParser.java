@@ -2,13 +2,23 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 // todo make static
+
+/**
+ * @author Jaron Cummings
+ */
 public class DDLParser {
-    private ArrayList<TableSchema> tableSchemas;
+    private ArrayList<TableSchema> tableSchemas; // arrayList of TableSchemas
     public DDLParser() {
+
+        // reads the catalog in from hardware
         this.tableSchemas = Catalog.readCatalog();
 
     }
 
+    /**
+     * creates a table by creating a new schema and inserting into the catalog
+     * @param query - the query entered by the user
+     */
     public void createTable(String query) {
 
         // todo - worry about casing of letters
@@ -25,6 +35,7 @@ public class DDLParser {
         int startIndex = 0;
         int endIndex = 0;
 
+        // determine where the ( ) are based off the writeup formatting
         for(int i = 0; i < query.length(); i ++){
             if(query.charAt(i) == '('){
                 startIndex = i;
@@ -33,6 +44,8 @@ public class DDLParser {
                 endIndex = i;
             }
         }
+
+        // get table name
         String tableName = query.substring(12, startIndex);
 
         //todo look into format string "create table %s (%s)"
@@ -40,6 +53,9 @@ public class DDLParser {
         Boolean typeValid = true;
         Boolean constraintsValid = true;
         ArrayList <AttributeSchema> attributes = new ArrayList<>();
+
+        // for each "column" in the create table query, perform validation
+        // and create new attribute objects
         for(int i = 0; i < args.length; i ++){
             typeValid = true;
             constraintsValid = true;
@@ -59,13 +75,21 @@ public class DDLParser {
             }
 
         }
+
+        // create new table schema
         TableSchema tableSchema = new TableSchema(tableName, attributes);
 
 
+        // update the catalog
         Catalog.updateCatalog(this.tableSchemas, tableSchema);
 
     }
 
+    /**
+     * Checks if a constraint is valid
+     * @param params - the list of constraints supplied by the user
+     * @return - true if valid false if not
+     */
     private Boolean checkConstraint(String[] params) {
         if(params.length < 1){
             return true;
@@ -78,11 +102,20 @@ public class DDLParser {
         return true;
     }
 
+    /**
+     * Checks if type is valid
+     * @param param - the type given by the user
+     * @return - true if valid false if not
+     */
     private Boolean checkTypes(String param) {
         //todo - look into types allowed
         return true;
     }
 
+    /**
+     * Drops a table
+     * @param query - query given by user
+     */
     public void dropTable(String query) {
         if(!query.contains("DROP TABLE")){
             return;
@@ -105,8 +138,75 @@ public class DDLParser {
         }
     }
 
-    public void alterTable(){
+    /**
+     * Alter table modifies a table schema
+     * @param query - query given by user
+     */
+    public void alterTable(String query){
+        // todo - worry about casing of letters
+        String name = "";
+        String operation = "";
+        String constraint_1 = "";
+        String constraint = "";
+
+        // check if valid operation
+        if(!query.contains("ALTER TABLE")){
+            return;
+        }
+
+        String [] parsed = query.split(" ");
+        name = parsed[2];   // name of table
+        operation = parsed[3]; // operation, drop or add
+
+        // check if operation is valid
+        if(!operation.equals("DROP") && !operation.equals("ADD")){
+            System.err.println("Invalid operation, must be Drop or Add");
+            return;
+        }
+        Boolean found = false;
+        TableSchema tableSchema = null;
+
+        // check to make sure the Catalog contains the table to alter
+        for(TableSchema t : this.tableSchemas){
+            if (t.tableName.equals(name)){
+                found = true;
+                tableSchema = t;
+                break;
+            }
+        }
+
+        // return if not found
+        if(!found){
+            System.err.println("Invalid table name");
+            return;
+
+        }
 
 
+        if(operation.equals("DROP")){
+            tableSchema.dropAttribute(parsed[4]);
+        }
+
+
+        if(operation.equals("ADD")){
+            if(parsed.length != 6 || parsed.length != 8){
+                System.err.println("Invalid number of args");
+            }
+
+            String attributeName = parsed[4];
+            String attributeType = parsed[5];
+            AttributeSchema a = new AttributeSchema(attributeName, attributeType, null);
+
+            tableSchema.addAttribute(a);
+            Catalog.alterSchema(tableSchemas, tableSchema);
+
+            // todo - deal with other args for alter table pending new constructor
+        }
+
+
+    }
+
+    public void writeCatalogToHardware(){
+        Catalog.writeCatalog(this.tableSchemas);
     }
 }
