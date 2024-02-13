@@ -6,15 +6,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Record<E> {
-    private ArrayList<E> values;
+public class Record {
+    private ArrayList<String> values;
+    TableSchema tableSchema = new TableSchema();
 
     public Record() {
         this.values = new ArrayList<>();
     }
 
     // Set the value of an attribute
-    public void addAttribute(E value) {
+    public void setAttribute(String value) {
         values.add(value);
     }
 
@@ -25,8 +26,12 @@ public class Record<E> {
     }
 
     // Get the value of an attribute
-    public void dropAttribute(int i) {
-        this.values.remove(i);
+    public String deleteAttribute(String attributeName) {
+        int index = tableSchema.findAttribute(attributeName);
+        if (index != -1){
+            return values.remove(index);
+        }
+        return null;
     }
 
     // Calculate the total size of the record
