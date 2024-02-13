@@ -128,7 +128,7 @@ class DiskManager {
         // In a real scenario, this method would write the page data to disk
         // For simplicity, we just print the page data here
         System.out.println("Writing table " + table + " to disk");
-
+        
         try (FileOutputStream fos = new FileOutputStream(table.getName(), true)) {
                 
         } catch (IOException e) {
