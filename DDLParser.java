@@ -39,7 +39,7 @@ public class DDLParser {
         String[] args = query.substring(startIndex, endIndex).split(",");  // each "attribute and its type/constraint"
         Boolean typeValid = true;
         Boolean constraintsValid = true;
-        ArrayList <Attribute> attributes = new ArrayList<>();
+        ArrayList <AttributeSchema> attributes = new ArrayList<>();
         for(int i = 0; i < args.length; i ++){
             typeValid = true;
             constraintsValid = true;
@@ -50,7 +50,7 @@ public class DDLParser {
             typeValid = checkTypes(attribute_data[1]);
             constraintsValid = checkConstraint(constraints);
             if(typeValid && constraintsValid){
-                Attribute a = new Attribute(attribute, type, constraints);
+                AttributeSchema a = new AttributeSchema(attribute, type, constraints);
                 attributes.add(a);
 
             }
@@ -59,10 +59,8 @@ public class DDLParser {
             }
 
         }
-        TableSchema tableSchema = new TableSchema();
-        for(Attribute anAttribute : attributes){
-            tableSchema.addAttribute(anAttribute);
-        }
+        TableSchema tableSchema = new TableSchema(tableName, attributes);
+
 
         Catalog.updateCatalog(this.tableSchemas, tableSchema);
 
@@ -99,10 +97,16 @@ public class DDLParser {
 
 
         //TODO  - talk to storage manager
-        //TODO - talk to catalog
+        for(TableSchema t : this.tableSchemas){
+            if (t.tableName.equals(name)){
+                Catalog.removeSchema(this.tableSchemas, t);
+                break;
+            }
+        }
     }
 
     public void alterTable(){
+
 
     }
 }
