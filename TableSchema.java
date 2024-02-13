@@ -1,42 +1,37 @@
 import java.util.ArrayList;
 
-import org.w3c.dom.Attr;
-
 public class TableSchema {
 
-    Attribute primaryKey;
-    ArrayList<Attribute> attributes;
+    String tableName;
+    int tableNumber;
+    Table table;
+    ArrayList<AttributeSchema> attributes;
 
-    public TableSchema() {
-        this.primaryKey = null;
-        this.attributes = null;
+    public TableSchema(String tableName, ArrayList<AttributeSchema> attributes) {
+        this.tableName = tableName;
+        this.table = new Table(tableName);
+        this.attributes = attributes;
     }
 
-    public void dropAttribute(String a_name) {
+    public void dropAttribute(String attrName) {
         // remove an attribute and its data from the table
-        for (Attribute a : attributes) {
-            if (a.getName().equals(a_name)) {
-                attributes.remove(a);
-                break;
-            }
-        }
+        this.attributes.remove(findAttribute(attrName));
+
+        this.table.dropAttribute(attrName);
     }
 
-    public void addAttribute(Attribute a) {
-        if (a.isPrimaryKey) {
-            if (this.primaryKey == null) {
-                this.primaryKey = a;
-            } else {
-                // break with an error
-            }
-        }
-
+    public void addAttribute(AttributeSchema a) {
         this.attributes.add(a);
+
+        if (a.getDefaultValue() != null) {
+            this.table.addAttribute(a.getDefaultValue());
+        }
+        
     }
 
     public int findAttribute(String attrName){
         for (int i = 0; i < attributes.size(); i++){
-            if (attrName.equals(attributes.get(i).a_name)){
+            if (attrName.equals(attributes.get(i).attrName)){
                 return i;
             }
         }
