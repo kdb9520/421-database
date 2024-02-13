@@ -29,8 +29,16 @@ public class Page {
         
     }
 
-    public void dropAttribute(String a_name) {
+    public void dropAttribute(int i) {
+        for (Record record : this.records) {
+            record.dropAttribute(i);
+        }
+    }
 
+    public void addAttribute(Object value) {
+        for (Record record : this.records) {
+            record.addAttribute(value);
+        }
     }
 
     public boolean addRecord(Record r){
@@ -83,7 +91,7 @@ public class Page {
         // Write each record
         for (Record record : records) {
             byte[] recordBytes = record.serialize();
-            dataOutputStream.writeInt(recordBytes.length);
+            dataOutputStream.writeInt(recordBytes.length); // Size of each record, is this needed
             dataOutputStream.write(recordBytes);
         }
 

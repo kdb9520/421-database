@@ -1,4 +1,6 @@
-import java.util.ArrayList;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.LinkedList;
 
 public class Table {
@@ -6,13 +8,11 @@ public class Table {
     String name;
     int numPages;
     LinkedList<Page> pages;
-    TableSchema schema;
     
     public Table(String name) {
         this.name = name;
         this.numPages = 0;
         this.pages = new LinkedList<>();
-        this.schema = new TableSchema();
     }
 
     /**
@@ -39,29 +39,26 @@ public class Table {
 
     /**
      * Given an attribute's name, drops that attribute and all its data from the table
-     * @param a_name name of the attribute to drop from the table
+     * @param i index of the attribute to drop from the table
      */
-    public void dropAttribute(String a_name) {
-        // remove an attribute and its data from the table
-        this.schema.dropAttribute(a_name);
+    public void dropAttribute(int i) {
 
         // remove its data from the table
         for (Page page : this.pages) {
-            page.dropAttribute(a_name);
+            page.dropAttribute(i);
         }
 
     }
 
     /**
      * Given an Attribute, add it to the table
-     * @param a an Attribute
+     * @param value value to add to the records in the table
      */
-    public void addAttribute(Attribute a) {
+    public void addAttribute(Object value) {
         // add an attribute to the table
-        this.schema.addAttribute(a);
-
-        // add the column to the pages
-        
+        for (Page page : this.pages) {
+            page.addAttribute(value);
+        }
     }
 
     // public void writeToHardware() {
@@ -73,5 +70,30 @@ public class Table {
     // private Byte[] convertToBinary() {
     //     return null;
     // }
+
+    public String getName(){
+        return this.name;
+    }
+
+    public byte[] serialize() throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream);
+
+        // Write number of pages
+        dataOutputStream.writeInt(this.numPages);
+
+        // Write each page
+        for (Page page : pages) {
+            byte[] pageBytes = page.serialize();
+            dataOutputStream.write(pageBytes);
+        }
+
+        dataOutputStream.close();
+        return byteArrayOutputStream.toByteArray();
+    }
+
+    public static Page deserialize(byte[] data) throws IOException {
+              return null;
+    }
 
 }
