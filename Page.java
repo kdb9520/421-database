@@ -83,7 +83,7 @@ public class Page {
         // Write each record
         for (Record record : records) {
             byte[] recordBytes = record.serialize();
-            dataOutputStream.writeInt(recordBytes.length);
+            dataOutputStream.writeInt(recordBytes.length); // Size of each record, is this needed
             dataOutputStream.write(recordBytes);
         }
 

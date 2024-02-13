@@ -122,4 +122,19 @@ class DiskManager {
             e.printStackTrace();
         }
     }
+
+    public void writeTableToDisk(Table table) {
+        // Write page to disk (mock implementation)
+        // In a real scenario, this method would write the page data to disk
+        // For simplicity, we just print the page data here
+        System.out.println("Writing table " + table + " to disk");
+
+        try (FileOutputStream fos = new FileOutputStream(table.getName(), true)) {
+                
+        } catch (IOException e) {
+            // Handle the exception (e.g., log it or throw a runtime exception)
+            e.printStackTrace();
+        }
+    }
+    
 }

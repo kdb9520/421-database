@@ -1,3 +1,7 @@
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,9 +44,24 @@ public class Record {
         return totalSize;
     }
 
-    public byte[] serialize() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'serialize'");
+    public byte[] serialize() throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream);
+
+        
+
+        // Write each record
+        for (String value : values) {
+            
+            byte[] valueBytes = value.getBytes(StandardCharsets.UTF_8);
+             // Write the length of the value as a short (Maybe needed?)
+            // dataOutputStream.writeShort(valueBytes.length);
+            // Write the actual value bytes
+            dataOutputStream.write(valueBytes);
+        }
+
+        dataOutputStream.close();
+        return byteArrayOutputStream.toByteArray();
     }
 
     public static Record deserialize(byte[] recordBytes) {

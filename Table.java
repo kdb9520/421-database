@@ -1,5 +1,11 @@
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 public class Table {
 
@@ -73,5 +79,30 @@ public class Table {
     // private Byte[] convertToBinary() {
     //     return null;
     // }
+
+    public String getName(){
+        return this.name;
+    }
+
+    public byte[] serialize() throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream);
+
+        // Write number of pages
+        dataOutputStream.writeInt(this.numPages);
+
+        // Write each page
+        for (Page page : pages) {
+            byte[] pageBytes = page.serialize();
+            dataOutputStream.write(pageBytes);
+        }
+
+        dataOutputStream.close();
+        return byteArrayOutputStream.toByteArray();
+    }
+
+    public static Page deserialize(byte[] data) throws IOException {
+              return null;
+    }
 
 }
