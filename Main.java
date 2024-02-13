@@ -20,7 +20,7 @@ public class Main {
             int started = DatabaseStart.initiateDatabase(dbLoc, pageSize, bufferSize);
 
             StorageManager storageManager = new StorageManager(dbLoc);
-            BufferManager bufferManager = new BufferManager(bufferSize, storageManager)
+            BufferManager bufferManager = new BufferManager(bufferSize, storageManager);
 
             if (started == 1) {
                 Scanner scanner = new Scanner(System.in);
