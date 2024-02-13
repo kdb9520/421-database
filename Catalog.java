@@ -1,26 +1,35 @@
 import java.util.ArrayList;
 
 public class Catalog {
-    private static ArrayList<TableSchema> schemas;
 
 
 
-    public Catalog(ArrayList<TableSchema> tableSchemas){
-        this.schemas = tableSchemas;
+    public static ArrayList<TableSchema> readCatalog(){
+        ArrayList<TableSchema> tableSchemas = new ArrayList<>(); //todo - read from hardware
+        return tableSchemas;
+
     }
 
-    public static void updateCatalog(TableSchema tableSchema){
-        //this.schemas.add(tableSchema);
+    public static void writeCatalog(ArrayList<TableSchema> tableSchemas){
+        // todo - write from hardware
+
     }
 
-    public static void removeSchema(TableSchema tableSchema){
-        //this.schemas.remove(tableSchema);
+    public static ArrayList<TableSchema> updateCatalog(ArrayList<TableSchema> tableSchemas, TableSchema tableSchema){
+        tableSchemas.add(tableSchema);
+        return tableSchemas;
     }
 
-    public static void alterSchema(TableSchema tableSchema){
+    public static ArrayList<TableSchema> removeSchema(ArrayList<TableSchema> tableSchemas, TableSchema tableSchema){
+        tableSchemas.remove(tableSchema);
+        return tableSchemas;
+    }
+
+    public static ArrayList<TableSchema> alterSchema(ArrayList<TableSchema> tableSchemas, TableSchema tableSchema){
         //this.schemas.remove(tableSchema);
         // todo modify schema passed in
         //this.schemas.add(tableSchema);
+        return tableSchemas;
 
     }
 
