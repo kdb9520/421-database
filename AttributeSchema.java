@@ -16,6 +16,16 @@ public class AttributeSchema<E> {
         this.defaultValue = null;
     }
 
+    public AttributeSchema(String attrName, String attrType, String[] constraints, E dVal) {
+        this.attrName = attrName;
+        this.attrType = attrType;
+        this.isNotNull = false;
+        this.isPrimaryKey = false;
+        this.isUnique = false;
+        setConstraints(constraints);
+        this.defaultValue = dVal;
+    }
+
     private void setConstraints(String[] constraints) {
         for (String con : constraints) {
             switch (con) {
@@ -34,10 +44,6 @@ public class AttributeSchema<E> {
                     break;
             }
         }
-    }
-
-    public void setDefaultValue(E dVal) {
-        this.defaultValue = dVal;
     }
 
     public E getDefaultValue() {
