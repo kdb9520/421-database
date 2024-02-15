@@ -42,9 +42,18 @@ public class Page {
         }
     }
 
-    public boolean addRecord(Record r){
+    public Page addRecord(Record r){
+        if(numRecords > PAGE_SIZE){
+            Page newPage = splitPage();
+            records.add(r);
+            return newPage;
+        }
         records.add(r);
-        return true;
+        return null;
+    }
+
+    public Object getFirstRecord(int primaryKey){
+        return this.records.get(0).getAttribute(primaryKey);
     }
 
     public int getPageSize(){
@@ -129,4 +138,6 @@ public class Page {
         Page page = new Page(pageNumber,new ArrayList<Record>(records) );
         return page;
     }
+
+    public 
 }
