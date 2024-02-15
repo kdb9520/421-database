@@ -1,5 +1,4 @@
 
-<<<<<<< HEAD
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -7,10 +6,6 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-=======
-import java.util.HashMap;
-import java.util.Map;
->>>>>>> 5574f2a402673062fea25535fb96e743a4e9ef6b
 
 public class BufferManager {
     //private Map<Integer, Page> bufferPool; // Map page number to page data
@@ -20,13 +15,8 @@ public class BufferManager {
 
     public BufferManager(int bufferSize, StorageManager storageManager) {
         this.bufferSize = bufferSize;
-<<<<<<< HEAD
         this.bufferPool = new ArrayList<Page>();
         this.diskManager = diskManager;
-=======
-        this.bufferPool = new HashMap<>();
-        this.storageManager = storageManager;
->>>>>>> 5574f2a402673062fea25535fb96e743a4e9ef6b
     }
 
     public Page getPage(String tableName, int pageNumber) {
@@ -37,11 +27,7 @@ public class BufferManager {
             }
         }
             // Page is not in buffer pool, so read it from disk
-<<<<<<< HEAD
             Page page = diskManager.readPageFromDisk(tableName, pageNumber);
-=======
-            Page page = storageManager.readPageFromDisk(pageNumber);
->>>>>>> 5574f2a402673062fea25535fb96e743a4e9ef6b
             if (bufferPool.size() >= bufferSize) {
                 // Buffer pool is full, evict a page using some policy (e.g., LRU)
                 evictPage();
@@ -76,30 +62,15 @@ public class BufferManager {
     private void evictPage() {
         // Implementation of page eviction policy (e.g., LRU)
         // For simplicity, this example just removes the first page in the buffer pool
-<<<<<<< HEAD
         Page removedPage = bufferPool.get(0);
         diskManager.writePageToDisk(removedPage);
         bufferPool.remove(0);
-=======
-        int firstPageNumber = bufferPool.keySet().iterator().next();
-        Page removedPage = bufferPool.get(firstPageNumber);
-        storageManager.writePageToDisk(firstPageNumber, removedPage);
-        bufferPool.remove(firstPageNumber);
->>>>>>> 5574f2a402673062fea25535fb96e743a4e9ef6b
     }
 
     public void purgeBuffer() {
         // Iterate through all entries in the buffer pool
-<<<<<<< HEAD
         for (Page p : bufferPool) {
             diskManager.writePageToDisk(p);
-=======
-        for (Map.Entry<Integer, Page> entry : bufferPool.entrySet()) {
-            int pageNumber = entry.getKey();
-            Page page = entry.getValue();
-            // Write the page to disk
-            storageManager.writePageToDisk(pageNumber, page);
->>>>>>> 5574f2a402673062fea25535fb96e743a4e9ef6b
         }
         // Clear the buffer pool
         bufferPool.clear();
