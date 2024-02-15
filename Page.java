@@ -10,6 +10,7 @@ public class Page {
     public static final int PAGE_SIZE = 8;
     int numRecords;
     int pageNumber;
+    String tableName;
     ArrayList<Record> records;
     Page nextPage;
 
@@ -19,7 +20,7 @@ public class Page {
     }
 
 
-    public Page(int pageNumber, byte[] pageData) {
+    public Page(String tableName, int pageNumber, byte[] pageData) {
         //TODO Auto-generated constructor stub
         
     }
@@ -76,6 +77,10 @@ public class Page {
 
     public int getPageNumber() {
         return this.pageNumber;
+    }
+
+    public String getTableName() {
+        return this.tableName;
     }
 
     public byte[] serialize() throws IOException {
