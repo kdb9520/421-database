@@ -16,7 +16,7 @@ public class BufferManager {
     public BufferManager(int bufferSize, StorageManager storageManager) {
         this.bufferSize = bufferSize;
         this.bufferPool = new ArrayList<Page>();
-        this.diskManager = diskManager;
+        this.storageManager = storageManager;
     }
 
     public Page getPage(String tableName, int pageNumber) {
@@ -27,7 +27,7 @@ public class BufferManager {
             }
         }
             // Page is not in buffer pool, so read it from disk
-            Page page = diskManager.readPageFromDisk(tableName, pageNumber);
+            Page page = storageManager.readPageFromDisk(tableName, pageNumber);
             if (bufferPool.size() >= bufferSize) {
                 // Buffer pool is full, evict a page using some policy (e.g., LRU)
                 evictPage();
@@ -63,64 +63,16 @@ public class BufferManager {
         // Implementation of page eviction policy (e.g., LRU)
         // For simplicity, this example just removes the first page in the buffer pool
         Page removedPage = bufferPool.get(0);
-        diskManager.writePageToDisk(removedPage);
+        storageManager.writePageToDisk(removedPage);
         bufferPool.remove(0);
     }
 
     public void purgeBuffer() {
         // Iterate through all entries in the buffer pool
         for (Page p : bufferPool) {
-            diskManager.writePageToDisk(p);
+            storageManager.writePageToDisk(p);
         }
         // Clear the buffer pool
         bufferPool.clear();
-    }
-}
-
-class DiskManager {
-    private String databaseFileName; // Name of the database file
-
-    public DiskManager(String databaseFileName) {
-        this.databaseFileName = databaseFileName;
-    }
-
-
-    public Page readPageFromDisk(String tableName, int pageNumber) {
-        try (FileChannel fileChannel = FileChannel.open(Paths.get(tableName), StandardOpenOption.READ)) {
-            // Calculate the position in the file where the page starts
-            long position = (long) pageNumber * Page.PAGE_SIZE;
-
-            // Allocate a ByteBuffer to hold the page data
-            ByteBuffer buffer = ByteBuffer.allocate(Page.PAGE_SIZE);
-
-            // Read the page data from the file into the buffer
-            fileChannel.read(buffer, position);
-
-            // Convert the ByteBuffer to a byte array
-            byte[] pageData = buffer.array();
-
-            // Create and return a new Page object
-            return new Page(tableName, pageNumber, pageData);
-        } catch (IOException e) {
-            // Handle the exception (e.g., log it or throw a runtime exception)
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public void writePageToDisk(Page page) {
-        System.out.println("Writing page " + page.getPageNumber() + " to disk: " + page);
-
-        try (FileOutputStream fos = new FileOutputStream(page.getTableName(), true)) {
-            // Calculate the offset where this page should be written
-            long offset = page.getPageNumber() * Page.PAGE_SIZE;
-            // Move the file pointer to the correct position
-            fos.getChannel().position(offset);
-            // Write the page data to the file
-            fos.write(page.serialize());
-        } catch (IOException e) {
-            // Handle the exception (e.g., log it or throw a runtime exception)
-            e.printStackTrace();
-        }
     }
 }
