@@ -5,11 +5,16 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
+
 public class Record {
     private ArrayList<Object> values;
 
     public Record() {
         this.values = new ArrayList<>();
+    }
+
+    public Record(ArrayList<Object> newValues){
+        this.values = newValues;
     }
 
     // Set the value of an attribute
