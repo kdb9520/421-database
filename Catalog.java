@@ -69,6 +69,20 @@ public class Catalog {
 
     }
 
+    /**
+     * Gets a table schema from the catalog
+     * @param name - name of the table
+     * @return - the schema or null if not found
+     */
+    public TableSchema getTableSchema(String name){
+        for(TableSchema t : this.tableSchemas){
+            if (t.tableName.equals(name)){
+                return t;
+            }
+        }
+        return null;
+    }
+
 
     public static Catalog getCatalog(){
         return Catalog.catalog;
