@@ -75,4 +75,17 @@ public class BufferManager {
         // Clear the buffer pool
         bufferPool.clear();
     }
+
+    public Page createPage(String tableName, int pageNumber){
+        // First create a page
+        Page page = new Page(tableName, pageNumber, null);
+        // Add it to buffer
+        if (bufferPool.size() >= bufferSize) {
+            // Buffer pool is full, evict a page using some policy (e.g., LRU)
+            evictPage();
+        }
+        // Add the new page to buffer pool
+        bufferPool.add(page);
+        return page;
+    }
 }
