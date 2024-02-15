@@ -8,18 +8,13 @@ import java.util.Arrays;
  */
 public class DDLParser {
     private ArrayList<TableSchema> tableSchemas; // arrayList of TableSchemas
-    public DDLParser() {
 
-        // reads the catalog in from hardware
-        this.tableSchemas = Catalog.readCatalog();
-
-    }
 
     /**
      * creates a table by creating a new schema and inserting into the catalog
      * @param query - the query entered by the user
      */
-    public void createTable(String query) {
+    public static void createTable(String query) {
 
         // todo - worry about casing of letters
         String name = "";
@@ -90,7 +85,7 @@ public class DDLParser {
      * @param params - the list of constraints supplied by the user
      * @return - true if valid false if not
      */
-    private Boolean checkConstraint(String[] params) {
+    private static Boolean checkConstraint(String[] params) {
         if(params.length < 1){
             return true;
         }
@@ -107,16 +102,22 @@ public class DDLParser {
      * @param param - the type given by the user
      * @return - true if valid false if not
      */
-    private Boolean checkTypes(String param) {
-        //todo - look into types allowed
-        return true;
+    private static Boolean checkTypes(String param) {
+        if(param.equals("INTEGER") || param.equals("DOUBLE") || param.equals("BOOLEAN")
+        || param.equals("BOOLEAN") || param.equals("CHAR") || param.equals("VARCHAR")){
+            return true;
+        }
+
+        else{
+            return false;
+        }
     }
 
     /**
      * Drops a table
      * @param query - query given by user
      */
-    public void dropTable(String query) {
+    public static void dropTable(String query) {
         if(!query.contains("DROP TABLE")){
             return;
         }
@@ -130,11 +131,9 @@ public class DDLParser {
 
 
         //TODO  - talk to storage manager
-        for(TableSchema t : this.tableSchemas){
-            if (t.tableName.equals(name)){
-                Catalog.getCatalog().removeSchema(t);
-                break;
-            }
+        Boolean result =  Catalog.getCatalog().removeSchema(name);
+        if(!result){
+            System.err.println("Error removing table");
         }
     }
 
@@ -142,7 +141,7 @@ public class DDLParser {
      * Alter table modifies a table schema
      * @param query - query given by user
      */
-    public void alterTable(String query){
+    public static void alterTable(String query){
 
         // create a table called temp based off new schema
         // copy the data over
@@ -171,14 +170,14 @@ public class DDLParser {
         Boolean found = false;
         TableSchema tableSchema = null;
 
-        // check to make sure the Catalog contains the table to alter
-        for(TableSchema t : this.tableSchemas){
-            if (t.tableName.equals(name)){
-                found = true;
-                tableSchema = t;
-                break;
-            }
-        }
+//        // check to make sure the Catalog contains the table to alter
+//        for(TableSchema t : this.tableSchemas){
+//            if (t.tableName.equals(name)){
+//                found = true;
+//                tableSchema = t;
+//                break;
+//            }
+//        }
 
         // return if not found
         if(!found){
@@ -208,6 +207,11 @@ public class DDLParser {
             // todo - deal with other args for alter table pending new constructor
         }
 
+
+    }
+
+
+    public static void main(String [] args){
 
     }
 

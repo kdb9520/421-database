@@ -50,11 +50,17 @@ public class Catalog {
 
     /**
      * removes a schema from the catalog
-     * @param tableSchema - the schema to remove
+     * @param name - the schema name to remove
      *
      */
-    public void removeSchema(TableSchema tableSchema){
-        this.tableSchemas.remove(tableSchema);
+    public Boolean removeSchema(String name){
+        for(TableSchema t : this.tableSchemas){
+            if (t.tableName.equals(name)){
+                this.tableSchemas.remove(t);
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
