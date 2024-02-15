@@ -23,8 +23,7 @@ public class Table {
 
         // if there are no pages
         if (this.numPages == 0) {
-            // make a new file for the table
-
+            
             // add this entry to a new page
 
             // insert the page into the table file

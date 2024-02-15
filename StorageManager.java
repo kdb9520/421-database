@@ -1,3 +1,4 @@
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -39,6 +40,14 @@ class StorageManager {
     public void writePageToDisk(Page page) {
         System.out.println("Writing page " + page.getPageNumber() + " to disk: " + page);
 
+        try {
+            File file = new File(page.getTableName());
+            
+            // Create the file if it doesn't exist
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+
         try (FileOutputStream fos = new FileOutputStream(page.getTableName(), true)) {
             // Calculate the offset where this page should be written
             long offset = page.getPageNumber() * Page.PAGE_SIZE;
@@ -50,5 +59,9 @@ class StorageManager {
             // Handle the exception (e.g., log it or throw a runtime exception)
             e.printStackTrace();
         }
+    } catch (IOException e) {
+        // Handle the exception (e.g., log it or throw a runtime exception)
+        e.printStackTrace();
+    }
     }
 }
