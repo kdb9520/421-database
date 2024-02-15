@@ -81,7 +81,7 @@ public class DDLParser {
 
 
         // update the catalog
-        Catalog.updateCatalog(this.tableSchemas, tableSchema);
+        Catalog.getCatalog().updateCatalog(tableSchema);
 
     }
 
@@ -132,7 +132,7 @@ public class DDLParser {
         //TODO  - talk to storage manager
         for(TableSchema t : this.tableSchemas){
             if (t.tableName.equals(name)){
-                Catalog.removeSchema(this.tableSchemas, t);
+                Catalog.getCatalog().removeSchema(t);
                 break;
             }
         }
@@ -143,6 +143,11 @@ public class DDLParser {
      * @param query - query given by user
      */
     public void alterTable(String query){
+
+        // create a table called temp based off new schema
+        // copy the data over
+        // drop the old table
+        // add the new table
         // todo - worry about casing of letters
         String name = "";
         String operation = "";
@@ -198,7 +203,7 @@ public class DDLParser {
             AttributeSchema a = new AttributeSchema(attributeName, attributeType, null);
 
             tableSchema.addAttribute(a);
-            Catalog.alterSchema(tableSchemas, tableSchema);
+            Catalog.getCatalog().alterSchema(tableSchema);
 
             // todo - deal with other args for alter table pending new constructor
         }
@@ -206,10 +211,5 @@ public class DDLParser {
 
     }
 
-    /**
-     * Writes catalog to hardware - theoretically on database shutdown
-     */
-    public void writeCatalogToHardware(){
-        Catalog.writeCatalog(this.tableSchemas);
-    }
+
 }
