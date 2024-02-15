@@ -2,7 +2,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.LinkedList;
-import java.util.List;
 
 public class Table {
 
@@ -53,10 +52,9 @@ public class Table {
 
     /**
      * Given an Attribute, add it to the table
-     * @param <E>
      * @param value value to add to the records in the table
      */
-    public <E> void addAttribute(E value) {
+    public void addAttribute(Object value) {
         // add an attribute to the table
         for (Page page : this.pages) {
             page.addAttribute(value);

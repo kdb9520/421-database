@@ -19,8 +19,8 @@ public class Main {
             // restart / create the database
             int started = DatabaseStart.initiateDatabase(dbLoc, pageSize, bufferSize);
 
-            DiskManager diskManager = new DiskManager(dbLoc);
-            BufferManager bufferManager = new BufferManager(bufferSize, diskManager)
+            StorageManager storageManager = new StorageManager(dbLoc);
+            BufferManager bufferManager = new BufferManager(bufferSize, storageManager);
 
             if (started == 1) {
                 Scanner scanner = new Scanner(System.in);
@@ -37,7 +37,7 @@ public class Main {
 
                     if (line.contains(";")) {
                         String command = commandBuilder.toString().trim().replaceAll("\\s+", " ");
-                        handleQuery(command);
+                        handleQuery(command, bufferManager);
                         if (line.endsWith(";")) {
                             // Clear the command builder if the semicolon is at the end of the line
                             commandBuilder.setLength(0);
@@ -75,14 +75,15 @@ public class Main {
             query.substring(0, 5).equals("alter ")) {
                 
             // give buffer manager too
-            DDLParser.query(query);
+            DDLParser.query(query, bufferManager);
         }
         else if(query.substring(0, 11).equals("insert into ") ||
+                query.substring(0, 14).equals("display schema ") ||
                 query.substring(0, 12).equals("display info ") ||
                 query.substring(0, 6).equals("select ")) {
 
                 // give buffer manager too
-                DMLParser.query(query);
+                DMLParser.query(query, bufferManager);
         }
         else {
             System.out.println("Command not valid!\n\nEnter 'help;' to list all commands.");

@@ -32,13 +32,13 @@ public class Page {
 
     public void dropAttribute(int i) {
         for (Record record : this.records) {
-            record.dropAttribute(i);
+            record.deleteAttribute(i);
         }
     }
 
-    public <E> void addAttribute(E value) {
+    public void addAttribute(Object value) {
         for (Record record : this.records) {
-            record.addAttribute(value);
+            record.setAttribute(value);
         }
     }
 
