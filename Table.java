@@ -20,7 +20,7 @@ public class Table {
      * @param record the record to insert
      */
     public void insert(Record record) {
-
+        
         // if there are no pages
         if (this.numPages == 0) {
             Page newPage = BufferManager.createPage(this.name,0);
@@ -30,9 +30,13 @@ public class Table {
             this.pages.add(result);
         }
         else{
+            // Get the primary key and its type so we can compare
+            TableSchema tableSchema = Catalog.getTableSchema(this.name);
+            // Get primary key col number
+            int primaryKeyCol = tableSchema.findPrimaryKeyColNum();
+            String primaryKeyType = tableSchema.getPrimaryKeyType();
             // Loop through pages and find which one to insert record into.
-            Page next = null;
-            
+            Page next = null;            
             for(int i = 0; i < pages.size(); i++){
                 // See if we are out of bounds
                 if(i+1 >= pages.size()){
@@ -42,16 +46,47 @@ public class Table {
                 next = pages.get(i+1);
 
                 // If its less than the first value of next page (i+1) then it belongs to page i
-                if(record.getAttribute(i) < next.getFirstRecord(i)){
-                    // Add the record to the page. Check if it split page or not
-                    Page result = pages.get(i).addRecord(record);
-                    // If we split then add the new page to our page list.
-                    if(result != null){
-                        pages.add(result);
+                // Type cast appropiately then compare records
+                if(primaryKeyType == "Integer"){
+                    if((Integer) record.getAttribute(primaryKeyCol) < (Integer) next.getFirstRecord(i)){
+                        // Add the record to the page. Check if it split page or not
+                        Page result = pages.get(i).addRecord(record);
+                        // If we split then add the new page to our page list.
+                        if(result != null){
+                            pages.add(result);
+                            return;
+                        }
                         return;
                     }
-                    return;
                 }
+
+                else if(primaryKeyType == "String"){
+                   
+                    if(record.getAttribute(primaryKeyCol).toString().compareTo(next.getFirstRecord(i).toString()) <= 0 ){
+                        // Add the record to the page. Check if it split page or not
+                        Page result = pages.get(i).addRecord(record);
+                        // If we split then add the new page to our page list.
+                        if(result != null){
+                            pages.add(result);
+                            return;
+                        }
+                        return;
+                    }
+                }
+
+                else if(primaryKeyType == "Char"){
+                    if((char) record.getAttribute(primaryKeyCol) < (char) next.getFirstRecord(i)){
+                        // Add the record to the page. Check if it split page or not
+                        Page result = pages.get(i).addRecord(record);
+                        // If we split then add the new page to our page list.
+                        if(result != null){
+                            pages.add(result);
+                            return;
+                        }
+                        return;
+                    }
+                }
+                
             }
             // If we make it here then the record belongs in a new page at the end of the list.
             // Create page

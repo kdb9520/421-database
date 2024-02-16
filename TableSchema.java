@@ -1,3 +1,4 @@
+import java.text.AttributedCharacterIterator.Attribute;
 import java.util.ArrayList;
 
 public class TableSchema {
@@ -37,4 +38,23 @@ public class TableSchema {
         }
         return -1;
     }
+
+    public int findPrimaryKeyColNum(){
+        for (int i = 0; i < attributes.size(); i++){
+            if(attributes.get(i).isPrimaryKey){
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public String getPrimaryKeyType(){
+        AttributeSchema primaryKeySchema = attributes.get(findPrimaryKeyColNum());
+        return primaryKeySchema.attrType;
+    }
+
+    public AttributeSchema findAttributeSchema(int attr){
+        return this.attributes.get(attr);
+    }
 }
+

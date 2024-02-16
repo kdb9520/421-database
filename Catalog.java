@@ -7,7 +7,7 @@ import java.util.ArrayList;
  */
 public class Catalog {
 
-    private ArrayList<TableSchema> tableSchemas;    // arrayList representing the table schemas
+    private static ArrayList<TableSchema> tableSchemas;    // arrayList representing the table schemas
     public static Catalog catalog;                  // private instance of Catalog, accessible by static methods
 
     // constructor for when there is no catalog on hardware
@@ -80,8 +80,8 @@ public class Catalog {
      * @param name - name of the table
      * @return - the schema or null if not found
      */
-    public TableSchema getTableSchema(String name){
-        for(TableSchema t : this.tableSchemas){
+    public static TableSchema getTableSchema(String name){
+        for(TableSchema t : tableSchemas){
             if (t.tableName.equals(name)){
                 return t;
             }

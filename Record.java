@@ -31,7 +31,14 @@ public class Record {
     public Object deleteAttribute(int index) {
         return values.remove(index);
     }
-    // }
+  
+    private String getAttributeType(int attributeIndex) {
+        // Implement this based on your Catalog class
+        // Example: return Catalog.getAttributeType(attributeName);
+        return "String"; // Replace with actual implementation
+    }
+
+
 
     // Calculate the size of the record in bytes
     public int calculateRecordSize() {
