@@ -2,14 +2,14 @@ import java.util.ArrayList;
 
 public class BufferManager {
     //private Map<Integer, Page> bufferPool; // Map page number to page data
-    private ArrayList<Page> bufferPool;
+    private static ArrayList<Page> bufferPool;
     private static final int bufferSize = 50; // Size of buffer pool
 
     private BufferManager() {
         this.bufferPool = new ArrayList<Page>();
     }
 
-    public Page getPage(String tableName, int pageNumber) {
+    public static Page getPage(String tableName, int pageNumber) {
 
         for(Page p : bufferPool){
             if(p.getTableName() == tableName & p.getPageNumber() == pageNumber){
@@ -28,7 +28,7 @@ public class BufferManager {
         }
     
 
-    public void writePage(Page page) {
+    public static void writePage(Page page) {
 
         
         for(Page p : bufferPool){
@@ -49,7 +49,7 @@ public class BufferManager {
             bufferPool.add(page);
         }
 
-    private void evictPage() {
+    private static void evictPage() {
         // Implementation of page eviction policy (e.g., LRU)
         // For simplicity, this example just removes the first page in the buffer pool
         Page removedPage = bufferPool.get(0);
@@ -66,7 +66,7 @@ public class BufferManager {
         bufferPool.clear();
     }
 
-    public Page createPage(String tableName, int pageNumber){
+    public static Page createPage(String tableName, int pageNumber){
         // First create a page
         Page page = new Page(tableName, pageNumber, null);
         // Add it to buffer
