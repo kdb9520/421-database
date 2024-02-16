@@ -138,6 +138,4 @@ public class Page {
         Page page = new Page(pageNumber,new ArrayList<Record>(records) );
         return page;
     }
-
-    public 
 }

@@ -7,10 +7,10 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
 class StorageManager {
-    private String databaseFileName; // Name of the database file
+    private String db_loc;
 
-    public StorageManager(String databaseFileName) {
-        this.databaseFileName = databaseFileName;
+    public StorageManager(String db_loc) {
+        this.db_loc = db_loc;
     }
 
 
@@ -41,14 +41,14 @@ class StorageManager {
         System.out.println("Writing page " + page.getPageNumber() + " to disk: " + page);
 
         try {
-            File file = new File(page.getTableName());
+            File file = new File(db_loc + page.getTableName());
             
             // Create the file if it doesn't exist
             if (!file.exists()) {
                 file.createNewFile();
             }
 
-        try (FileOutputStream fos = new FileOutputStream(page.getTableName(), true)) {
+        try (FileOutputStream fos = new FileOutputStream(file, true)) {
             // Calculate the offset where this page should be written
             long offset = page.getPageNumber() * Page.PAGE_SIZE;
             // Move the file pointer to the correct position
