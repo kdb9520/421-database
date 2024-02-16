@@ -25,7 +25,7 @@ public class Table {
         if (this.numPages == 0) {
             
             // add this entry to a new page
-
+            
             // insert the page into the table file
 
         }

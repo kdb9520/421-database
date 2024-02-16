@@ -6,15 +6,16 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
-class StorageManager {
-    private String db_loc;
+public class StorageManager {
+    public static final String db_loc = "";
+    public static Catalog catalog;                  // private instance of Catalog, accessible by static methods
 
-    public StorageManager(String db_loc) {
-        this.db_loc = db_loc;
+    private StorageManager() {
+       
     }
 
 
-    public Page readPageFromDisk(String tableName, int pageNumber) {
+    public static Page readPageFromDisk(String tableName, int pageNumber) {
         try (FileChannel fileChannel = FileChannel.open(Paths.get(tableName), StandardOpenOption.READ)) {
             // Calculate the position in the file where the page starts
             long position = (long) pageNumber * Page.PAGE_SIZE;
@@ -37,7 +38,7 @@ class StorageManager {
         }
     }
 
-    public void writePageToDisk(Page page) {
+    public static void writePageToDisk(Page page) {
         System.out.println("Writing page " + page.getPageNumber() + " to disk: " + page);
 
         try {
