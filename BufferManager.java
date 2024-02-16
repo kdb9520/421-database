@@ -1,22 +1,12 @@
-
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 
 public class BufferManager {
     //private Map<Integer, Page> bufferPool; // Map page number to page data
     private ArrayList<Page> bufferPool;
-    private int bufferSize; // Size of buffer pool
-    private StorageManager storageManager; // A hypothetical class for disk operations
+    private static final int bufferSize = 50; // Size of buffer pool
 
-    public BufferManager(int bufferSize, StorageManager storageManager) {
-        this.bufferSize = bufferSize;
+    private BufferManager() {
         this.bufferPool = new ArrayList<Page>();
-        this.storageManager = storageManager;
     }
 
     public Page getPage(String tableName, int pageNumber) {
@@ -27,7 +17,7 @@ public class BufferManager {
             }
         }
             // Page is not in buffer pool, so read it from disk
-            Page page = storageManager.readPageFromDisk(tableName, pageNumber);
+            Page page = StorageManager.readPageFromDisk(tableName, pageNumber);
             if (bufferPool.size() >= bufferSize) {
                 // Buffer pool is full, evict a page using some policy (e.g., LRU)
                 evictPage();
@@ -63,14 +53,14 @@ public class BufferManager {
         // Implementation of page eviction policy (e.g., LRU)
         // For simplicity, this example just removes the first page in the buffer pool
         Page removedPage = bufferPool.get(0);
-        storageManager.writePageToDisk(removedPage);
+        StorageManager.writePageToDisk(removedPage);
         bufferPool.remove(0);
     }
 
     public void purgeBuffer() {
         // Iterate through all entries in the buffer pool
         for (Page p : bufferPool) {
-            storageManager.writePageToDisk(p);
+            StorageManager.writePageToDisk(p);
         }
         // Clear the buffer pool
         bufferPool.clear();
