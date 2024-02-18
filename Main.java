@@ -6,6 +6,10 @@ import java.util.Scanner;
 // Authors:
 
 public class Main {
+
+    public static int pageSize;
+    public static int bufferSize;
+
     public static void main (String[] args) {
 
         if (args.length != 3) {
@@ -13,11 +17,13 @@ public class Main {
         }
         else {
             String dbLoc = args[1];
-            int pageSize = Integer.valueOf(args[2]);
-            int bufferSize = Integer.valueOf(args[3]);
+            pageSize = Integer.valueOf(args[2]);
+            bufferSize = Integer.valueOf(args[3]);
 
             // restart / create the database
-            int started = DatabaseStart.initiateDatabase(dbLoc, pageSize, bufferSize);
+            // Jaron Handling start up of dbint started = DatabaseStart.initiateDatabase(dbLoc, pageSize, bufferSize);
+
+            Catalog.readCatalog(dbLoc);
 
             StorageManager storageManager = new StorageManager(dbLoc);
             BufferManager bufferManager = new BufferManager(bufferSize, storageManager);
@@ -83,7 +89,7 @@ public class Main {
                 query.substring(0, 6).equals("select ")) {
 
                 // give buffer manager too
-                DMLParser.query(query, bufferManager);
+                DMLParser.query(query, dbloc);
         }
         else {
             System.out.println("Command not valid!\n\nEnter 'help;' to list all commands.");
