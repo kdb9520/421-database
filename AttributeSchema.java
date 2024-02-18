@@ -77,11 +77,13 @@ public class AttributeSchema {
             return null;
         }
     }
-}
 
-  // Deserialize a byte array into a record object
+      // Deserialize a byte array into a record object
   public static AttributeSchema deserialize(byte[] data) {
    
     return null;
 }
+}
+
+
 
