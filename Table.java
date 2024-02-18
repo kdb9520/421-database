@@ -100,6 +100,14 @@ public class Table {
         
     }
 
+    public int getNumberOfPages(){
+        return this.numPages;
+    }
+
+    public LinkedList<Page> getPages(){
+        return this.pages;
+    }
+
     public void dropTable() {
         // erase the table from hardware
     }
