@@ -63,6 +63,10 @@ public class TableSchema {
         return primaryKeySchema.attrType;
     }
 
+    public String getTableName(){
+        return this.tableName;
+    }
+
     public AttributeSchema findAttributeSchema(int attr){
         return this.attributes.get(attr);
     }

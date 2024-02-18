@@ -1,5 +1,8 @@
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 /**
@@ -52,9 +55,40 @@ public class Catalog {
      * Writes to hardware
      *
      */
-    public static void writeCatalog(){
-        // todo - write from hardware
+    public static void writeCatalog(String db_loc) {
+        // Ensure the db_loc/Schema directory exists or create it if it doesn't
+        String schemaDirectoryPath = db_loc + "/Schema";
+        createDirectoryIfNotExists(schemaDirectoryPath);
 
+        for (TableSchema tableSchema : tableSchemas) {
+            // Generate a unique filename for each TableSchema (you may need to adjust this)
+            String filename = schemaDirectoryPath + "/" + tableSchema.getTableName();
+
+            // Write the TableSchema to the file
+           // Write the TableSchema to the file
+        try (FileOutputStream fileOutputStream = new FileOutputStream(filename)) {
+            // Serialize the TableSchema to obtain a byte array
+            byte[] serializedData = tableSchema.serialize();
+
+            // Write the byte array to the file
+            fileOutputStream.write(serializedData);
+            System.out.println("TableSchema written to: " + filename);
+        } catch (IOException e) {
+            e.printStackTrace();
+            // Handle the exception according to your requirements
+        }
+        }
+    }
+
+    private static void createDirectoryIfNotExists(String directoryPath) {
+        try {
+            Path path = Path.of(directoryPath);
+            if (!Files.exists(path)) {
+                Files.createDirectories(path);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
