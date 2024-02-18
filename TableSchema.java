@@ -1,3 +1,8 @@
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.text.AttributedCharacterIterator.Attribute;
 import java.util.ArrayList;
 
@@ -55,6 +60,29 @@ public class TableSchema {
 
     public AttributeSchema findAttributeSchema(int attr){
         return this.attributes.get(attr);
+    }
+
+    // Serialize in format [numAttributes,[attr1][attr2][attr....n]]
+    public byte[] serialize() throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream);
+
+        // Write number of pages
+
+
+        // Write each page
+        for (AttributeSchema attribute : attributes) {
+            byte[] attribute_bytes = attribute.serialize();
+            dataOutputStream.write(attribute_bytes);
+        }
+
+        dataOutputStream.close();
+        return byteArrayOutputStream.toByteArray();
+    }
+
+      // Deserialize a byte array into a TableSchema object
+    public static TableSchema deserialize(byte[] data) {
+        return null;
     }
 }
 

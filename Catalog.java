@@ -1,3 +1,5 @@
+import java.io.File;
+import java.nio.file.Files;
 import java.util.ArrayList;
 
 /**
@@ -10,25 +12,41 @@ public class Catalog {
     private static ArrayList<TableSchema> tableSchemas;    // arrayList representing the table schemas
     public static Catalog catalog;                  // private instance of Catalog, accessible by static methods
 
-    // constructor for when there is no catalog on hardware
-    private Catalog(){
-
-    }
-
-    // constructor for when there is a catalog
-    private Catalog(String dir){
-
+    static{
+        tableSchemas = new ArrayList<>();
     }
 
     /**
-     * needs to pass in file directory
+     * Check db_loc/Schema folder and read in each file, converting it to TableSchema objects
      * @return
      */
-    public static ArrayList<TableSchema> readCatalog(String db_loc){
-        ArrayList<TableSchema> tableSchemas = new ArrayList<>(); //todo - read from hardware
-        return tableSchemas;
+    public static ArrayList<TableSchema> readCatalog(String db_loc) {
+        ArrayList<TableSchema> tableSchemas = new ArrayList<>();
+        try{
+            // Assuming db_loc is a directory path
+            File schemaDirectory = new File(db_loc + "/Schema");
 
+            if (schemaDirectory.exists() && schemaDirectory.isDirectory()) {
+                File[] schemaFiles = schemaDirectory.listFiles();
+
+                if (schemaFiles != null) {
+                    for (File schemaFile : schemaFiles) {
+                        // Read each schema file and create TableSchema objects
+                        TableSchema tableSchema = TableSchema.deserialize(Files.readAllBytes(schemaFile.toPath()));
+                        if (tableSchema != null) {
+                            tableSchemas.add(tableSchema);
+                        }
+                    }
+                }
+            }
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+        
+
+        return tableSchemas;
     }
+
 
     /**
      * Writes to hardware

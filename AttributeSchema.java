@@ -1,3 +1,8 @@
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+
 public class AttributeSchema {
     String attrName;
     String attrType;
@@ -54,4 +59,29 @@ public class AttributeSchema {
         return this.attrType;
     }
 
+    // Serialize in format: [AttrName,AttrType,isNull,isPK,isUN,defaultValue]
+    public byte[] serialize() {
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+             ObjectOutputStream oos = new ObjectOutputStream(bos)) {
+            oos.writeObject(attrName.getBytes());
+            oos.writeObject(attrType.getBytes());
+            byte isNull = (byte)(isNotNull?1:0);
+            oos.writeObject(isNull);
+            byte isPK = (byte)(isPrimaryKey?1:0);
+            oos.writeObject(isPK);
+            byte isUN = (byte)(isUnique?1:0);
+            oos.writeObject(isUN);
+            return bos.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
+
+  // Deserialize a byte array into a record object
+  public static AttributeSchema deserialize(byte[] data) {
+   
+    return null;
+}
+
