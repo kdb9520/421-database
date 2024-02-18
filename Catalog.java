@@ -20,8 +20,8 @@ public class Catalog {
      * Check db_loc/Schema folder and read in each file, converting it to TableSchema objects
      * @return
      */
-    public static ArrayList<TableSchema> readCatalog(String db_loc) {
-        ArrayList<TableSchema> tableSchemas = new ArrayList<>();
+    public static void readCatalog(String db_loc) {
+        
         try{
             // Assuming db_loc is a directory path
             File schemaDirectory = new File(db_loc + "/Schema");
@@ -44,7 +44,7 @@ public class Catalog {
         }
         
 
-        return tableSchemas;
+        
     }
 
 
