@@ -5,8 +5,8 @@ public class BufferManager {
     private static ArrayList<Page> bufferPool;
     private static final int bufferSize = 50; // Size of buffer pool
 
-    private BufferManager() {
-        this.bufferPool = new ArrayList<Page>();
+    static{
+        bufferPool = new ArrayList<>();
     }
 
     public static Page getPage(String tableName, int pageNumber) {
