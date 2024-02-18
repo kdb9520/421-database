@@ -23,17 +23,15 @@ public class Main {
             // restart / create the database
             // Jaron Handling start up of dbint started = DatabaseStart.initiateDatabase(dbLoc, pageSize, bufferSize);
 
-            Catalog.readCatalog(dbLoc);
-            // TODO
-            int started = 0;
+            boolean started = DatabaseStart.initiateDatabase(dbLoc, pageSize, bufferSize);
 
-            if (started == 1) {
+            Catalog.readCatalog(dbLoc);
+
+            if (started) {
                 Scanner scanner = new Scanner(System.in);
-                //String query = "";
                 StringBuilder commandBuilder = new StringBuilder();
 
                 while (true) {
-                    
                     String line = readCommand(scanner);
                     commandBuilder.append(line).append("\n");
 

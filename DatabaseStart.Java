@@ -28,7 +28,7 @@ public class DatabaseStart {
         return success;
     }
 
-    public static boolean startDatabase (String databaseLocation, int pageSize, int bufferSize) {
+    private static boolean startDatabase (String databaseLocation, int pageSize, int bufferSize) {
 
         boolean success = false;
         try {
@@ -54,7 +54,7 @@ public class DatabaseStart {
         return success;
     }
 
-    public static boolean createDatabase (String databaseLocation, int pageSize, int bufferSize) {
+    private static boolean createDatabase (String databaseLocation, int pageSize, int bufferSize) {
         
         boolean success = false;
         try {
