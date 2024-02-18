@@ -4,62 +4,64 @@ import javax.management.Query;
 
 public class DMLParser {
 
-    BufferManager bufferManager;
-
-    public DMLParser(BufferManager bufferManager) {
-        this.bufferManager = bufferManager;
-    }
-
-    public void handleQuery(String query) {
+    public static void handleQuery(String query, String databaseLocation) {
 
         if (query.substring(0, 11).equals("insert into ")) {
             insert(query);
         }
 
         else if (query.substring(0, 14).equals("display schema ")) {
-            displaySchema(query.substring(14));
+            displaySchema(query.substring(14), databaseLocation);
         }
 
         else if (query.substring(0, 12).equals("display info ")) {
-            displaySchema(query.substring(12));
+            displayInfo(query.substring(12));
         }
     }
 
-    public void insert(String query) {
-        String name = "";
-        String a_name = "";
-        String constraint_1 = "";
-        String constraint = "";
+    public static void insert(String query) {
+        String splitQuery[] = query.split(" ", 3);
+
+        String tableName = splitQuery[0];
+
+        String values = splitQuery[1];
+
+        // splitQuery[3] - the tuples
+        
+
+
 
     }
 
-    private boolean displaySchema(String tableName) {
+    public static void select(String query) {
 
-        Table table = bufferManager.getTable(tableName);
-        if (table != null) {
+    }
 
-            String dbLocation = bufferManager.getDatabaseLocation();
+    private static boolean displaySchema(String tableName, String databaseLocation) {
 
-            int pageSize = table.pages.getLast().getPageSize();
-
-            int bufferSize = bufferManager.getSize();
+        TableSchema tableSchema = Catalog.getCatalog().getTableSchema(tableName);
+        if (tableSchema != null) {
            
-            String schema = "_";
+            String schema = tableSchema.toString();
 
-            System.out.println("Database Location: "+ dbLocation + "\nPage Size: " + pageSize + "\nBuffer Size: " + bufferSize + "Table Schema: " + schema);
+            System.out.println("Database Location: "+ databaseLocation + "\nPage Size: " + Main.pageSize + "\nBuffer Size: " + Main.bufferSize + "Table Schema: " + schema);
             return true;
+        }
+        else {
+            System.out.println("Error: Table '" + tableName + "' not found");
         }
         return false;
     }
 
-    private boolean displayInfo(String tableName) {
+    private static boolean displayInfo(String tableName) {
 
-        Table table = bufferManager.getTable(tableName);
-        if (table != null) {
-            // get schema
-            String schema = "";
+        TableSchema tableSchema = Catalog.getCatalog().getTableSchema(tableName);
+        
+        if (tableSchema != null) {
 
-            int pageNumber = table.numPages;
+            String schema = tableSchema.toString();
+
+            int pageNumber = Catalog.getCatalog().getPageNumber(tableName);// table.numPages;
 
             LinkedList<Page> pages = table.pages;
             int numRecords = 0;
@@ -70,27 +72,11 @@ public class DMLParser {
             System.out.println("Table: "+ tableName + "\nSchema: " + schema + "\nNumber of Pages: " + pageNumber + "\nNumber of Records: " + numRecords);
             return true;
         }
+        else {
+            System.out.println("Error: Table '" + tableName + "' not found");
+        }
 
         return false;
-    }
-
-    private Boolean checkTypes(String param) {
-
-        //todo - look into types allowed
-        return true;
-    }
-
-    public void dropTable(String query) {
-        if(!query.contains("drop table")){
-            return;
-        }
-
-        String [] args = query.split(" ");
-        if(args.length > 3){
-            return;
-        }
-
-        String name = args[2];
     }
 
 }
