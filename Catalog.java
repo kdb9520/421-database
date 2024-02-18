@@ -24,7 +24,7 @@ public class Catalog {
      * needs to pass in file directory
      * @return
      */
-    public static ArrayList<TableSchema> readCatalog(){
+    public static ArrayList<TableSchema> readCatalog(String db_loc){
         ArrayList<TableSchema> tableSchemas = new ArrayList<>(); //todo - read from hardware
         return tableSchemas;
 

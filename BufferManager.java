@@ -57,7 +57,7 @@ public class BufferManager {
         bufferPool.remove(0);
     }
 
-    public void purgeBuffer() {
+    public static void purgeBuffer() {
         // Iterate through all entries in the buffer pool
         for (Page p : bufferPool) {
             StorageManager.writePageToDisk(p);

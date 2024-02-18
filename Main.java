@@ -24,9 +24,8 @@ public class Main {
             // Jaron Handling start up of dbint started = DatabaseStart.initiateDatabase(dbLoc, pageSize, bufferSize);
 
             Catalog.readCatalog(dbLoc);
-
-            StorageManager storageManager = new StorageManager(dbLoc);
-            BufferManager bufferManager = new BufferManager(bufferSize, storageManager);
+            // TODO
+            int started = 0;
 
             if (started == 1) {
                 Scanner scanner = new Scanner(System.in);
@@ -43,7 +42,7 @@ public class Main {
 
                     if (line.contains(";")) {
                         String command = commandBuilder.toString().trim().replaceAll("\\s+", " ");
-                        handleQuery(command, bufferManager);
+                        handleQuery(command, dbLoc);
                         if (line.endsWith(";")) {
                             // Clear the command builder if the semicolon is at the end of the line
                             commandBuilder.setLength(0);
@@ -68,10 +67,10 @@ public class Main {
         return scanner.nextLine().trim();
     }
 
-    private static void handleQuery (String query, BufferManager bufferManager) {
+    private static void handleQuery (String query, String dbloc) {
         
         if(query.substring(0, 3).equals("quit")) {
-            shutdown(bufferManager);
+            shutdown();
         }
         else if (query.substring(0, 3).equals("help")) {
             helpCommand();
@@ -81,7 +80,7 @@ public class Main {
             query.substring(0, 5).equals("alter ")) {
                 
             // give buffer manager too
-            DDLParser.query(query, bufferManager);
+            DDLParser.query(query);
         }
         else if(query.substring(0, 11).equals("insert into ") ||
                 query.substring(0, 14).equals("display schema ") ||
@@ -115,9 +114,9 @@ public class Main {
         System.out.println("select * from <name>;");
     }
 
-    private static void shutdown(BufferManager bufferManager) {
+    private static void shutdown() {
         System.out.println("Shutting down database...");
-        bufferManager.purgeBuffer();
+        BufferManager.purgeBuffer();
         System.out.println("Shutdown complete.");
         System.exit(0);
     }
