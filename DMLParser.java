@@ -26,10 +26,7 @@ public class DMLParser {
 
         String values = splitQuery[1];
 
-        // splitQuery[3] - the tuples
-        
-
-
+        // splitQuery[3] - the tuple
 
     }
 
