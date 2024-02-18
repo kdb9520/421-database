@@ -3,6 +3,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.nio.ByteBuffer;
 import java.text.AttributedCharacterIterator.Attribute;
 import java.util.ArrayList;
 
@@ -17,6 +18,10 @@ public class TableSchema {
         this.tableName = tableName;
         this.table = new Table(tableName);
         this.attributes = attributes;
+    }
+
+    public TableSchema(ArrayList<AttributeSchema> attributeList) {
+        this.attributes = attributeList;
     }
 
     public void dropAttribute(String attrName) {
@@ -66,11 +71,10 @@ public class TableSchema {
     public byte[] serialize() throws IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream);
+        // Write the attribute number
+        dataOutputStream.write(attributes.size());
 
-        // Write number of pages
-
-
-        // Write each page
+        // Write each attribute
         for (AttributeSchema attribute : attributes) {
             byte[] attribute_bytes = attribute.serialize();
             dataOutputStream.write(attribute_bytes);
@@ -82,7 +86,26 @@ public class TableSchema {
 
       // Deserialize a byte array into a TableSchema object
     public static TableSchema deserialize(byte[] data) {
-        return null;
+        ByteBuffer buffer = ByteBuffer.wrap(data);
+
+        // Read the number of attributes
+        int numAttributes = buffer.getInt();
+
+        // Read each attribute
+        ArrayList<AttributeSchema> attributeList = new ArrayList<>();
+        for (int i = 0; i < numAttributes; i++) {
+            AttributeSchema attribute = AttributeSchema.deserialize(buffer);
+            attributeList.add(attribute);
+        }
+
+        return new TableSchema(attributeList);
+    }
+
+    @Override
+    public String toString() {
+        return "TableSchema{" +
+                "attributes=" + attributes +
+                '}';
     }
 }
 

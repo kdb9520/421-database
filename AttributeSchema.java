@@ -2,6 +2,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.nio.ByteBuffer;
 
 public class AttributeSchema {
     String attrName;
@@ -29,6 +30,14 @@ public class AttributeSchema {
         this.isUnique = false;
         setConstraints(constraints);
         this.defaultValue = dVal;
+    }
+
+    public AttributeSchema(String attrName, String attrType, boolean isNull, boolean isPK, boolean isUN) {
+        this.attrName = attrName;
+        this.attrType = attrType;
+        this.isNotNull = !isNull;
+        this.isPrimaryKey = isPK;
+        this.isUnique = isUN;
     }
 
     private void setConstraints(String[] constraints) {
@@ -59,18 +68,26 @@ public class AttributeSchema {
         return this.attrType;
     }
 
-    // Serialize in format: [AttrName,AttrType,isNull,isPK,isUN,defaultValue]
+    // Serialize in format: [AttrNameSize,AttrName,AttrTypeSize,AttrType,isNull,isPK,isUN,defaultValue]
     public byte[] serialize() {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
              ObjectOutputStream oos = new ObjectOutputStream(bos)) {
-            oos.writeObject(attrName.getBytes());
-            oos.writeObject(attrType.getBytes());
-            byte isNull = (byte)(isNotNull?1:0);
-            oos.writeObject(isNull);
-            byte isPK = (byte)(isPrimaryKey?1:0);
-            oos.writeObject(isPK);
-            byte isUN = (byte)(isUnique?1:0);
-            oos.writeObject(isUN);
+            // Serialize the length and content of attrName
+            byte[] attrNameBytes = attrName.getBytes();
+            oos.writeInt(attrNameBytes.length);
+            oos.write(attrNameBytes);
+
+            // Serialize the length and content of attrType
+            byte[] attrTypeBytes = attrType.getBytes();
+            oos.writeInt(attrTypeBytes.length);
+            oos.write(attrTypeBytes);
+
+        
+              // Serialize isNull, isPK, and isUN directly
+              oos.writeBoolean(isNotNull);
+              oos.writeBoolean(isPrimaryKey);
+              oos.writeBoolean(isUnique);
+
             return bos.toByteArray();
         } catch (IOException e) {
             e.printStackTrace();
@@ -79,10 +96,34 @@ public class AttributeSchema {
     }
 
       // Deserialize a byte array into a record object
-  public static AttributeSchema deserialize(byte[] data) {
-   
-    return null;
-}
+      public static AttributeSchema deserialize(ByteBuffer buffer) {
+        // Read attribute details from the buffer
+        String attrName = readString(buffer);
+        String attrType = readString(buffer);
+        boolean isNull = buffer.get() != 0;
+        boolean isPK = buffer.get() != 0;
+        boolean isUN = buffer.get() != 0;
+
+        return new AttributeSchema(attrName, attrType, isNull, isPK, isUN);
+    }
+
+    private static String readString(ByteBuffer buffer) {
+        int length = buffer.getInt();
+        byte[] stringBytes = new byte[length];
+        buffer.get(stringBytes);
+        return new String(stringBytes);
+    }
+
+    @Override
+    public String toString() {
+        return "AttributeSchema{" +
+                "attrName='" + attrName + '\'' +
+                ", attrType='" + attrType + '\'' +
+                ", isNull=" + isNotNull +
+                ", isPK=" + isPrimaryKey +
+                ", isUN=" + isUnique +
+                '}';
+    }
 }
 
 

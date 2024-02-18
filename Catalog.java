@@ -61,8 +61,8 @@ public class Catalog {
      * creates a new schema in the catalog
      * @param tableSchema - the schema to add
      */
-    public void updateCatalog(TableSchema tableSchema){
-        this.tableSchemas.add(tableSchema);
+    public static void updateCatalog(TableSchema tableSchema){
+        tableSchemas.add(tableSchema);
 
     }
 
