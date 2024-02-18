@@ -80,7 +80,7 @@ public class Main {
             query.substring(0, 5).equals("alter ")) {
                 
             // give buffer manager too
-            DDLParser.query(query);
+            //DDLParser.handleQuery(query);
         }
         else if(query.substring(0, 11).equals("insert into ") ||
                 query.substring(0, 14).equals("display schema ") ||
@@ -88,7 +88,7 @@ public class Main {
                 query.substring(0, 6).equals("select ")) {
 
                 // give buffer manager too
-                DMLParser.query(query, dbloc);
+                DMLParser.handleQuery(query, dbloc);
         }
         else {
             System.out.println("Command not valid!\n\nEnter 'help;' to list all commands.");

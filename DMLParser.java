@@ -58,8 +58,8 @@ public class DMLParser {
 
             String schema = tableSchema.toString();
 
-            int pageNumber = Catalog.getCatalog().getPageNumber(tableName);// table.numPages;
-
+            //int pageNumber = Catalog.getCatalog().getPageNumber(tableName);// table.numPages;
+            int pageNumber = 1;
             LinkedList<Page> pages = table.pages;
             int numRecords = 0;
             for (Page page : pages) {
