@@ -20,7 +20,29 @@ public class Page {
     }
 
     public Page(String tableName, int pageNumber, byte[] pageData) {
-        // TODO Auto-generated constructor stub
+        records = new ArrayList<>();
+        try{ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(pageData);
+            DataInputStream dataInputStream = new DataInputStream(byteArrayInputStream);
+    
+            // Read page number
+            int pNum = dataInputStream.readInt();
+    
+            // Read number of records
+            numRecords = dataInputStream.readInt();
+    
+            // Read each record
+            for (int i = 0; i < numRecords; i++) {
+                int recordLength = dataInputStream.readInt();
+                byte[] recordBytes = new byte[recordLength];
+                dataInputStream.readFully(recordBytes);
+                records.add(Record.deserialize(recordBytes));
+            }
+    
+            dataInputStream.close();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        
 
     }
 
@@ -112,7 +134,7 @@ public class Page {
         return byteArrayOutputStream.toByteArray();
     }
 
-    public static Page deserialize(byte[] data) throws IOException {
+    public static Page deserialize(byte[] data, String tableName) throws IOException {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         DataInputStream dataInputStream = new DataInputStream(byteArrayInputStream);
 
