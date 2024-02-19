@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Vector;
 
 /**
  * Catalog
@@ -105,14 +106,16 @@ public class Catalog {
      * @param name - the schema name to remove
      *
      */
-    public static Boolean removeSchema(String name){
+    public static void removeSchema(String name){
         for(TableSchema t : tableSchemas){
             if (t.tableName.equals(name)){
                 tableSchemas.remove(t);
-                return true;
+                System.out.println("Schema removed from Catalog");
+
             }
+
         }
-        return false;
+        System.err.println("Error removing table schema from catalog");
     }
 
     /**

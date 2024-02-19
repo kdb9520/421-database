@@ -149,11 +149,9 @@ public class DDLParser {
         String name = args[2];
 
 
-        //TODO  - talk to storage manager
-        Boolean result =  Catalog.removeSchema(name);
-        if(!result){
-            System.err.println("Error removing table");
-        }
+        StorageManager.deleteTable(name);
+        Catalog.removeSchema(name);
+
     }
 
     /**
