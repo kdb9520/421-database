@@ -19,7 +19,6 @@ public class StorageManager {
         try (FileChannel fileChannel = FileChannel.open(Paths.get(tableName), StandardOpenOption.READ)) {
             // Calculate the position in the file where the page starts
             long position = (long) pageNumber * Page.PAGE_SIZE;
-
             // Allocate a ByteBuffer to hold the page data
             ByteBuffer buffer = ByteBuffer.allocate(Page.PAGE_SIZE);
 
@@ -92,5 +91,16 @@ public class StorageManager {
             // Return a default value or handle the error as appropriate for your application
             return -1; // You might want to choose an appropriate default value
         }
+    }
+
+    public static void deleteTable(String tableName){
+        File file = new File(db_loc + tableName);
+        if(!file.exists()) {
+            System.err.println("File does not exist");
+            return;
+        }
+
+        file.delete();
+        System.out.println("File deleted successfully");
     }
 }
