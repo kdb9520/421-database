@@ -49,7 +49,7 @@ public class DMLParser {
             if (numPages == 0) {
                 Page newPage = BufferManager.createPage(tableName, 0);
                 // add this entry to a new page
-                Page result = newPage.addRecord(record);
+                newPage.addRecord(record);
             } else {
                 // Get the primary key and its type so we can compare
                 
