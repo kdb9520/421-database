@@ -101,4 +101,16 @@ public class Record {
         return record;
     }
 
+    @Override
+    public String toString() {
+        String str = "(";
+        for (int i = 0; i < this.values.size(); i++) {
+            str += this.values.get(i);
+            if (i < this.values.size() - 1) {
+                str += " ";
+            }
+        }
+        return str += ")";
+    }
+
 }
