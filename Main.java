@@ -16,9 +16,9 @@ public class Main {
             displayUsage();
         }
         else {
-            String dbLoc = args[1];
-            pageSize = Integer.valueOf(args[2]);
-            bufferSize = Integer.valueOf(args[3]);
+            String dbLoc = args[0];
+            pageSize = Integer.valueOf(args[1]);
+            bufferSize = Integer.valueOf(args[2]);
 
             // restart / create the database
             // Jaron Handling start up of dbint started = DatabaseStart.initiateDatabase(dbLoc, pageSize, bufferSize);
