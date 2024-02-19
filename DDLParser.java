@@ -35,6 +35,14 @@ public class DDLParser {
                 startIndex = i;
                 break;
             }
+            System.err.println("Invalid syntax");
+            return;
+
+        }
+
+        if (!query.contains(");")) {
+            System.err.println("Invalid syntax");
+            return;
 
         }
 
@@ -66,21 +74,28 @@ public class DDLParser {
             typeValid = checkTypes(type);
             constraintsValid = checkConstraint(constraints);
             if (typeValid && constraintsValid) {
-                //AttributeSchema a = new AttributeSchema(attribute, attribute_data[1], constraints);
-                //attributes.add(a);
+                AttributeSchema a = new AttributeSchema(attribute, attribute_data[1], constraints);
+                attributes.add(a);
 
             } else {
+                if(!typeValid){
+                    System.err.println("Invalid type");
+                }
+
+                if(!constraintsValid){
+                    System.err.println("Invalid constraint");
+                }
                 return;
             }
 
         }
 
-        // create new table schema
-        //TableSchema tableSchema = new TableSchema(tableName, attributes);
+        //create new table schema
+        TableSchema tableSchema = new TableSchema(tableName, attributes);
 
 
         // update the catalog
-        //Catalog.getCatalog().updateCatalog(tableSchema);
+        Catalog.getCatalog().updateCatalog(tableSchema);
 
     }
 
@@ -128,6 +143,7 @@ public class DDLParser {
 
         String [] args = query.split(" ");
         if(args.length > 3){
+            System.err.println("Invalid syntax");
             return;
         }
 
@@ -173,15 +189,6 @@ public class DDLParser {
         Boolean found = false;
         TableSchema tableSchema = null;
 
-//        // check to make sure the Catalog contains the table to alter
-//        for(TableSchema t : this.tableSchemas){
-//            if (t.tableName.equals(name)){
-//                found = true;
-//                tableSchema = t;
-//                break;
-//            }
-//        }
-
         // return if not found
         if(!found){
             System.err.println("Invalid table name");
@@ -197,7 +204,7 @@ public class DDLParser {
 
         if(operation.equals("ADD")){
             if(parsed.length != 6 || parsed.length != 8){
-                System.err.println("Invalid number of args");
+                System.err.println("Invalid syntax");
             }
 
             String attributeName = parsed[4];
