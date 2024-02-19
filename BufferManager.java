@@ -18,7 +18,7 @@ public class BufferManager {
         }
             // Page is not in buffer pool, so read it from disk
             Page page = StorageManager.readPageFromDisk(tableName, pageNumber);
-            if (bufferPool.size() >= bufferSize) {
+            if (bufferPool.size() + 1 >= bufferSize) {
                 // Buffer pool is full, evict a page using some policy (e.g., LRU)
                 evictPage();
             }
@@ -42,7 +42,7 @@ public class BufferManager {
             }
         }
             // Page is not in the buffer pool, add it
-            if (bufferPool.size() >= bufferSize) {
+            if (bufferPool.size() + 1 >= bufferSize) {
                 // Buffer pool is full, evict a page using some policy (e.g., LRU)
                 evictPage();
             }
@@ -77,5 +77,16 @@ public class BufferManager {
         // Add the new page to buffer pool
         bufferPool.add(page);
         return page;
+    }
+
+    public static void addPageToBuffer(Page page){
+        // First create a page
+        // Add it to buffer
+        if (bufferPool.size() + 1 >= bufferSize) {
+            // Buffer pool is full, evict a page using some policy (e.g., LRU)
+            evictPage();
+        }
+        // Add the new page to buffer pool
+        bufferPool.add(page);
     }
 }
