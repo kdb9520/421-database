@@ -67,18 +67,22 @@ public class Main {
 
     private static void handleQuery (String query, String dbloc) {
         
+        query = query.toLowerCase();
+
         if(query.substring(0, 3).equals("quit")) {
             shutdown();
         }
         else if (query.substring(0, 3).equals("help")) {
             helpCommand();
         }
-        else if (query.substring(0, 6).equals("create ") || 
-            query.substring(0, 4).equals("drop ") || 
-            query.substring(0, 5).equals("alter ")) {
-                
-            // give buffer manager too
-            //DDLParser.handleQuery(query);
+        else if (query.substring(0, 6).equals("create ")) {
+            DDLParser.createTable(query);
+        }
+        else if (query.substring(0, 4).equals("drop ") ) {
+            DDLParser.dropTable(query);
+        }
+        else if (query.substring(0, 5).equals("alter ")) {
+            DDLParser.alterTable(query);
         }
         else if(query.substring(0, 11).equals("insert into ") ||
                 query.substring(0, 14).equals("display schema ") ||

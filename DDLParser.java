@@ -15,13 +15,12 @@ public class DDLParser {
      * @param query - the query entered by the user
      */
     public static void createTable(String query) {
-        query = query.toUpperCase();
         String name = "";
         String a_name = "";
         String constraint_1 = "";
         String constraint = "";
 
-        if(!query.contains("CREATE TABLE")){
+        if(!query.contains("create table")){
             return;
         }
 
@@ -67,7 +66,7 @@ public class DDLParser {
             String attribute = args[0];
             String type = attribute_data[1];
             String[] constraints = Arrays.copyOfRange(attribute_data, 2, attribute_data.length);
-            if(type.contains("VARCHAR") || type.contains("CHAR")){
+            if(type.contains("varchar") || type.contains("char")){
                 String value = type.substring(type.indexOf('(') + 1, type.indexOf(')'));
                 type = type.substring(0, type.indexOf('('));
             }
@@ -95,7 +94,7 @@ public class DDLParser {
 
 
         // update the catalog
-        Catalog.getCatalog().updateCatalog(tableSchema);
+        Catalog.updateCatalog(tableSchema);
 
     }
 
@@ -109,7 +108,7 @@ public class DDLParser {
             return true;
         }
         for(String p : params){
-            if(!p.equals("NOTNULL") && !p.equals("PRIMARYKEY") && !p.equals("UNIQUE")){
+            if(!p.equals("notnull") && !p.equals("primarykey") && !p.equals("unique")){
                 return false;
             }
         }
@@ -122,8 +121,8 @@ public class DDLParser {
      * @return - true if valid false if not
      */
     private static Boolean checkTypes(String param) {
-        if(param.equals("INTEGER") || param.equals("DOUBLE") || param.equals("BOOLEAN")
-        || param.equals("BOOLEAN") || param.equals("CHAR") || param.equals("VARCHAR")){
+        if(param.equals("integer") || param.equals("double") || param.equals("boolean")
+        || param.equals("boolean") || param.equals("char") || param.equals("varchar")){
             return true;
         }
 
@@ -137,7 +136,7 @@ public class DDLParser {
      * @param query - query given by user
      */
     public static void dropTable(String query) {
-        if(!query.contains("DROP TABLE")){
+        if(!query.contains("drop table")){
             return;
         }
 
@@ -151,7 +150,7 @@ public class DDLParser {
 
 
         //TODO  - talk to storage manager
-        Boolean result =  Catalog.getCatalog().removeSchema(name);
+        Boolean result =  Catalog.removeSchema(name);
         if(!result){
             System.err.println("Error removing table");
         }
@@ -173,7 +172,7 @@ public class DDLParser {
 
 
         // check if valid operation
-        if(!query.contains("ALTER TABLE")){
+        if(!query.contains("alter table")){
             return;
         }
 
@@ -182,7 +181,7 @@ public class DDLParser {
         operation = parsed[3]; // operation, drop or add
 
         // check if operation is valid
-        if(!operation.equals("DROP") && !operation.equals("ADD")){
+        if(!operation.equals("drop") && !operation.equals("add")){
             System.err.println("Invalid operation, must be Drop or Add");
             return;
         }
@@ -197,12 +196,12 @@ public class DDLParser {
         }
 
 
-        if(operation.equals("DROP")){
+        if(operation.equals("drop")){
             tableSchema.dropAttribute(parsed[4]);
         }
 
 
-        if(operation.equals("ADD")){
+        if(operation.equals("add")){
             if(parsed.length != 6 || parsed.length != 8){
                 System.err.println("Invalid syntax");
             }
@@ -211,7 +210,7 @@ public class DDLParser {
             String attributeType = parsed[5];
 
 
-            if(attributeType.contains("VARCHAR") || attributeType.contains("CHAR")){
+            if(attributeType.contains("varchar") || attributeType.contains("char")){
                 String value = attributeType.substring(attributeType.indexOf('(') + 1, attributeType.indexOf(')'));
                 attributeType = attributeType.substring(0, attributeType.indexOf('('));
             }
@@ -226,7 +225,7 @@ public class DDLParser {
 
             AttributeSchema a = new AttributeSchema(attributeName, parsed[5], null);
             tableSchema.addAttribute(a);
-            Catalog.getCatalog().alterSchema(tableSchema);
+            Catalog.alterSchema(tableSchema);
 
             // todo - deal with other args for alter table pending new constructor
         }
