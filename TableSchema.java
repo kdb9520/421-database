@@ -1,10 +1,7 @@
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.nio.ByteBuffer;
-import java.text.AttributedCharacterIterator.Attribute;
 import java.util.ArrayList;
 
 public class TableSchema {
@@ -59,8 +56,11 @@ public class TableSchema {
     }
 
     public String getPrimaryKeyType(){
-        AttributeSchema primaryKeySchema = attributes.get(findPrimaryKeyColNum());
-        return primaryKeySchema.attrType;
+        if (this.attributes.size() > 0) {
+            AttributeSchema primaryKeySchema = attributes.get(findPrimaryKeyColNum());
+            return primaryKeySchema.attrType.strip().split("(")[0];
+        } 
+        return null;
     }
 
     public String getTableName(){
