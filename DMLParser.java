@@ -6,7 +6,7 @@ import javax.management.Query;
 public class DMLParser {
 
     public static void main(String[] args) {
-        handleQuery("insert into foo values (1 \"foo bar\" true 2.1),(3 \"baz\" true 4.14),(2 \"bar\" false 5.2),(5 \"true\" true null);", null);
+        handleQuery("select * from <name>;", null);
     }
 
     public static void handleQuery(String query, String databaseLocation) {
@@ -21,6 +21,8 @@ public class DMLParser {
 
         else if (query.substring(0, 12).equals("display info ")) {
             displayInfo(query.substring(12));
+        } else if (query.substring(0, 6).equals("select")) {
+            select(query.substring(6));
         }
     }
 
@@ -41,12 +43,28 @@ public class DMLParser {
             }
 
             tableSchema.table.insert(new Record(values));
-            
+
         }
 
     }
 
     public static void select(String query) {
+        System.out.println("spliting");
+        String[] splitQuery = query.strip().split(" ");
+        System.out.println(splitQuery[0]);
+        if (splitQuery[0].equals("*")) {
+            String tableName = splitQuery[2];
+            // gets rid of semicolon after table name
+            tableName = tableName.substring(0, tableName.length() - 1);
+            TableSchema tableSchema = Catalog.getCatalog().getTableSchema(tableName);
+            if (tableSchema != null) {
+                // need to test formating of toStrings
+                System.out.println(tableSchema.toString());
+                System.out.println(tableSchema.table.toString());
+            } else {
+                System.err.println("Table: " + tableName + "does not exist");
+            }
+        }
 
     }
 
@@ -54,13 +72,13 @@ public class DMLParser {
 
         TableSchema tableSchema = Catalog.getCatalog().getTableSchema(tableName);
         if (tableSchema != null) {
-           
+
             String schema = tableSchema.toString();
 
-            System.out.println("Database Location: "+ databaseLocation + "\nPage Size: " + Main.pageSize + "\nBuffer Size: " + Main.bufferSize + "Table Schema: " + schema);
+            System.out.println("Database Location: " + databaseLocation + "\nPage Size: " + Main.pageSize
+                    + "\nBuffer Size: " + Main.bufferSize + "Table Schema: " + schema);
             return true;
-        }
-        else {
+        } else {
             System.out.println("Error: Table '" + tableName + "' not found");
         }
         return false;
@@ -69,12 +87,13 @@ public class DMLParser {
     private static boolean displayInfo(String tableName) {
 
         TableSchema tableSchema = Catalog.getCatalog().getTableSchema(tableName);
-        
+
         if (tableSchema != null) {
 
             String schema = tableSchema.toString();
 
-            //int pageNumber = Catalog.getCatalog().getPageNumber(tableName);// table.numPages;
+            // int pageNumber = Catalog.getCatalog().getPageNumber(tableName);//
+            // table.numPages;
             int pageNumber = tableSchema.table.getNumberOfPages();
             LinkedList<Page> pages = tableSchema.table.getPages();
             int numRecords = 0;
@@ -82,10 +101,10 @@ public class DMLParser {
                 numRecords = numRecords + page.numRecords;
             }
 
-            System.out.println("Table: "+ tableName + "\nSchema: " + schema + "\nNumber of Pages: " + pageNumber + "\nNumber of Records: " + numRecords);
+            System.out.println("Table: " + tableName + "\nSchema: " + schema + "\nNumber of Pages: " + pageNumber
+                    + "\nNumber of Records: " + numRecords);
             return true;
-        }
-        else {
+        } else {
             System.out.println("Error: Table '" + tableName + "' not found");
         }
 
