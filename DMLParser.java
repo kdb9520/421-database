@@ -30,7 +30,7 @@ public class DMLParser {
         String splitQuery[] = query.split(" ", 3);
         String tableName = splitQuery[0];
 
-        TableSchema tableSchema = Catalog.getCatalog().getTableSchema(tableName);
+        TableSchema tableSchema = Catalog.getTableSchema(tableName);
 
         String[] tuples = splitQuery[2].strip().split("[,;]");
 
@@ -56,7 +56,7 @@ public class DMLParser {
             String tableName = splitQuery[2];
             // gets rid of semicolon after table name
             tableName = tableName.substring(0, tableName.length() - 1);
-            TableSchema tableSchema = Catalog.getCatalog().getTableSchema(tableName);
+            TableSchema tableSchema = Catalog.getTableSchema(tableName);
             if (tableSchema != null) {
                 // need to test formating of toStrings
                 System.out.println(tableSchema.toString());
@@ -70,7 +70,7 @@ public class DMLParser {
 
     private static boolean displaySchema(String tableName, String databaseLocation) {
 
-        TableSchema tableSchema = Catalog.getCatalog().getTableSchema(tableName);
+        TableSchema tableSchema = Catalog.getTableSchema(tableName);
         if (tableSchema != null) {
 
             String schema = tableSchema.toString();
@@ -86,7 +86,7 @@ public class DMLParser {
 
     private static boolean displayInfo(String tableName) {
 
-        TableSchema tableSchema = Catalog.getCatalog().getTableSchema(tableName);
+        TableSchema tableSchema = Catalog.getTableSchema(tableName);
 
         if (tableSchema != null) {
 

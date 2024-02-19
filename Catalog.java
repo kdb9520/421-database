@@ -105,10 +105,10 @@ public class Catalog {
      * @param name - the schema name to remove
      *
      */
-    public Boolean removeSchema(String name){
-        for(TableSchema t : this.tableSchemas){
+    public static Boolean removeSchema(String name){
+        for(TableSchema t : tableSchemas){
             if (t.tableName.equals(name)){
-                this.tableSchemas.remove(t);
+                tableSchemas.remove(t);
                 return true;
             }
         }
@@ -119,7 +119,7 @@ public class Catalog {
      * alters a schema in the catalog
      * @param tableSchema - schema to alter
      */
-    public void alterSchema(TableSchema tableSchema){
+    public static void alterSchema(TableSchema tableSchema){
         //this.schemas.remove(tableSchema);
         // todo modify schema passed in
         //this.schemas.add(tableSchema);
