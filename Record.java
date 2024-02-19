@@ -112,7 +112,7 @@ public class Record {
         String output = "( ";
 
         for ( int i = 0; i < attributeSchemas.size(); i++) {
-            String type = attributeSchemas.get(i).attrType;
+            String type = attributeSchemas.get(i).getType();
             Object value = values.get(i);
 
             if (type.equals("Integer")) {
