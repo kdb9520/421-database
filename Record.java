@@ -102,7 +102,7 @@ public class Record {
         return record;
     }
 
-    //@Override
+    // Alternate toString method if objects need to be specified
     public String toString(String tableName) {
         
         TableSchema tableSchema = Catalog.getTableSchema(tableName);
@@ -133,4 +133,15 @@ public class Record {
         return output;
     }
 
+    @Override
+    public String toString() {
+        String str = "(";
+        for (int i = 0; i < this.values.size(); i++) {
+            str += this.values.get(i);
+            if (i < this.values.size() - 1) {
+                str += " ";
+            }
+        }
+        return str += ")";
+    }
 }
