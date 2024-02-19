@@ -71,6 +71,10 @@ public class TableSchema {
         return this.attributes.get(attr);
     }
 
+    public ArrayList<AttributeSchema> getAttributeSchema() {
+        return attributes;
+    }
+
     // Serialize in format [numAttributes,[attr1][attr2][attr....n]]
     public byte[] serialize() throws IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();

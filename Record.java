@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.lang.*;
 
 
 public class Record {
@@ -101,16 +102,35 @@ public class Record {
         return record;
     }
 
-    @Override
-    public String toString() {
-        String str = "(";
-        for (int i = 0; i < this.values.size(); i++) {
-            str += this.values.get(i);
-            if (i < this.values.size() - 1) {
-                str += " ";
+    //@Override
+    public String toString(String tableName) {
+        
+        TableSchema tableSchema = Catalog.getTableSchema(tableName);
+
+        ArrayList<AttributeSchema> attributeSchemas = tableSchema.getAttributeSchema();
+        
+        String output = "( ";
+
+        for ( int i = 0; i < attributeSchemas.size(); i++) {
+            String type = attributeSchemas.get(i).attrType;
+            Object value = values.get(i);
+
+            if (type.equals("Integer")) {
+                Integer n = (Integer) value;
+                output = output + n.toString();
             }
+            else if (type.equals("String")) {
+                String s = (String) value;
+                output = output + s;
+            }
+            else if (type.equals("Char")) {
+                char c = (char) value;
+                output = output + c;
+            }
+            output = output + " ";
         }
-        return str += ")";
+        output = output + ")";
+        return output;
     }
 
 }
