@@ -65,4 +65,32 @@ public class StorageManager {
         e.printStackTrace();
     }
     }
+
+ 
+        
+
+    public static int readNumberOfPages(String tableName) {
+        System.out.println("Getting number of pages from table " + tableName);
+        final int INTEGER_SIZE = 4; // Assuming an integer is 4 bytes
+        try (FileChannel fileChannel = FileChannel.open(Paths.get(db_loc, tableName), StandardOpenOption.READ)) {
+
+            // Allocate a ByteBuffer to hold the integer data
+            ByteBuffer buffer = ByteBuffer.allocate(INTEGER_SIZE);
+
+            // Read an integer from the buffer
+            fileChannel.read(buffer, 0);
+            
+            // Reset the position to read from the beginning of the buffer
+            buffer.rewind();
+
+            // Return the integer value
+            return buffer.getInt();
+
+        } catch (IOException e) {
+            // Handle the exception (e.g., log it or throw a runtime exception)
+            e.printStackTrace();
+            // Return a default value or handle the error as appropriate for your application
+            return -1; // You might want to choose an appropriate default value
+        }
+    }
 }

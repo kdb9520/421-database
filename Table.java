@@ -1,7 +1,11 @@
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 public class Table {
 
@@ -171,8 +175,8 @@ public class Table {
         dataOutputStream.close();
         return byteArrayOutputStream.toByteArray();
     }
-
-    public static Page deserialize(byte[] data) throws IOException {
+    // Deserialize in format [num_pages,page1,page2,etc]
+    public static Table deserialize(byte[] data, TableSchema schema) throws IOException {
         return null;
     }
 
