@@ -15,8 +15,7 @@ public class DDLParser {
      * @param query - the query entered by the user
      */
     public static void createTable(String query) {
-
-        // todo - worry about casing of letters
+        query = query.toUpperCase();
         String name = "";
         String a_name = "";
         String constraint_1 = "";
@@ -28,50 +27,70 @@ public class DDLParser {
 
 
         int startIndex = 0;
-        int endIndex = 0;
+        int endIndex = query.length() - 2;
 
         // determine where the ( ) are based off the writeup formatting
         for(int i = 0; i < query.length(); i ++){
             if(query.charAt(i) == '('){
                 startIndex = i;
+                break;
             }
-            if(query.charAt(i) == (')')){
-                endIndex = i;
-            }
+            System.err.println("Invalid syntax");
+            return;
+
         }
 
+        if (!query.contains(");")) {
+            System.err.println("Invalid syntax");
+            return;
+
+        }
+
+        query = query.replace("\n", "");
         // get table name
         String tableName = query.substring(12, startIndex);
 
         //todo look into format string "create table %s (%s)"
-        String[] args = query.substring(startIndex, endIndex).split(",");  // each "attribute and its type/constraint"
+        String[] args = query.substring(startIndex  + 1, endIndex - 1).split(",");  // each "attribute and its type/constraint"
         Boolean typeValid = true;
         Boolean constraintsValid = true;
         ArrayList <AttributeSchema> attributes = new ArrayList<>();
 
         // for each "column" in the create table query, perform validation
         // and create new attribute objects
-        for(int i = 0; i < args.length; i ++){
+        for (String arg : args) {
             typeValid = true;
             constraintsValid = true;
-            String[] attribute_data = args[i].split(" ");
+
+
+            String[] attribute_data = arg.split(" ");
             String attribute = args[0];
             String type = attribute_data[1];
-            String [] constraints = Arrays.copyOfRange(attribute_data, 2, attribute_data.length);
-            typeValid = checkTypes(attribute_data[1]);
+            String[] constraints = Arrays.copyOfRange(attribute_data, 2, attribute_data.length);
+            if(type.contains("VARCHAR") || type.contains("CHAR")){
+                String value = type.substring(type.indexOf('(') + 1, type.indexOf(')'));
+                type = type.substring(0, type.indexOf('('));
+            }
+            typeValid = checkTypes(type);
             constraintsValid = checkConstraint(constraints);
-            if(typeValid && constraintsValid){
-                AttributeSchema a = new AttributeSchema(attribute, type, constraints);
+            if (typeValid && constraintsValid) {
+                AttributeSchema a = new AttributeSchema(attribute, attribute_data[1], constraints);
                 attributes.add(a);
 
-            }
-            else{
+            } else {
+                if(!typeValid){
+                    System.err.println("Invalid type");
+                }
+
+                if(!constraintsValid){
+                    System.err.println("Invalid constraint");
+                }
                 return;
             }
 
         }
 
-        // create new table schema
+        //create new table schema
         TableSchema tableSchema = new TableSchema(tableName, attributes);
 
 
@@ -90,7 +109,7 @@ public class DDLParser {
             return true;
         }
         for(String p : params){
-            if(!p.equals("notnull") && !p.equals("primarykey") && !p.equals("unique")){
+            if(!p.equals("NOTNULL") && !p.equals("PRIMARYKEY") && !p.equals("UNIQUE")){
                 return false;
             }
         }
@@ -124,6 +143,7 @@ public class DDLParser {
 
         String [] args = query.split(" ");
         if(args.length > 3){
+            System.err.println("Invalid syntax");
             return;
         }
 
@@ -150,8 +170,7 @@ public class DDLParser {
         // todo - worry about casing of letters
         String name = "";
         String operation = "";
-        String constraint_1 = "";
-        String constraint = "";
+
 
         // check if valid operation
         if(!query.contains("ALTER TABLE")){
@@ -170,15 +189,6 @@ public class DDLParser {
         Boolean found = false;
         TableSchema tableSchema = null;
 
-//        // check to make sure the Catalog contains the table to alter
-//        for(TableSchema t : this.tableSchemas){
-//            if (t.tableName.equals(name)){
-//                found = true;
-//                tableSchema = t;
-//                break;
-//            }
-//        }
-
         // return if not found
         if(!found){
             System.err.println("Invalid table name");
@@ -194,13 +204,27 @@ public class DDLParser {
 
         if(operation.equals("ADD")){
             if(parsed.length != 6 || parsed.length != 8){
-                System.err.println("Invalid number of args");
+                System.err.println("Invalid syntax");
             }
 
             String attributeName = parsed[4];
             String attributeType = parsed[5];
-            AttributeSchema a = new AttributeSchema(attributeName, attributeType, null);
 
+
+            if(attributeType.contains("VARCHAR") || attributeType.contains("CHAR")){
+                String value = attributeType.substring(attributeType.indexOf('(') + 1, attributeType.indexOf(')'));
+                attributeType = attributeType.substring(0, attributeType.indexOf('('));
+            }
+            if(!checkTypes(attributeType)){
+                System.err.println("Invalid type");
+                return;
+            }
+            String value = "";
+            if(parsed.length == 8){
+                value = parsed[7];
+            }
+
+            AttributeSchema a = new AttributeSchema(attributeName, parsed[5], null);
             tableSchema.addAttribute(a);
             Catalog.getCatalog().alterSchema(tableSchema);
 
@@ -212,7 +236,9 @@ public class DDLParser {
 
 
     public static void main(String [] args){
-
+        String demo = "create table foo(\n" +
+                "column1 varchar(40) primarykey);";
+        DDLParser.createTable(demo);
     }
 
 
