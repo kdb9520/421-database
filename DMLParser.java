@@ -88,15 +88,17 @@ public class DMLParser {
 
             // int pageNumber = Catalog.getCatalog().getPageNumber(tableName);//
             // table.numPages;
-            int pageNumber = tableSchema.table.getNumberOfPages();
-            LinkedList<Page> pages = tableSchema.table.getPages();
-            int numRecords = 0;
-            for (Page page : pages) {
-                numRecords = numRecords + page.numRecords;
+            int numOfPages = tableSchema.getIndexList().size();
+            int numOfRecords = 0;
+
+            for(int i = 0; i < numOfPages; i++){
+                Page page = BufferManager.getPage(tableName, i);
+                numOfRecords += page.getRecords().size();
             }
 
-            System.out.println("Table: " + tableName + "\nSchema: " + schema + "\nNumber of Pages: " + pageNumber
-                    + "\nNumber of Records: " + numRecords);
+
+            System.out.println("Table: " + tableName + "\nSchema: " + schema + "\nNumber of Pages: " + numOfPages
+                    + "\nNumber of Records: " + numOfRecords);
             return true;
         } else {
             System.out.println("Error: Table '" + tableName + "' not found");

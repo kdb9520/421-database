@@ -8,20 +8,18 @@ public class TableSchema {
 
     String tableName;
     int tableNumber;
-    Table table;
     ArrayList<AttributeSchema> attributes;
     ArrayList<Integer> pageIndexes;
 
     public TableSchema(String tableName, ArrayList<AttributeSchema> attributes) {
         this.tableName = tableName;
-        this.table = new Table(tableName);
+        this.pageIndexes = new ArrayList<>();
         this.attributes = attributes;
     }
 
     public TableSchema(TableSchema old){
         this.tableName = old.tableName;
         this.tableNumber = old.tableNumber;
-        this.table = old.table;
         this.attributes = old.attributes;
         this.pageIndexes = old.pageIndexes;
 
@@ -36,16 +34,11 @@ public class TableSchema {
     public void dropAttribute(String attrName) {
         // remove an attribute and its data from the table
         int i = findAttribute(attrName);
-        this.table.dropAttribute(i);
         this.attributes.remove(i);
     }
 
     public void addAttribute(AttributeSchema a) {
         this.attributes.add(a);
-
-        if (a.getDefaultValue() != null) {
-            this.table.addAttribute(a.getDefaultValue());
-        }
         
     }
 
