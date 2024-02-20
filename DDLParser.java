@@ -218,20 +218,27 @@ public class DDLParser {
 
         }
 
+        // add operation
 
         if(operation.equals("add")){
+
+            // if invalid args, return
             if(parsed.length != 6 || parsed.length != 8){
                 System.err.println("Invalid syntax");
+                return;
             }
 
             String attributeName = parsed[4];
             String attributeType = parsed[5];
 
 
+            // check for nested ()
             if(attributeType.contains("varchar") || attributeType.contains("char")){
                 String value = attributeType.substring(attributeType.indexOf('(') + 1, attributeType.indexOf(')'));
                 attributeType = attributeType.substring(0, attributeType.indexOf('('));
             }
+
+            // if invalid types
             if(!checkTypes(attributeType)){
                 System.err.println("Invalid type");
                 return;
@@ -241,12 +248,22 @@ public class DDLParser {
                 value = parsed[7];
             }
 
+            // make a new attribute schema
             AttributeSchema a = new AttributeSchema(attributeName, parsed[5], null);
             tableSchema.addAttribute(a);
 
 
-            ArrayList<Record> recordsOld = new ArrayList<>();
+            // get the old records
+            ArrayList<Record> recordsOld = new ArrayList<>();   // old records
+
+            // don't know if I need this, this is intended to be for the old array
             int numPages = StorageManager.readNumberOfPages(name);
+
+            // these are based off insert from the DML
+            ArrayList<Integer> pageIndexList = tableSchema.getIndexList();
+            int nPages = tableSchema.getIndexList().size();
+
+            // add all old records from new array
             for(int i = 0; i < numPages; i ++){
                 Page page = BufferManager.getPage(name,i);
                 ArrayList<Record> t = page.getRecords();
@@ -254,11 +271,15 @@ public class DDLParser {
 
             }
 
+            // set default attribute, if any
+            // insert
             for (Record record: recordsOld){
                 record.setAttribute(value);
+                StorageManager.insert(nPages, name, record, tableSchema, pageIndexList);
             }
 
             Catalog.alterSchema(tableSchema);
+            // todo delete old table/schema
 
             // todo - deal with other args for alter table pending new constructor
         }
