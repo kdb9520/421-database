@@ -27,9 +27,10 @@ public class TableSchema {
 
 
     }
-    public TableSchema(ArrayList<AttributeSchema> attributeList, ArrayList<Integer> pageIndexes) {
+    public TableSchema(ArrayList<AttributeSchema> attributeList, ArrayList<Integer> pageIndexes, String tableName) {
         this.attributes = attributeList;
         this.pageIndexes = pageIndexes;
+        this.tableName = tableName;
     }
 
     public void dropAttribute(String attrName) {
@@ -118,7 +119,7 @@ public class TableSchema {
     }
 
       // Deserialize a byte array into a TableSchema object
-    public static TableSchema deserialize(byte[] data) {
+    public static TableSchema deserialize(byte[] data, String tableName) {
         ByteBuffer buffer = ByteBuffer.wrap(data);
 
         // Read the number of attributes
@@ -139,7 +140,7 @@ public class TableSchema {
             Integer pageIndex = buffer.getInt();
             pageIndexList.add(pageIndex);
         }
-        return new TableSchema(attributeList,pageIndexList);
+        return new TableSchema(attributeList,pageIndexList,tableName);
     }
 
     public ArrayList<Integer> getIndexList(){

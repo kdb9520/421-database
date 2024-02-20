@@ -201,7 +201,6 @@ public class StorageManager {
                 System.out.println(page.toString());
             }
 
-            System.out.println(tableSchema.table.toString());
         } else {
             System.err.println("Table: " + tableName + "does not exist");
         }

@@ -36,7 +36,7 @@ public class Catalog {
                 if (schemaFiles != null) {
                     for (File schemaFile : schemaFiles) {
                         // Read each schema file and create TableSchema objects
-                        TableSchema tableSchema = TableSchema.deserialize(Files.readAllBytes(schemaFile.toPath()));
+                        TableSchema tableSchema = TableSchema.deserialize(Files.readAllBytes(schemaFile.toPath()),schemaFile.getName());
                         if (tableSchema != null) {
                             tableSchemas.add(tableSchema);
                         }
