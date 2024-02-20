@@ -21,27 +21,36 @@ public class Page {
 
     public Page(String tableName, int pageNumber, byte[] pageData) {
         records = new ArrayList<>();
-        try{ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(pageData);
-            DataInputStream dataInputStream = new DataInputStream(byteArrayInputStream);
-    
-            // Read page number
-            int pNum = dataInputStream.readInt();
-    
-            // Read number of records
-            numRecords = dataInputStream.readInt();
-    
-            // Read each record
-            for (int i = 0; i < numRecords; i++) {
-                int recordLength = dataInputStream.readInt();
-                byte[] recordBytes = new byte[recordLength];
-                dataInputStream.readFully(recordBytes);
-                records.add(Record.deserialize(recordBytes));
-            }
-    
-            dataInputStream.close();
-        } catch(Exception e) {
-            e.printStackTrace();
+        if(pageData == null){
+            numRecords = 0;
+            this.pageNumber = pageNumber;
+            this.tableName = tableName;
+            this.records = new ArrayList<>();
         }
+        else{
+            try{ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(pageData);
+                DataInputStream dataInputStream = new DataInputStream(byteArrayInputStream);
+        
+                // Read page number
+                int pNum = dataInputStream.readInt();
+        
+                // Read number of records
+                numRecords = dataInputStream.readInt();
+        
+                // Read each record
+                for (int i = 0; i < numRecords; i++) {
+                    int recordLength = dataInputStream.readInt();
+                    byte[] recordBytes = new byte[recordLength];
+                    dataInputStream.readFully(recordBytes);
+                    records.add(Record.deserialize(recordBytes));
+                }
+        
+                dataInputStream.close();
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+       
         
 
     }
