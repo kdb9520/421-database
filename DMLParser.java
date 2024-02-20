@@ -66,7 +66,7 @@ public class DMLParser {
 
                     // If its less than the first value of next page (i+1) then it belongs to page i
                     // Type cast appropiately then compare records
-                    if (primaryKeyType == "Integer") {
+                    if (primaryKeyType.equals("Integer")) {
                         if ((Integer) record.getAttribute(primaryKeyCol) < (Integer) next.getFirstRecord(i)) {
                             // Add the record to the page. Check if it split page or not
                             Page result = BufferManager.getPage(tableName,i).addRecord(record);
@@ -79,7 +79,7 @@ public class DMLParser {
                         }
                     }
 
-                    else if (primaryKeyType == "String") {
+                    else if (primaryKeyType.equals("String")) {
 
                         if (record.getAttribute(primaryKeyCol).toString()
                                 .compareTo(next.getFirstRecord(i).toString()) <= 0) {
@@ -94,7 +94,7 @@ public class DMLParser {
                         }
                     }
 
-                    else if (primaryKeyType == "Char") {
+                    else if (primaryKeyType.equals("Char")) {
                         if ((char) record.getAttribute(primaryKeyCol) < (char) next.getFirstRecord(i)) {
                             // Add the record to the page. Check if it split page or not
                             Page result = BufferManager.getPage(tableName,i).addRecord(record);
