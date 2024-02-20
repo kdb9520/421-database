@@ -59,23 +59,8 @@ public class DMLParser {
             // gets rid of semicolon after table name
             tableName = tableName.substring(0, tableName.length() - 1);
             TableSchema tableSchema = Catalog.getTableSchema(tableName);
-            if (tableSchema != null) {
-                // need to test formating of toStrings
-                System.out.println(tableSchema.toString());
+            StorageManager.select(tableSchema, tableName);
 
-                // Print all values in table
-                // Loop through the table and print each page
-                // For each page in table tableName
-                int num_pages = tableSchema.getIndexList().size();    
-                for(int i = 0; i < num_pages; i++){
-                    Page page = BufferManager.getPage(tableName, i);
-                    System.out.println(page.toString());
-                }
-                
-                System.out.println(tableSchema.table.toString());
-            } else {
-                System.err.println("Table: " + tableName + "does not exist");
-            }
         }
 
     }
