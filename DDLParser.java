@@ -15,10 +15,6 @@ public class DDLParser {
      * @param query - the query entered by the user
      */
     public static void createTable(String query) {
-        String name = "";
-        String a_name = "";
-        String constraint_1 = "";
-        String constraint = "";
 
         if(!query.contains("create table")){
             return;
