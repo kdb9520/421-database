@@ -144,6 +144,9 @@ public class TableSchema {
     }
 
     public ArrayList<Integer> getIndexList(){
+        if(this.pageIndexes == null){
+            return null;
+        }
         return this.pageIndexes;
     }
 

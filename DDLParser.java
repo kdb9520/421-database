@@ -264,6 +264,7 @@ public class DDLParser {
 
             // To copy the records into a new ArrayList of records, does this look right?
             // don't know if I need this, this is intended to be for the old array
+            ArrayList<Integer> pageIndexes = tableSchema.getIndexList();
             int numPages = tableSchema.getIndexList().size();
 
             // these are based off insert from the DML
