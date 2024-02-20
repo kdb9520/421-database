@@ -99,6 +99,9 @@ public class TableSchema {
                 dataOutputStream.writeInt(pageIndex);
             }
         }
+        else{
+            dataOutputStream.writeInt(0);
+        }
         
 
         dataOutputStream.close();
