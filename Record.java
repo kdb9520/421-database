@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.lang.*;
 
 
 public class Record {
@@ -32,14 +31,7 @@ public class Record {
     public Object deleteAttribute(int index) {
         return values.remove(index);
     }
-  
-    private String getAttributeType(int attributeIndex) {
-        // Implement this based on your Catalog class
-        // Example: return Catalog.getAttributeType(attributeName);
-        return "String"; // Replace with actual implementation
-    }
-
-
+    // }
 
     // Calculate the size of the record in bytes
     public int calculateRecordSize() {
@@ -102,46 +94,4 @@ public class Record {
         return record;
     }
 
-    // Alternate toString method if objects need to be specified
-    public String toString(String tableName) {
-        
-        TableSchema tableSchema = Catalog.getTableSchema(tableName);
-
-        ArrayList<AttributeSchema> attributeSchemas = tableSchema.getAttributeSchema();
-        
-        String output = "( ";
-
-        for ( int i = 0; i < attributeSchemas.size(); i++) {
-            String type = attributeSchemas.get(i).getType();
-            Object value = values.get(i);
-
-            if (type.equals("Integer")) {
-                Integer n = (Integer) value;
-                output = output + n.toString();
-            }
-            else if (type.equals("String")) {
-                String s = (String) value;
-                output = output + s;
-            }
-            else if (type.equals("Char")) {
-                char c = (char) value;
-                output = output + c;
-            }
-            output = output + " ";
-        }
-        output = output + ")";
-        return output;
-    }
-
-    @Override
-    public String toString() {
-        String str = "(";
-        for (int i = 0; i < this.values.size(); i++) {
-            str += this.values.get(i);
-            if (i < this.values.size() - 1) {
-                str += " ";
-            }
-        }
-        return str += ")";
-    }
 }

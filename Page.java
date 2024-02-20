@@ -113,6 +113,10 @@ public class Page {
         return this.tableName;
     }
 
+    public void setPageNumber(int pageNumber){
+        this.pageNumber = pageNumber;
+    }
+
     public byte[] serialize() throws IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream);

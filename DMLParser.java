@@ -27,7 +27,8 @@ public class DMLParser {
         String tableName = query.substring(0, query.indexOf('('));
         String remaining = query.substring(query.indexOf('('));
         TableSchema tableSchema = Catalog.getTableSchema(tableName);
-
+        ArrayList<Integer> pageIndexList = tableSchema.getIndexList();
+        int numPages = tableSchema.getIndexList().size(); 
         String[] tuples = remaining.split(",");
 
         for (String tuple : tuples) {
@@ -39,7 +40,7 @@ public class DMLParser {
             }
             
             Record record = new Record(values);
-            int numPages = StorageManager.readNumberOfPages(tableName);  
+               
              // if there are no pages
             if (numPages == 0) {
                 Page newPage = BufferManager.createPage(tableName, 0);
@@ -66,9 +67,15 @@ public class DMLParser {
                         if ((Integer) record.getAttribute(primaryKeyCol) < (Integer) next.getFirstRecord(i)) {
                             // Add the record to the page. Check if it split page or not
                             Page result = BufferManager.getPage(tableName,i).addRecord(record);
+
                             // If we split then add the new page to our page list.
                             if (result != null) {
+                                // Add new page to our page
+                                pageIndexList.add(i+1, numPages);
                                 BufferManager.addPageToBuffer(result);
+                               // Go in and update page number of all pages current in here
+                                // Update our pageIndexList, and update pageNumber every Page after this page
+                                
                                 return;
                             }
                             return;
@@ -83,6 +90,7 @@ public class DMLParser {
                             Page result = BufferManager.getPage(tableName,i).addRecord(record);
                             // If we split then add the new page to our page list.
                             if (result != null) {
+                                pageIndexList.add(i+1, numPages);
                                 BufferManager.addPageToBuffer(result);
                                 return;
                             }
@@ -96,6 +104,7 @@ public class DMLParser {
                             Page result = BufferManager.getPage(tableName,i).addRecord(record);
                             // If we split then add the new page to our page list.
                             if (result != null) {
+                                pageIndexList.add(i+1, numPages);
                                 BufferManager.addPageToBuffer(result);
                                 return;
                             }
@@ -110,6 +119,7 @@ public class DMLParser {
             Page newPage = BufferManager.createPage(tableName, numPages);
             // Add record to page
             newPage.addRecord(record);
+            pageIndexList.add(numPages);
 
         }
 
@@ -133,7 +143,7 @@ public class DMLParser {
                 // Print all values in table
                 // Loop through the table and print each page
                 // For each page in table tableName
-                int num_pages = StorageManager.readNumberOfPages(tableName);     
+                int num_pages = tableSchema.getIndexList().size();    
                 for(int i = 0; i < num_pages; i++){
                     Page page = BufferManager.getPage(tableName, i);
                     System.out.println(page.toString());
