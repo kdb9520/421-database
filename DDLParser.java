@@ -51,7 +51,7 @@ public class DDLParser {
 
         query = query.replace("\n", "");
         // get table name
-        String tableName = query.substring(12, startIndex);
+        String tableName = query.substring(12, startIndex).trim();
 
         //todo look into format string "create table %s (%s)"
         String[] args = query.substring(startIndex  + 1, endIndex).split(",");  // each "attribute and its type/constraint"
@@ -68,8 +68,8 @@ public class DDLParser {
 
 
             String[] attribute_data = arg.split(" ");
-            String attribute = attribute_data[0];
-            String type = attribute_data[1];
+            String attribute = attribute_data[0].trim();
+            String type = attribute_data[1].trim();
             String[] constraints = Arrays.copyOfRange(attribute_data, 2, attribute_data.length);
             if(type.contains("varchar") || type.contains("char")){
                 String value = type.substring(type.indexOf('(') + 1, type.indexOf(')'));

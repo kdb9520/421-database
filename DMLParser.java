@@ -28,11 +28,11 @@ public class DMLParser {
 
     public static void insert(String query) {
         String splitQuery[] = query.split(" ", 3);
-        String tableName = splitQuery[0];
-
+        String tableName = query.substring(0, query.indexOf('('));
+        String remaining = query.substring(query.indexOf('('));
         TableSchema tableSchema = Catalog.getTableSchema(tableName);
 
-        String[] tuples = splitQuery[2].strip().split("[,;]");
+        String[] tuples = remaining.split(",");
 
         for (String tuple : tuples) {
             String valString = tuple.strip().split("[()]")[1];
