@@ -8,7 +8,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 
 public class StorageManager {
-    public static final String db_loc = "";
     public static Catalog catalog;                  // private instance of Catalog, accessible by static methods
 
     private StorageManager() {
@@ -122,7 +121,7 @@ public class StorageManager {
         System.out.println("Writing page " + page.getPageNumber() + " to disk: " + page);
 
         try {
-            File file = new File(db_loc + page.getTableName());
+            File file = new File(Main.databaseLocation + page.getTableName());
             
             // Create the file if it doesn't exist
             if (!file.exists()) {
@@ -155,7 +154,7 @@ public class StorageManager {
     public static int readNumberOfPages(String tableName) {
         System.out.println("Getting number of pages from table " + tableName);
         final int INTEGER_SIZE = 4; // Assuming an integer is 4 bytes
-        try (FileChannel fileChannel = FileChannel.open(Paths.get(db_loc, tableName), StandardOpenOption.READ)) {
+        try (FileChannel fileChannel = FileChannel.open(Paths.get(Main.databaseLocation, tableName), StandardOpenOption.READ)) {
 
             // Allocate a ByteBuffer to hold the integer data
             ByteBuffer buffer = ByteBuffer.allocate(INTEGER_SIZE);
@@ -178,7 +177,7 @@ public class StorageManager {
     }
 
     public static void deleteTable(String tableName){
-        File file = new File(db_loc + tableName);
+        File file = new File(Main.databaseLocation + tableName);
         if(!file.exists()) {
             System.err.println("File does not exist");
             return;
