@@ -69,19 +69,19 @@ public class Main {
         
         query = query.toLowerCase();
 
-        if(query.substring(0, 3).equals("quit")) {
+        if(query.startsWith("quit")) {
             shutdown();
         }
-        else if (query.substring(0, 3).equals("help")) {
+        else if (query.startsWith("help")) {
             helpCommand();
         }
-        else if (query.substring(0, 6).equals("create ")) {
+        else if (query.startsWith("create ")) {
             DDLParser.createTable(query);
         }
-        else if (query.substring(0, 4).equals("drop ") ) {
+        else if (query.startsWith("drop ") ) {
             DDLParser.dropTable(query);
         }
-        else if (query.substring(0, 5).equals("alter ")) {
+        else if (query.startsWith("alter ")) {
             DDLParser.alterTable(query);
         }
         else if (query.startsWith("insert into ") ||
