@@ -268,12 +268,12 @@ public class DDLParser {
 
             // these are based off insert from the DML
             ArrayList<Integer> pageIndexList = tableSchema.getIndexList();
-            int nPages = tableSchema.getIndexList().size();
 
             // add all old records from new array
             for(int i = 0; i < numPages; i ++){
                 Page page = BufferManager.getPage(name,i);
                 ArrayList<Record> t = page.getRecords();
+
                 recordsOld.addAll(t);
 
             }
@@ -282,8 +282,28 @@ public class DDLParser {
             // insert
             for (Record record: recordsOld){
                 record.setAttribute(value);
-                StorageManager.insert(nPages, temp, record, tableSchema, pageIndexList);
+                StorageManager.insert(temp, record, tableSchema);
+
             }
+
+            // remove old table from catalog and StorageManager
+            Catalog.removeSchema(name);
+            StorageManager.deleteTable(name);
+
+            //rename to the new table
+            numPages = tableSchema.getIndexList().size();
+
+            // these are based off insert from the DML
+            pageIndexList = tableSchema.getIndexList();
+
+            // rename
+            for(int i = 0; i < numPages; i ++){
+                Page page = BufferManager.getPage(name,i);
+                page.tableName = name;
+
+            }
+
+
 
             // todo delete old table/schema
             StorageManager.deleteTable(tableSchemaOld.tableName);

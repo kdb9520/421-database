@@ -28,8 +28,7 @@ public class DMLParser {
         String tableName = splitQuery[0];
         String remaining = query.substring(query.indexOf('('));
         TableSchema tableSchema = Catalog.getTableSchema(tableName);
-        ArrayList<Integer> pageIndexList = tableSchema.getIndexList();
-        int numPages = tableSchema.getIndexList().size(); 
+
         String[] tuples = remaining.split(",");
 
         for (String tuple : tuples) {
@@ -40,7 +39,7 @@ public class DMLParser {
             Record record = new Record(values);
 
 
-            StorageManager.insert(numPages, tableName, record, tableSchema, pageIndexList);
+            StorageManager.insert(tableName, record, tableSchema);
              // if there are no pages
 
 

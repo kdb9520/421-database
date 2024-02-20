@@ -39,14 +39,16 @@ public class StorageManager {
         }
     }
 
-    public static void insert(int numPages, String tableName, Record record, TableSchema tableSchema, ArrayList<Integer> pageIndexList) {
-        if (numPages == 0) {
+    public static void insert(String tableName, Record record, TableSchema tableSchema) {
+
+
+        if (tableSchema.getIndexList() == null) {
             Page newPage = BufferManager.createPage(tableName, 0);
             // add this entry to a new page
             newPage.addRecord(record);
         } else {
             // Get the primary key and its type so we can compare
-
+            int numPages = tableSchema.getIndexList().size();
             // Get primary key col number
             int primaryKeyCol = tableSchema.findPrimaryKeyColNum();
             String primaryKeyType = tableSchema.getPrimaryKeyType();
@@ -69,7 +71,7 @@ public class StorageManager {
                         // If we split then add the new page to our page list.
                         if (result != null) {
                             // Add new page to our page
-                            pageIndexList.add(i + 1, numPages);
+                            tableSchema.getIndexList().add(i + 1, numPages);
                             BufferManager.addPageToBuffer(result);
                             // Go in and update page number of all pages current in here
                             // Update our pageIndexList, and update pageNumber every Page after this page
@@ -86,7 +88,7 @@ public class StorageManager {
                         Page result = BufferManager.getPage(tableName, i).addRecord(record);
                         // If we split then add the new page to our page list.
                         if (result != null) {
-                            pageIndexList.add(i + 1, numPages);
+                            tableSchema.getIndexList().add(i + 1, numPages);
                             BufferManager.addPageToBuffer(result);
                             return;
                         }
@@ -98,7 +100,7 @@ public class StorageManager {
                         Page result = BufferManager.getPage(tableName, i).addRecord(record);
                         // If we split then add the new page to our page list.
                         if (result != null) {
-                            pageIndexList.add(i + 1, numPages);
+                            tableSchema.getIndexList().add(i + 1, numPages);
                             BufferManager.addPageToBuffer(result);
                             return;
                         }
@@ -113,7 +115,7 @@ public class StorageManager {
             Page newPage = BufferManager.createPage(tableName, numPages);
             // Add record to page
             newPage.addRecord(record);
-            pageIndexList.add(numPages);
+            tableSchema.getIndexList().add(numPages);
         }
     }
 
