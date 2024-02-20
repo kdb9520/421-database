@@ -42,7 +42,6 @@ public class DMLParser {
                 values.add(attrs[i]);
             }
             
-            tableSchema.table.insert(new Record(values));
             Record record = new Record(values);
             int numPages = StorageManager.readNumberOfPages(tableName);  
              // if there are no pages
