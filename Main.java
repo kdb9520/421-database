@@ -84,10 +84,10 @@ public class Main {
         else if (query.substring(0, 5).equals("alter ")) {
             DDLParser.alterTable(query);
         }
-        else if(query.substring(0, 11).equals("insert into ") ||
-                query.substring(0, 14).equals("display schema ") ||
-                query.substring(0, 12).equals("display info ") ||
-                query.substring(0, 6).equals("select ")) {
+        else if (query.startsWith("insert into ") ||
+            query.startsWith("display schema ") ||
+            query.startsWith("display info ") ||
+            query.startsWith("select ")) {
 
                 // give buffer manager too
                 DMLParser.handleQuery(query, dbloc);
