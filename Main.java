@@ -9,6 +9,7 @@ public class Main {
 
     public static int pageSize;
     public static int bufferSize;
+    public static String databaseLocation;
 
     public static void main (String[] args) {
 
@@ -16,16 +17,16 @@ public class Main {
             displayUsage();
         }
         else {
-            String dbLoc = args[0];
+            String databaseLocation = args[0];
             pageSize = Integer.valueOf(args[1]);
             bufferSize = Integer.valueOf(args[2]);
 
             // restart / create the database
             // Jaron Handling start up of dbint started = DatabaseStart.initiateDatabase(dbLoc, pageSize, bufferSize);
 
-            boolean started = DatabaseStart.initiateDatabase(dbLoc, pageSize, bufferSize);
+            boolean started = DatabaseStart.initiateDatabase(databaseLocation, pageSize, bufferSize);
 
-            Catalog.readCatalog(dbLoc);
+            Catalog.readCatalog(databaseLocation);
 
             if (started) {
                 Scanner scanner = new Scanner(System.in);
@@ -40,7 +41,7 @@ public class Main {
 
                     if (line.contains(";")) {
                         String command = commandBuilder.toString().trim().replaceAll("\\s+", " ");
-                        handleQuery(command, dbLoc);
+                        handleQuery(command, databaseLocation);
                         if (line.endsWith(";")) {
                             // Clear the command builder if the semicolon is at the end of the line
                             commandBuilder.setLength(0);
