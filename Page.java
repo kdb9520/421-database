@@ -164,6 +164,10 @@ public class Page {
         return page;
     }
 
+    public ArrayList<Record> getRecords() {
+        return records;
+    }
+
     @Override
     public String toString() {
         String pageString = "";

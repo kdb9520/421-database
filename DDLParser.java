@@ -204,10 +204,9 @@ public class DDLParser {
             return;
         }
         Boolean found = false;
-        TableSchema tableSchema = null;
-
+        TableSchema tableSchema = Catalog.getTableSchema(name);
         // return if not found
-        if(!found){
+        if(tableSchema == null){
             System.err.println("Invalid table name");
             return;
 
@@ -216,6 +215,7 @@ public class DDLParser {
 
         if(operation.equals("drop")){
             tableSchema.dropAttribute(parsed[4]);
+
         }
 
 
@@ -243,6 +243,21 @@ public class DDLParser {
 
             AttributeSchema a = new AttributeSchema(attributeName, parsed[5], null);
             tableSchema.addAttribute(a);
+
+
+            ArrayList<Record> recordsOld = new ArrayList<>();
+            int numPages = StorageManager.readNumberOfPages(name);
+            for(int i = 0; i < numPages; i ++){
+                Page page = BufferManager.getPage(name,i);
+                ArrayList<Record> t = page.getRecords();
+                recordsOld.addAll(t);
+
+            }
+
+            for (Record record: recordsOld){
+                record.setAttribute(value);
+            }
+
             Catalog.alterSchema(tableSchema);
 
             // todo - deal with other args for alter table pending new constructor

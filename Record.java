@@ -17,6 +17,10 @@ public class Record {
         this.values = newValues;
     }
 
+
+    public void modifyAttribute(Object newValue, int index){
+        this.values.set(index, newValue);
+    }
     // Set the value of an attribute
     public void setAttribute(Object value) {
         values.add(value);
