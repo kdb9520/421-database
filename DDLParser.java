@@ -25,7 +25,7 @@ public class DDLParser {
         }
 
 
-        int startIndex = 0;
+        int startIndex = -1;
         int endIndex = query.length() - 2;
 
         // determine where the ( ) are based off the writeup formatting
@@ -34,9 +34,13 @@ public class DDLParser {
                 startIndex = i;
                 break;
             }
+
+
+        }
+
+        if(startIndex == -1){
             System.err.println("Invalid syntax");
             return;
-
         }
 
         if (!query.contains(");")) {
