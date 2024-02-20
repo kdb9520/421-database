@@ -228,7 +228,7 @@ public class DDLParser {
             tableSchema.tableName = temp;
 
             // if invalid args, return
-            if(parsed.length != 6 || parsed.length != 8){
+            if(parsed.length != 6 && parsed.length != 8){
                 System.err.println("Invalid syntax");
                 return;
             }

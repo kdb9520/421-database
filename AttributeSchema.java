@@ -42,6 +42,9 @@ public class AttributeSchema {
     }
 
     private void setConstraints(String[] constraints) {
+        if(constraints == null){
+            return;
+        }
         for (String con : constraints) {
             con = con.toUpperCase();
             switch (con) {
