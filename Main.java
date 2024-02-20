@@ -17,7 +17,7 @@ public class Main {
             displayUsage();
         }
         else {
-            String databaseLocation = args[0];
+            databaseLocation = args[0];
             pageSize = Integer.valueOf(args[1]);
             bufferSize = Integer.valueOf(args[2]);
 
@@ -123,6 +123,7 @@ public class Main {
     private static void shutdown() {
         System.out.println("Shutting down database...");
         BufferManager.purgeBuffer();
+        Catalog.writeCatalog(databaseLocation);
         System.out.println("Shutdown complete.");
         System.exit(0);
     }
