@@ -5,10 +5,6 @@ import javax.management.Query;
 
 public class DMLParser {
 
-    public static void main(String[] args) {
-        handleQuery("select * from <name>;", null);
-    }
-
     public static void handleQuery(String query, String databaseLocation) {
 
         if (query.substring(0, 12).equals("insert into ")) {
