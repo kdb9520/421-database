@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 
 import javax.management.Query;
@@ -23,8 +24,8 @@ public class DMLParser {
     }
 
     public static void insert(String query) {
-        String splitQuery[] = query.split(" ", 3);
-        String tableName = query.substring(0, query.indexOf('('));
+        String[] splitQuery = query.split(" ", 3);
+        String tableName = splitQuery[0];
         String remaining = query.substring(query.indexOf('('));
         TableSchema tableSchema = Catalog.getTableSchema(tableName);
         ArrayList<Integer> pageIndexList = tableSchema.getIndexList();
@@ -33,11 +34,8 @@ public class DMLParser {
 
         for (String tuple : tuples) {
             String valString = tuple.strip().split("[()]")[1];
-            ArrayList<Object> values = new ArrayList<>();
             String[] attrs = valString.strip().split(" ");
-            for (int i = 0; i < attrs.length; i++) {
-                values.add(attrs[i]);
-            }
+            ArrayList<Object> values = new ArrayList<>(Arrays.asList(attrs));
             
             Record record = new Record(values);
 
