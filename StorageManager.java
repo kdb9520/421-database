@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 
 public class StorageManager {
     public static final String db_loc = "";
@@ -18,7 +19,9 @@ public class StorageManager {
     public static Page readPageFromDisk(String tableName, int pageNumber) {
         try (FileChannel fileChannel = FileChannel.open(Paths.get(tableName), StandardOpenOption.READ)) {
             // Calculate the position in the file where the page starts
-            long position = (long) pageNumber * Page.PAGE_SIZE;
+            TableSchema tableSchema = Catalog.getTableSchema(tableName);
+            ArrayList<Integer> indexList = tableSchema.getIndexList();
+            long position = indexList.get(pageNumber) * Page.PAGE_SIZE;
             // Allocate a ByteBuffer to hold the page data
             ByteBuffer buffer = ByteBuffer.allocate(Page.PAGE_SIZE);
 
@@ -50,7 +53,10 @@ public class StorageManager {
 
         try (FileOutputStream fos = new FileOutputStream(file, true)) {
             // Calculate the offset where this page should be written
-            long offset = page.getPageNumber() * Page.PAGE_SIZE;
+            TableSchema tableSchema = Catalog.getTableSchema(page.getTableName());
+            ArrayList<Integer> indexList = tableSchema.getIndexList();
+            //Integer pageIndex = ;
+            long offset = indexList.get(page.getPageNumber()) * Page.PAGE_SIZE;
             // Move the file pointer to the correct position
             fos.getChannel().position(offset);
             // Write the page data to the file

@@ -10,6 +10,7 @@ public class TableSchema {
     int tableNumber;
     Table table;
     ArrayList<AttributeSchema> attributes;
+    ArrayList<Integer> pageIndexes;
 
     public TableSchema(String tableName, ArrayList<AttributeSchema> attributes) {
         this.tableName = tableName;
@@ -17,8 +18,9 @@ public class TableSchema {
         this.attributes = attributes;
     }
 
-    public TableSchema(ArrayList<AttributeSchema> attributeList) {
+    public TableSchema(ArrayList<AttributeSchema> attributeList, ArrayList<Integer> pageIndexes) {
         this.attributes = attributeList;
+        this.pageIndexes = pageIndexes;
     }
 
     public void dropAttribute(String attrName) {
@@ -81,12 +83,19 @@ public class TableSchema {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream);
         // Write the attribute number
-        dataOutputStream.write(attributes.size());
+        dataOutputStream.writeInt(attributes.size());
 
         // Write each attribute
         for (AttributeSchema attribute : attributes) {
             byte[] attribute_bytes = attribute.serialize();
             dataOutputStream.write(attribute_bytes);
+        }
+        // Write the number of pages
+        dataOutputStream.writeInt(pageIndexes.size());
+
+        // Write each attribute
+        for (Integer pageIndex : pageIndexes) {
+            dataOutputStream.writeInt(pageIndex);
         }
 
         dataOutputStream.close();
@@ -102,12 +111,28 @@ public class TableSchema {
 
         // Read each attribute
         ArrayList<AttributeSchema> attributeList = new ArrayList<>();
+        ArrayList<Integer> pageIndexList = new ArrayList<>();
+
         for (int i = 0; i < numAttributes; i++) {
             AttributeSchema attribute = AttributeSchema.deserialize(buffer);
             attributeList.add(attribute);
         }
 
-        return new TableSchema(attributeList);
+          // Read the number of attributes
+          int numPages = buffer.getInt();
+          for (int i = 0; i < numPages; i++) {
+            Integer pageIndex = buffer.getInt();
+            pageIndexList.add(pageIndex);
+        }
+        return new TableSchema(attributeList,pageIndexList);
+    }
+
+    public ArrayList<Integer> getIndexList(){
+        return this.pageIndexes;
+    }
+
+    public void updateIndexList(ArrayList<Integer> pageIndexes){
+        this.pageIndexes = pageIndexes;
     }
 
     @Override
