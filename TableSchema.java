@@ -18,6 +18,15 @@ public class TableSchema {
         this.attributes = attributes;
     }
 
+    public TableSchema(TableSchema old){
+        this.tableName = old.tableName;
+        this.tableNumber = old.tableNumber;
+        this.table = old.table;
+        this.attributes = old.attributes;
+        this.pageIndexes = old.pageIndexes;
+
+
+    }
     public TableSchema(ArrayList<AttributeSchema> attributeList, ArrayList<Integer> pageIndexes) {
         this.attributes = attributeList;
         this.pageIndexes = pageIndexes;

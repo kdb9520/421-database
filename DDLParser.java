@@ -211,6 +211,9 @@ public class DDLParser {
             return;
 
         }
+        TableSchema tableSchemaOld = new TableSchema(tableSchema); // make a deep copy
+        Catalog.updateCatalog(tableSchemaOld);
+
 
 
         if(operation.equals("drop")){
@@ -221,6 +224,8 @@ public class DDLParser {
         // add operation
 
         if(operation.equals("add")){
+            String temp = "temp";
+            tableSchema.tableName = temp;
 
             // if invalid args, return
             if(parsed.length != 6 || parsed.length != 8){
@@ -256,8 +261,10 @@ public class DDLParser {
             // get the old records
             ArrayList<Record> recordsOld = new ArrayList<>();   // old records
 
+
+            // To copy the records into a new ArrayList of records, does this look right?
             // don't know if I need this, this is intended to be for the old array
-            int numPages = StorageManager.readNumberOfPages(name);
+            int numPages = tableSchema.getIndexList().size();
 
             // these are based off insert from the DML
             ArrayList<Integer> pageIndexList = tableSchema.getIndexList();
@@ -275,13 +282,13 @@ public class DDLParser {
             // insert
             for (Record record: recordsOld){
                 record.setAttribute(value);
-                StorageManager.insert(nPages, name, record, tableSchema, pageIndexList);
+                StorageManager.insert(nPages, temp, record, tableSchema, pageIndexList);
             }
 
-            Catalog.alterSchema(tableSchema);
             // todo delete old table/schema
+            StorageManager.deleteTable(tableSchemaOld.tableName);
 
-            // todo - deal with other args for alter table pending new constructor
+
         }
 
 
