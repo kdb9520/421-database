@@ -91,12 +91,15 @@ public class TableSchema {
             dataOutputStream.write(attribute_bytes);
         }
         // Write the number of pages
-        dataOutputStream.writeInt(pageIndexes.size());
+            if(pageIndexes != null){
+                dataOutputStream.writeInt(pageIndexes.size());
 
-        // Write each attribute
-        for (Integer pageIndex : pageIndexes) {
-            dataOutputStream.writeInt(pageIndex);
+            // Write each attribute
+            for (Integer pageIndex : pageIndexes) {
+                dataOutputStream.writeInt(pageIndex);
+            }
         }
+        
 
         dataOutputStream.close();
         return byteArrayOutputStream.toByteArray();
