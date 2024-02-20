@@ -94,7 +94,7 @@ public class TableSchema {
             dataOutputStream.write(attribute_bytes);
         }
         // Write the number of pages
-            if(pageIndexes != null){
+            if(!pageIndexes.isEmpty()){
                 dataOutputStream.writeInt(pageIndexes.size());
 
             // Write each attribute
@@ -137,7 +137,7 @@ public class TableSchema {
     }
 
     public ArrayList<Integer> getIndexList(){
-        if(this.pageIndexes == null){
+        if(this.pageIndexes.isEmpty()){
             return null;
         }
         return this.pageIndexes;
