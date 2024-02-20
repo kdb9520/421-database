@@ -42,6 +42,7 @@ public class AttributeSchema {
 
     private void setConstraints(String[] constraints) {
         for (String con : constraints) {
+            con = con.toUpperCase();
             switch (con) {
                 case "PRIMARYKEY":
                     this.isPrimaryKey = true;

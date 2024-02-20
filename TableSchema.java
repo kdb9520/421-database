@@ -58,6 +58,7 @@ public class TableSchema {
     public String getPrimaryKeyType(){
         if (this.attributes.size() > 0) {
             AttributeSchema primaryKeySchema = attributes.get(findPrimaryKeyColNum());
+            //todo - removed regex because it seemed unnecessary, unless it was for varchar or char?
             return primaryKeySchema.attrType.strip().split("(")[0];
         } 
         return null;
