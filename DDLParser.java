@@ -97,6 +97,9 @@ public class DDLParser {
         // update the catalog
         Catalog.updateCatalog(tableSchema);
 
+        // Write tableschema to hardware
+        // Tableschema?
+
     }
 
     /**
@@ -231,13 +234,4 @@ public class DDLParser {
 
 
     }
-
-
-    public static void main(String [] args){
-        String demo = "create table foo(\n" +
-                "column1 varchar(40) primarykey);";
-        DDLParser.createTable(demo);
-    }
-
-
 }
