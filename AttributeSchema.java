@@ -3,6 +3,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 public class AttributeSchema {
     String attrName;
@@ -72,22 +73,22 @@ public class AttributeSchema {
     // Serialize in format: [AttrNameSize,AttrName,AttrTypeSize,AttrType,isNull,isPK,isUN,defaultValue]
     public byte[] serialize() {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-             ObjectOutputStream oos = new ObjectOutputStream(bos)) {
+        DataOutputStream dataOutputStream = new DataOutputStream(bos);) {
             // Serialize the length and content of attrName
-            byte[] attrNameBytes = attrName.getBytes();
-            oos.writeInt(attrNameBytes.length);
-            oos.write(attrNameBytes);
+            byte[] attrNameBytes = attrName.getBytes("UTF-8");
+            dataOutputStream.writeInt(attrNameBytes.length);
+            dataOutputStream.write(attrNameBytes);
 
             // Serialize the length and content of attrType
             byte[] attrTypeBytes = attrType.getBytes();
-            oos.writeInt(attrTypeBytes.length);
-            oos.write(attrTypeBytes);
+            dataOutputStream.writeInt(attrTypeBytes.length);
+            dataOutputStream.write(attrTypeBytes);
 
         
               // Serialize isNull, isPK, and isUN directly
-              oos.writeBoolean(isNotNull);
-              oos.writeBoolean(isPrimaryKey);
-              oos.writeBoolean(isUnique);
+              dataOutputStream.writeBoolean(isNotNull);
+              dataOutputStream.writeBoolean(isPrimaryKey);
+              dataOutputStream.writeBoolean(isUnique);
 
             return bos.toByteArray();
         } catch (IOException e) {
@@ -99,7 +100,10 @@ public class AttributeSchema {
       // Deserialize a byte array into a record object
       public static AttributeSchema deserialize(ByteBuffer buffer) {
         // Read attribute details from the buffer
-        String attrName = readString(buffer);
+        int length = buffer.getInt();
+        byte[] stringBytes = new byte[length];
+        buffer.get(stringBytes);
+        String attrName =  new String(stringBytes);
         String attrType = readString(buffer);
         boolean isNull = buffer.get() != 0;
         boolean isPK = buffer.get() != 0;
