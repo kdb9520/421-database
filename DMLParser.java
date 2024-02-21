@@ -67,6 +67,7 @@ public class DMLParser {
                 break;
             }
 
+            // This does all the parsing and converting the attributes to correct type based off schema
             try {
                 for (int i = 0; i < attributeSchemas.size(); i++) {
                     String type = attributeSchemas.get(i).getType();
@@ -133,26 +134,32 @@ public class DMLParser {
                 break;
             }
 
+            // We now have the record made corectly, we need to insert it into right place
             Record record = new Record(values);
 
+
+            // If the table is empty, no pages exist. Create a new page
             if (tableSchema.getIndexList().size() == 0) {
+                // Create new page (using bufferManager)
                 Page newPage = BufferManager.createPage(tableName, 0);
                 // add this entry to a new page
                 newPage.addRecord(record);
                 tableSchema.addToIndexList(0);
+            // Else the table is not empty! We need to find where to insert this record now
             } else {
                 // Get the primary key and its type so we can compare
                 int numPages = tableSchema.getIndexList().size();
-                // Get primary key col number
+                // Get primary key col number so we can figure out where to insert this record
                 int primaryKeyCol = tableSchema.findPrimaryKeyColNum();
                 String primaryKeyType = tableSchema.getPrimaryKeyType();
-                // Loop through pages and find which one to insert record into.
+                // Loop through pages and find which one to insert record into. Look ahead algorithim
                 Page next = null;
                 for (int i = 0; i < numPages; i++) {
-                    // See if we are out of bounds
+                    // See if we are going to be out of bounds
                     if (i + 1 >= numPages) {
                         break;
                     }
+                    // Get the next page (must use BufferManager to get it)
                     next = BufferManager.getPage(tableName, i + 1);
 
                     // If its less than the first value of next page (i+1) then it belongs to page i
@@ -160,15 +167,28 @@ public class DMLParser {
                     if (primaryKeyType.equals("integer")) {
                         if ((Integer) record.getAttribute(primaryKeyCol) < (Integer) next.getFirstRecord(i)) {
                             // Add the record to the page. Check if it split page or not
+                            // addRecord returns a new Page object if it split
                             Page result = BufferManager.getPage(tableName, i).addRecord(record);
 
-                            // If we split then add the new page to our page list.
+                            // If we split (result != null) then add the new page to our page list.
                             if (result != null) {
                                 // Add new page to our page
-                                tableSchema.getIndexList().add(i + 1, numPages); // TODO maybe need to change this to not be getIndexList
+                                tableSchema.getIndexList().add(i + 1, numPages); // TODO maybe need to change this to not be getIndexList. This may work as is
                                 BufferManager.addPageToBuffer(result);
-                                // Go in and update page number of all pages current in here
-                                // Update our pageIndexList, and update pageNumber every Page after this page
+                                
+                                // To do: 
+                                // All pages actively in the pageBuffer have a pageNumber attribute
+                                // If these aren't updated then when they are written to hardware it will overwrite information
+                                // Example page1 page2 page3 page4
+                                // We split page 1 so now there's a new page (lets call it 1.5) between page 1 and page 2
+                                // page1 page1.5 page2 page3 page4
+                                // Issue:
+                                // Once we insert into tableSchema indexList page1.5 in the right index, pushing other values to the side, the page number of all pages in buffermanager must be updated
+                                // to be +1 their current value, otherwise when it asks storageManager to write it storageManager will overwrite this new page we made
+                                // Alterante solution is the value of each item in indexList is not the index the page is stored at, but rather the page number that it is? Idk about this solution
+                                // Would require some changes to Storagemanager to make sure its all written at right spot and may not work
+
+                                // Anyway whatever fix is inserted here needs to be done for the other types as well when they split pages
 
                                 return;
                             }
