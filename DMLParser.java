@@ -8,17 +8,17 @@ public class DMLParser {
 
     public static void handleQuery(String query, String databaseLocation) {
 
-        if (query.substring(0, 12).equals("insert into ")) {
+        if (query.startsWith("insert into ")) {
             insert(query.substring(12));
         }
 
-        else if (query.substring(0, 14).equals("display schema ")) {
+        else if (query.startsWith("display schema ")) {
             displaySchema(query.substring(14), databaseLocation);
         }
 
-        else if (query.substring(0, 12).equals("display info ")) {
+        else if (query.startsWith("display info ")) {
             displayInfo(query.substring(12));
-        } else if (query.substring(0, 6).equals("select")) {
+        } else if (query.startsWith("select")) {
             select(query.substring(6));
         }
     }
