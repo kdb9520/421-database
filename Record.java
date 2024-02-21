@@ -123,6 +123,14 @@ public class Record {
                 char c = (char) value;
                 output = output + c;
             }
+            else if (type.equals("double")) {
+                double d = (double) value;
+                output = output + d;
+            }
+            else if (type.equals("boolean")) {
+                boolean b = (boolean) value;
+                output = output + b;
+            }
             output = output + " ";
         }
         output = output + ")";

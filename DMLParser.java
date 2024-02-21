@@ -52,6 +52,12 @@ public class DMLParser {
                 else if (type.equals("char")) {
                     values.add(value.charAt(0));
                 }
+                else if (type.equals("double")) {
+                    values.add(Double.parseDouble(value));
+                }
+                else if (type.equals("boolean")) {
+                    values.add(Boolean.parseBoolean(value));
+                }
             }
             
             Record record = new Record(values);
