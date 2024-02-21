@@ -73,7 +73,7 @@ public class Page {
     }
 
     public Page addRecord(Record r) {
-        if (numRecords > PAGE_SIZE) {
+        if (numRecords + 1 > PAGE_SIZE) {
             Page newPage = splitPage();
             records.add(r);
             return newPage;

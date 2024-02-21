@@ -174,14 +174,15 @@ public class DMLParser {
                             if (result != null) {
                                 // Add new page to our page
                                 tableSchema.getIndexList().add(i + 1, numPages); // TODO maybe need to change this to not be getIndexList. This may work as is
-                                BufferManager.addPageToBuffer(result);
+                                
                                 
                                 // To do: 
                                 // All pages actively in the pageBuffer have a pageNumber attribute
                                 // If these aren't updated then when they are written to hardware it will overwrite information
                                 // Example page1 page2 page3 page4
                                 // We split page 1 so now there's a new page (lets call it 1.5) between page 1 and page 2
-                                // page1 page1.5 page2 page3 page4
+                                // page0 page0.5  page1 page2 page3 
+                                // [0,4,1,2,3]
                                 // Issue:
                                 // Once we insert into tableSchema indexList page1.5 in the right index, pushing other values to the side, the page number of all pages in buffermanager must be updated
                                 // to be +1 their current value, otherwise when it asks storageManager to write it storageManager will overwrite this new page we made
@@ -189,7 +190,7 @@ public class DMLParser {
                                 // Would require some changes to Storagemanager to make sure its all written at right spot and may not work
 
                                 // Anyway whatever fix is inserted here needs to be done for the other types as well when they split pages
-
+                                BufferManager.addPageToBuffer(result);
                                 return;
                             }
                             return;
