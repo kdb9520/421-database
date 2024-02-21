@@ -151,4 +151,16 @@ public class Catalog {
         return Catalog.catalog;
     }
 
+    /**
+     * Renames the schema from temp to the tableName - used by Alter Table in DDL Parser
+     * @param name - the real table name
+     */
+    public static void renameSchema(String name) {
+        for(TableSchema t: tableSchemas){
+            if(t.tableName.equals("temp")){
+                t.tableName = name;
+                return;
+            }
+        }
+    }
 }

@@ -208,11 +208,12 @@ public class DDLParser {
 
         // add operation
 
+        //todo - right now this only has been tested with a default value
         if(operation.equals("add")){
             TableSchema tableSchemaOld = new TableSchema(tableSchema); // make a deep copy
-            Catalog.updateCatalog(tableSchemaOld);
+            Catalog.updateCatalog(tableSchemaOld);                     // adds the copy to the catalog
             String temp = "temp";
-            tableSchema.tableName = temp;
+            tableSchema.tableName = temp;                               // temp name for other copy
 
             // if invalid args, return
             if(parsed.length != 6 && parsed.length != 8){
@@ -220,8 +221,8 @@ public class DDLParser {
                 return;
             }
 
-            String attributeName = parsed[4];
-            String attributeType = parsed[5];
+            String attributeName = parsed[4];   // name of attribute
+            String attributeType = parsed[5];   // name of type
 
 
             // check for nested ()
@@ -236,8 +237,10 @@ public class DDLParser {
                 return;
             }
             String value = "";
+            // if there is a default value
             if(parsed.length == 8){
                 value = parsed[7];
+                value = value.substring(0, value.length() - 1);
             }
 
             // make a new attribute schema
@@ -249,8 +252,7 @@ public class DDLParser {
             ArrayList<Record> recordsOld = new ArrayList<>();   // old records
 
 
-            // To copy the records into a new ArrayList of records, does this look right?
-            // don't know if I need this, this is intended to be for the old array
+            // get the number of pages
             int numPages = tableSchema.getIndexList().size();
 
             // these are based off insert from the DML
@@ -271,9 +273,30 @@ public class DDLParser {
             // set default attribute, if any
             // insert
             for (Record record: recordsOld){
-                record.setAttribute(value);
 
-                StorageManager.insert(temp, record, tableSchema);
+                // committing right now, but this line might not actually be necessary since it is done in insert
+                record = recordaddAtributeValueHelper(record, attributeType, value);
+                if(record == null){
+                    return;
+                }
+                ArrayList<Object> attrs = record.getValues();
+                // build a new query for insert operation
+                StringBuilder tempQuery = new StringBuilder(temp + " values(");
+                int c = 0;
+                for(Object attr : attrs){
+                    tempQuery.append(attr.toString());
+                    if(c != attrs.size() - 1){
+                        tempQuery.append(" ");
+                    }
+                    c += 1;
+
+                }
+
+                tempQuery.append(");");
+
+                // insert the new record
+                DMLParser.insert(String.valueOf(tempQuery));
+                //StorageManager.insert(temp, record, tableSchema);
 
             }
 
@@ -288,19 +311,83 @@ public class DDLParser {
             pageIndexList = tableSchema.getIndexList();
 
 
-            //rename
+            //rename all the pages
             i = 0;
             do {
-                Page page = BufferManager.getPage(name,i);
+                Page page = BufferManager.getPage(temp,i);
                 page.tableName = name;
                 i ++;
 
             }while (i < numPages);
 
+            // rename schema in Catalog
+            Catalog.renameSchema(name);
+
 
 
         }
 
+
+    }
+
+    public static Record recordaddAtributeValueHelper(Record record, String type, String value){
+        try{
+            if (type.equals("integer")) {
+                // Check if the value consists only of numeric characters
+                if (value.matches("\\d+")) {
+                    record.setAttribute(Integer.parseInt(value));
+                    return record;
+                } else {
+                    throw new IllegalArgumentException("Invalid value for integer type: " + value);
+                }
+            } else if (type.equals("string")) {
+                // account for "" on either side of val
+                if (String.valueOf(value.charAt(0)).equals("\"")
+                        && String.valueOf(value.charAt(value.length() - 1)).equals("\"")) {
+                    record.setAttribute(value.substring(1, value.length() - 1));
+                    return record;
+                }
+                else {
+                    throw new IllegalArgumentException("Invalid value for string type: " + value);
+                }
+            } else if (type.equals("char")) {
+                // account for '' on either side of val
+                if (value.length() == 3) { // Check if it's a single character enclosed in single quotes
+                    record.setAttribute(value.charAt(1));
+                    return record;
+                } else {
+                    throw new IllegalArgumentException("Invalid value for char type: " + value);
+                }
+            } else if (type.equals("double")) {
+                // Check if the value is a valid double (numeric characters with optional
+                // decimal point)
+                if (value.matches("-?\\d+(\\.\\d+)?")) {
+                    record.setAttribute(Double.parseDouble(value));
+                    return record;
+                } else {
+                    throw new IllegalArgumentException("Invalid value for double type: " + value);
+                }
+            } else if (type.equals("boolean")) {
+                if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
+                    record.setAttribute(Boolean.parseBoolean(value));
+                    return record;
+                } else {
+                    throw new IllegalArgumentException("Invalid value for boolean type: " + value);
+                }
+            }
+
+            else{
+                System.err.println("Invalid type");
+                return null;
+            }
+        }
+        catch (Exception e){
+            // print error and go to command loop
+            System.out.println("Invalid default value");
+            System.out.println(e.getMessage());
+
+            return null;
+        }
 
     }
 }
