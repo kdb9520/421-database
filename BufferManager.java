@@ -1,3 +1,4 @@
+import java.io.File;
 import java.util.ArrayList;
 
 public class BufferManager {
@@ -79,6 +80,25 @@ public class BufferManager {
         return page;
     }
 
+    public static void deleteTable(String tableName, int pageNumber){
+        for(Page p : bufferPool){
+            if(p.getTableName().equals(tableName) && p.getPageNumber() == pageNumber){
+                bufferPool.remove(p);
+            }
+
+            return;
+        }
+
+
+        File file = new File(Main.databaseLocation + tableName);
+        if(!file.exists()) {
+            System.err.println("File does not exist");
+            return;
+        }
+
+        file.delete();
+        System.out.println("File deleted successfully");
+    }
     public static void addPageToBuffer(Page page){
         // First create a page
         // Add it to buffer
