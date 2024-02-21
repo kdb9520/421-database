@@ -8,55 +8,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Page {
-    int numRecords;
     int pageNumber;
     String tableName;
     ArrayList<Record> records;
-    Page nextPage;
 
-    public Page() {
-        this.numRecords = 0;
+
+    public Page() { 
         this.records = new ArrayList<>();
     }
 
-    public Page(String tableName, int pageNumber, byte[] pageData) {
-        records = new ArrayList<>();
-        if(pageData == null){
-            numRecords = 0;
-            this.pageNumber = pageNumber;
-            this.tableName = tableName;
-            this.records = new ArrayList<>();
-        }
-        else{
-            try{ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(pageData);
-                DataInputStream dataInputStream = new DataInputStream(byteArrayInputStream);
-        
-                // Read page number; Old implementation may not need
-                // int pNum = dataInputStream.readInt();
-        
-                // Read number of records
-                numRecords = dataInputStream.readInt();
-        
-                // Read each record
-                for (int i = 0; i < numRecords; i++) {
-                    int recordLength = dataInputStream.readInt();
-                    byte[] recordBytes = new byte[recordLength];
-                    dataInputStream.readFully(recordBytes);
-                    //records.add(Record.deserialize(recordBytes));
-                }
-        
-                dataInputStream.close();
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
-        }
-       
-        
 
-    }
 
-    public Page(int pageNumber, ArrayList<Record> records) {
-        // TODO Auto-generated constructor stub
+    public Page(String tablename, int pageNumber, ArrayList<Record> records) {
+        this.tableName = tablename;
+        this.pageNumber = pageNumber;
+        this.records = records;
 
     }
 
@@ -73,7 +39,7 @@ public class Page {
     }
 
     public Page addRecord(Record r) {
-        if (numRecords + 1 > Main.pageSize) {
+        if (this.records.size() + 1 > Main.pageSize) {
             Page newPage = splitPage();
             records.add(r);
             return newPage;
@@ -87,7 +53,7 @@ public class Page {
     }
 
     public int getPageSize() {
-        return numRecords;
+        return this.records.size();
     }
 
     public Page splitPage() {
@@ -159,7 +125,7 @@ public class Page {
         }
 
         // Create and return the Page object
-        Page page = new Page(pageNumber, new ArrayList<Record>(records));
+        Page page = new Page(tableName, pageNumber, new ArrayList<Record>(records));
         return page;
     }
 

@@ -18,7 +18,7 @@ public class StorageManager {
 
 
     public static Page readPageFromDisk(String tableName, int pageNumber) {
-        try (FileChannel fileChannel = FileChannel.open(Paths.get(tableName), StandardOpenOption.READ)) {
+        try (FileChannel fileChannel = FileChannel.open(Paths.get(Main.databaseLocation,tableName), StandardOpenOption.READ)) {
             // Calculate the position in the file where the page starts
             TableSchema tableSchema = Catalog.getTableSchema(tableName);
             ArrayList<Integer> indexList = tableSchema.getIndexList();
@@ -44,12 +44,6 @@ public class StorageManager {
             e.printStackTrace();
             return null;
         }
-    }
-
-    public static void insert(String tableName, Record record, TableSchema tableSchema) {
-
-
-        
     }
 
     public static void writePageToDisk(Page page) {
@@ -130,22 +124,4 @@ public class StorageManager {
 
     }
 
-    public static void select(TableSchema tableSchema, String tableName) {
-        if (tableSchema != null) {
-            // need to test formating of toStrings
-            System.out.println(tableSchema.toString());
-
-            // Print all values in table
-            // Loop through the table and print each page
-            // For each page in table tableName
-            int num_pages = tableSchema.getIndexList().size();
-            for(int i = 0; i < num_pages; i++){
-                Page page = BufferManager.getPage(tableName, i);
-                System.out.println(page.toString());
-            }
-
-        } else {
-            System.err.println("Table: " + tableName + "does not exist");
-        }
-    }
 }
