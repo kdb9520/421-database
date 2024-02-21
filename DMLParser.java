@@ -55,6 +55,18 @@ public class DMLParser {
 
             ArrayList<AttributeSchema> attributeSchemas = tableSchema.getAttributeSchema();
 
+            if(attrs.length > attributeSchemas.size() || attrs.length < attributeSchemas.size()){
+                // print error and go to command loop
+                System.out.println("Error with inserting record: " + tuple);
+                System.out.println("Expected " + attributeSchemas.size() + " values but got " + attrs.length + " values");
+
+                System.out.println(
+                        "If there were records inputted previous to this record, they have been successfuly inserted.");
+                System.out.println("All records after the failed record were not inserted.");
+                previousRecordFail = true;
+                break;
+            }
+
             try {
                 for (int i = 0; i < attributeSchemas.size(); i++) {
                     String type = attributeSchemas.get(i).getType();
@@ -79,6 +91,12 @@ public class DMLParser {
                         // account for '' on either side of val
                         // Get the number between ()
                         int numberOfChars = Integer.parseInt(type.substring(type.indexOf("(")+1, type.indexOf(")")));
+
+                        // If not wrapped in a '' then we know its not a char
+                        if(!value.startsWith("'") || !value.endsWith("'")){
+                            throw new IllegalArgumentException("Invalid value for char type: " + value);
+                        }
+
                         // If it has char(size) characters or less, pad if needed and at it
                         if (value.length() <= numberOfChars+2) { // Check if it's right length excluding the ''
                             String concatValue = value.substring(1, value.length()-1);
@@ -87,6 +105,7 @@ public class DMLParser {
                         } else {
                             throw new IllegalArgumentException("Invalid value for char type: " + value);
                         }
+
                     } else if (type.equals("double")) {
                         // Check if the value is a valid double (numeric characters with optional
                         // decimal point)
