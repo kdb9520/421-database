@@ -12,7 +12,7 @@ public class BufferManager {
     public static Page getPage(String tableName, int pageNumber) {
 
         for(Page p : bufferPool){
-            if(p.getTableName() == tableName & p.getPageNumber() == pageNumber){
+            if(p.getTableName().equals(tableName) && p.getPageNumber() == pageNumber){
                 return p;
             }
         }
