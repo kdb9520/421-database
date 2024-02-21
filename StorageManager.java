@@ -124,14 +124,7 @@ public class StorageManager {
     }
 
     public static void deleteTable(String tableName){
-        File file = new File(Main.databaseLocation + tableName);
-        if(!file.exists()) {
-            System.err.println("File does not exist");
-            return;
-        }
 
-        file.delete();
-        System.out.println("File deleted successfully");
     }
 
     public static void select(TableSchema tableSchema, String tableName) {
