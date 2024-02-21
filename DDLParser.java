@@ -100,22 +100,8 @@ public class DDLParser {
         // update the catalog
         Catalog.updateCatalog(tableSchema);
 
-        // Create actual table file (they are stored as files)
-
-        try {
-        Path folder = Paths.get(Main.databaseLocation);
-
-        // Create the file within the folder
-        Path filePath = folder.resolve(tableName);
-
-        // Write content to the file
-        byte[] bytes = ByteBuffer.allocate(4).putInt(0).array();
-    
-        Files.write(filePath, bytes);
-        }
-        catch (Exception e) {
-            System.out.println("Error writing table: " + tableName + " to hardware.");
-        }
+        // write the file to the disk
+        StorageManager.writeTableToDisk(tableName);
     }
 
     /**
