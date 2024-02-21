@@ -34,7 +34,25 @@ public class DMLParser {
         for (String tuple : tuples) {
             String valString = tuple.strip().split("[()]")[1];
             String[] attrs = valString.strip().split(" ");
-            ArrayList<Object> values = new ArrayList<>(Arrays.asList(attrs));
+            
+            ArrayList<Object> values = new ArrayList<>();
+
+            ArrayList<AttributeSchema> attributeSchemas = tableSchema.getAttributeSchema();
+
+            for ( int i = 0; i < attributeSchemas.size(); i++) {
+                String type = attributeSchemas.get(i).getType();
+                String value = attrs[i];
+    
+                if (type.equals("integer")) {
+                    values.add(Integer.parseInt(value));
+                }
+                else if (type.equals("string")) {
+                    values.add(value);
+                }
+                else if (type.equals("char")) {
+                    values.add(value.charAt(0));
+                }
+            }
             
             Record record = new Record(values);
 

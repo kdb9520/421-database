@@ -197,8 +197,7 @@ public class DDLParser {
             return;
 
         }
-        TableSchema tableSchemaOld = new TableSchema(tableSchema); // make a deep copy
-        Catalog.updateCatalog(tableSchemaOld);
+
 
 
 
@@ -210,6 +209,8 @@ public class DDLParser {
         // add operation
 
         if(operation.equals("add")){
+            TableSchema tableSchemaOld = new TableSchema(tableSchema); // make a deep copy
+            Catalog.updateCatalog(tableSchemaOld);
             String temp = "temp";
             tableSchema.tableName = temp;
 
