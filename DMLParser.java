@@ -221,7 +221,6 @@ public class DMLParser {
     }
 
     public static void select(String query) {
-        System.out.println("spliting");
         String[] splitQuery = query.strip().split(" ");
         System.out.println(splitQuery[0]);
         if (splitQuery[0].equals("*")) {
