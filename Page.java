@@ -24,6 +24,10 @@ public class Page {
         this.pageNumber = pageNumber;
         this.records = records;
 
+        if(records == null){
+            this.records = new ArrayList<>();
+        }
+
     }
 
     public void dropAttribute(int i) {
@@ -38,13 +42,79 @@ public class Page {
         }
     }
 
+    public boolean isLessThan(Record r1, Record r2, String tableName){
+        TableSchema tableSchema = Catalog.getTableSchema(tableName);
+        // Get primary key col number so we can figure out where to insert this record
+        int primaryKeyCol = tableSchema.findPrimaryKeyColNum();
+        String primaryKeyType = tableSchema.getPrimaryKeyType();
+
+        // Type cast appropiately then compare records
+        if (primaryKeyType.equals("integer")) {
+            if ((Integer) r1.getAttribute(primaryKeyCol) < (Integer) r2.getAttribute(primaryKeyCol)) {
+                return true;
+            }
+            else{
+                return false;
+            }
+        } else if (primaryKeyType.startsWith("varchar")) {
+
+            if (r1.getAttribute(primaryKeyCol).toString()
+                    .compareTo(r2.getAttribute(primaryKeyCol).toString()) <= 0) {
+                return true;
+            }
+            else{
+                return false;
+            }
+        } else if (primaryKeyType.startsWith("char")) {
+            String recordString = (String) r1.getAttribute(primaryKeyCol);
+            String nextRecordString = (String)  r2.getAttribute(primaryKeyCol);
+            // If this record is <= next record this is our page!
+            if (recordString.compareTo(nextRecordString) <= 0) {
+                return true;
+            }
+            else{
+                return false;
+            }
+        } else if (primaryKeyType.equals("double")) {
+            if ((Double) r1.getAttribute(primaryKeyCol) < (Double) r2.getAttribute(primaryKeyCol)) {
+                return true;
+        } else{
+            return false;
+        }
+        }
+         else if (primaryKeyType.equals("boolean")) {
+            
+            Boolean recordBoolean = (Boolean) r1.getAttribute(primaryKeyCol);
+            Boolean nextRecordBoolean = (Boolean)  r2.getAttribute(primaryKeyCol);
+            
+            if (recordBoolean.compareTo(nextRecordBoolean) <= 0) {
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        return false;
+    }
+
+    // This needs to be done in order oof
     public Page addRecord(Record r) {
         if (this.records.size() + 1 > Main.pageSize) {
             Page newPage = splitPage();
-            records.add(r);
+            // Find where to insert it in the page
+            for(int i = 0; i < records.size(); i++){
+                if(isLessThan(r,records.get(i),tableName)){
+                    records.add(i, r);
+                }
+            }
             return newPage;
         }
-        records.add(r);
+
+        for(int i = 0; i < records.size(); i++){
+            if(isLessThan(r,records.get(i),tableName)){
+                records.add(i, r);
+            }
+        }
         return null;
     }
 

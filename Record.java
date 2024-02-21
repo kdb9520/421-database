@@ -91,7 +91,7 @@ public class Record {
                     for(int i = 0; i < attributes.size(); i++){
                         String type = attributes.get(i).getType();
                         // Now write the bytes depending on what the type is
-                        if(type == "integer"){
+                        if(type.equals("integer")){
                             dataOutputStream.writeInt((Integer) values.get(i));
                         }
                         else if(type.startsWith("varchar")){
@@ -126,7 +126,7 @@ public class Record {
         for(int i = 0; i < attributes.size(); i++){
             String type = attributes.get(i).getType();
                         // Now write the bytes depending on what the type is
-                        if(type == "integer"){
+                        if(type.equals("integer")){
                             Integer attr = buffer.getInt();
                             values.add(attr);
                         }
@@ -177,7 +177,7 @@ public class Record {
             Object value = values.get(i);
 
             if (type.equals("integer")) {
-                int n = (int) value;
+                Integer n = (Integer) value;
                 output = output + n;
             }
             else if (type.startsWith("varchar")) {
@@ -201,5 +201,4 @@ public class Record {
         output = output + ")";
         return output;
     }
-
 }

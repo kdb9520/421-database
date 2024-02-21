@@ -23,7 +23,7 @@ public class StorageManager {
             TableSchema tableSchema = Catalog.getTableSchema(tableName);
             ArrayList<Integer> indexList = tableSchema.getIndexList();
             // Set buffer to position of the right page
-            long position = indexList.get(pageNumber) * Main.pageSize;
+            long position = indexList.get(pageNumber) * Main.pageSize + 4; // Add 4 since num_pages is stored at beginning
             // Allocate a ByteBuffer to hold the page data
             ByteBuffer buffer = ByteBuffer.allocate(Main.pageSize);
 
@@ -50,19 +50,28 @@ public class StorageManager {
         System.out.println("Writing page " + page.getPageNumber() + " to disk: " + page);
 
         try {
-            File file = new File(Main.databaseLocation + page.getTableName());
+            File file = new File(Main.databaseLocation + File.separator + page.getTableName());
             
             // Create the file if it doesn't exist
             if (!file.exists()) {
                 System.out.println("Error: Table: " + page.getTableName() + " does not exist");
             }
             FileOutputStream fos = new FileOutputStream(file, true);
-       
+        
             // Calculate the offset where this page should be written
             TableSchema tableSchema = Catalog.getTableSchema(page.getTableName());
             ArrayList<Integer> indexList = tableSchema.getIndexList();
+
+            // First we update the num_pages if it changed
+            
+            // Read the current num_pages to see if its up to date
+            int written_num_pages = readNumberOfPages(page.getTableName());
+            if(page.getPageNumber() >  written_num_pages){
+                byte[] bytes = ByteBuffer.allocate(4).putInt(written_num_pages + 1).array();
+                fos.write(bytes);
+            }
             //Integer pageIndex = ;
-            long offset = indexList.get(page.getPageNumber()) * Main.pageSize;
+            long offset = indexList.get(page.getPageNumber()) * Main.pageSize + 4;
             // Move the file pointer to the correct position
             fos.getChannel().position(offset);
             // Write the page data to the file
@@ -75,10 +84,7 @@ public class StorageManager {
 
     }
 
-    public static void writeTableToDisk (String tableName) {
-
-        // Create actual table file (they are stored as files)
-
+    public static void updateTableNumPages(String tableName) {
         try {
             Path folder = Paths.get(Main.databaseLocation);
     
@@ -91,6 +97,30 @@ public class StorageManager {
             Files.write(filePath, bytes);
         } catch (Exception e) {
             System.out.println("Error writing table: " + tableName + " to hardware.");
+        }
+
+    }
+
+    public static void writeTableToDisk (String tableName) {
+
+        // Create actual table file (they are stored as files)
+
+        try {
+            // Construct the file path
+            String filePath = Main.databaseLocation + File.separator + tableName;
+            File f = new File(filePath);
+            f.createNewFile();
+
+            try (FileOutputStream fos = new FileOutputStream(filePath)) {
+                // Write the integer 0 to the file
+                fos.write(ByteBuffer.allocate(4).putInt(0).array());
+                System.out.println("Integer written to file successfully.");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            System.out.println("Table created successfully.");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
