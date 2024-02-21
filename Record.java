@@ -1,8 +1,10 @@
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 
@@ -79,11 +81,34 @@ public class Record {
         }
     }
 
-    public byte[] serialize() {
+    public byte[] serialize(String tablename) {
+        ArrayList<AttributeSchema> attributes = Catalog.getTableSchema(tablename).getAttributeSchema();
+
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-             ObjectOutputStream oos = new ObjectOutputStream(bos)) {
-            oos.writeObject(values);
-            return bos.toByteArray();
+                DataOutputStream dataOutputStream = new DataOutputStream(bos);) {
+
+                    // For each attribute we need to know its type before writing to hardware
+                    for(int i = 0; i < attributes.size(); i++){
+                        String type = attributes.get(i).getType();
+                        // Now write the bytes depending on what the type is
+                    }
+                    // Serialize the length and content of attrName
+                    byte[] attrNameBytes = attrName.getBytes("UTF-8");
+                    dataOutputStream.writeInt(attrNameBytes.length);
+                    dataOutputStream.write(attrNameBytes);
+
+                    // Serialize the length and content of attrType
+                    byte[] attrTypeBytes = attrType.getBytes();
+                    dataOutputStream.writeInt(attrTypeBytes.length);
+                    dataOutputStream.write(attrTypeBytes);
+
+                
+                    // Serialize isNull, isPK, and isUN directly
+                    dataOutputStream.writeBoolean(isNotNull);
+                    dataOutputStream.writeBoolean(isPrimaryKey);
+                    dataOutputStream.writeBoolean(isUnique);
+
+                    return bos.toByteArray();
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -91,7 +116,7 @@ public class Record {
     }
 
       // Deserialize a byte array into a record object
-    public static Record deserialize(byte[] data) {
+    public static Record deserialize(ByteBuffer buffer) {
         Record record = new Record();
         try (ByteArrayInputStream bis = new ByteArrayInputStream(data);
              ObjectInputStream ois = new ObjectInputStream(bis)) {
