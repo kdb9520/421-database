@@ -144,6 +144,10 @@ public class TableSchema {
         this.pageIndexes = pageIndexes;
     }
 
+    public void addToIndexList(Integer pageIndex){
+        this.pageIndexes.add(pageIndex);
+    }
+
     @Override
     public String toString() {
         return "TableSchema{" +

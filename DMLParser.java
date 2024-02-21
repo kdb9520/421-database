@@ -171,6 +171,7 @@ public class DMLParser {
                     } else if (primaryKeyType.equals("char")) {
                         String recordString = (String) record.getAttribute(primaryKeyCol);
                         String nextRecordString = (String)  next.getFirstRecord(i);
+                        // If this record is <= next record this is our page!
                         if (recordString.compareTo(nextRecordString) <= 0) {
                             // Add the record to the page. Check if it split page or not
                             Page result = BufferManager.getPage(tableName, i).addRecord(record);
@@ -191,7 +192,7 @@ public class DMLParser {
                 Page newPage = BufferManager.createPage(tableName, numPages);
                 // Add record to page
                 newPage.addRecord(record);
-                tableSchema.getIndexList().add(numPages);
+                tableSchema.addToIndexList(numPages);
             }
             // if there are no pages
 
