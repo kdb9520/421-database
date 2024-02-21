@@ -232,7 +232,11 @@ public class DMLParser {
                             return;
                         }
                     } else if (primaryKeyType.equals("boolean")) {
-                        if ((Boolean) record.getAttribute(primaryKeyCol) < (Boolean) next.getFirstRecord(i)) {
+                        
+                        Boolean recordBoolean = (Boolean) record.getAttribute(primaryKeyCol);
+                        Boolean nextRecordBoolean = (Boolean)  next.getFirstRecord(i);
+                        
+                        if (recordBoolean.compareTo(nextRecordBoolean) <= 0) {
                             // Add the record to the page. Check if it split page or not
                             // addRecord returns a new Page object if it split
                             Page result = BufferManager.getPage(tableName, i).addRecord(record);
@@ -249,7 +253,7 @@ public class DMLParser {
                             return;
                         }
                     }
-
+                }
 
                 // Cycled through all pages -> Record belongs on the last page of the table
 
@@ -257,7 +261,7 @@ public class DMLParser {
                 Page lastPage = BufferManager.getPage(tableName, numPages - 1).addRecord(record);
 
                 if (lastPage != null) {
-                    tableSchema.getIndexList().add(numPages, numPages); // is this insert right?
+                    tableSchema.getIndexList().add(numPages, numPages);
 
                     // Update all pages in the buffer pool list to have the correct page number
                     BufferManager.updatePageNumbersOnSplit(tableName, lastPage.getPageNumber());
