@@ -105,16 +105,22 @@ public class Page {
             for(int i = 0; i < records.size(); i++){
                 if(isLessThan(r,records.get(i),tableName)){
                     records.add(i, r);
+                    return newPage;
                 }
             }
+            // Add it at the end if it belongs there
+            records.add(records.size(), r);
             return newPage;
         }
 
         for(int i = 0; i < records.size(); i++){
             if(isLessThan(r,records.get(i),tableName)){
                 records.add(i, r);
+                return null;
             }
         }
+        // Add it at the end if it belongs there
+        records.add(records.size(), r);
         return null;
     }
 
@@ -167,7 +173,8 @@ public class Page {
         DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream);
 
         // Write number of records
-        dataOutputStream.writeInt(records.size());
+        int numRecords = records.size();
+        dataOutputStream.writeInt(numRecords);
 
         // Write each record
         for (Record record : records) {
@@ -187,7 +194,6 @@ public class Page {
 
         // Read number of records
         int numRecords = buffer.getInt();
-
         // Read each record
         List<Record> records = new ArrayList<>();
         for (int i = 0; i < numRecords; i++) {;

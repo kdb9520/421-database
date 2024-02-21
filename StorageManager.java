@@ -56,7 +56,7 @@ public class StorageManager {
             if (!file.exists()) {
                 System.out.println("Error: Table: " + page.getTableName() + " does not exist");
             }
-            FileOutputStream fos = new FileOutputStream(file, true);
+            FileOutputStream fos = new FileOutputStream(file);
         
             // Calculate the offset where this page should be written
             TableSchema tableSchema = Catalog.getTableSchema(page.getTableName());
