@@ -39,7 +39,7 @@ public class DMLParser {
             Record record = new Record(values);
 
 
-            if (tableSchema.getIndexList() == null) {
+            if (tableSchema.getIndexList().size() == 0) {
                 Page newPage = BufferManager.createPage(tableName, 0);
                 // add this entry to a new page
                 newPage.addRecord(record);
@@ -130,7 +130,22 @@ public class DMLParser {
             // gets rid of semicolon after table name
             tableName = tableName.substring(0, tableName.length() - 1);
             TableSchema tableSchema = Catalog.getTableSchema(tableName);
-            StorageManager.select(tableSchema, tableName);
+            if (tableSchema != null) {
+                // need to test formating of toStrings
+                System.out.println(tableSchema.toString());
+    
+                // Print all values in table
+                // Loop through the table and print each page
+                // For each page in table tableName
+                int num_pages = tableSchema.getIndexList().size();
+                for(int i = 0; i <= num_pages; i++){
+                    Page page = BufferManager.getPage(tableName, i);
+                    System.out.println(page.toString());
+                }
+    
+            } else {
+                System.err.println("Table: " + tableName + "does not exist");
+            }
 
         }
 
