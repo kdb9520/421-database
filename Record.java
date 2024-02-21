@@ -81,8 +81,8 @@ public class Record {
         }
     }
 
-    public byte[] serialize(String tablename) {
-        ArrayList<AttributeSchema> attributes = Catalog.getTableSchema(tablename).getAttributeSchema();
+    public byte[] serialize(String tableName) {
+        ArrayList<AttributeSchema> attributes = Catalog.getTableSchema(tableName).getAttributeSchema();
 
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 DataOutputStream dataOutputStream = new DataOutputStream(bos);) {
@@ -91,23 +91,26 @@ public class Record {
                     for(int i = 0; i < attributes.size(); i++){
                         String type = attributes.get(i).getType();
                         // Now write the bytes depending on what the type is
+                        if(type == "integer"){
+                            dataOutputStream.writeInt((Integer) values.get(i));
+                        }
+                        else if(type.startsWith("varchar")){
+                            // Convert object to string, write how many bytes it is and write the string
+                            String value = (String) values.get(i);
+                            dataOutputStream.writeInt(value.length());
+                            dataOutputStream.write(value.getBytes("UTF-8"));
+                        }
+                        else if(type.startsWith("char")){
+                            String value = (String) values.get(i);
+                            dataOutputStream.write(value.getBytes("UTF-8"));
+                        }
+                        else if(type.equals("double")){
+                            dataOutputStream.writeDouble((Double) values.get(i));
+                        }
+                        else if(type.equals("boolean")){
+                            dataOutputStream.writeBoolean((boolean) values.get(i));
+                        }
                     }
-                    // Serialize the length and content of attrName
-                    byte[] attrNameBytes = attrName.getBytes("UTF-8");
-                    dataOutputStream.writeInt(attrNameBytes.length);
-                    dataOutputStream.write(attrNameBytes);
-
-                    // Serialize the length and content of attrType
-                    byte[] attrTypeBytes = attrType.getBytes();
-                    dataOutputStream.writeInt(attrTypeBytes.length);
-                    dataOutputStream.write(attrTypeBytes);
-
-                
-                    // Serialize isNull, isPK, and isUN directly
-                    dataOutputStream.writeBoolean(isNotNull);
-                    dataOutputStream.writeBoolean(isPrimaryKey);
-                    dataOutputStream.writeBoolean(isUnique);
-
                     return bos.toByteArray();
         } catch (IOException e) {
             e.printStackTrace();
@@ -116,15 +119,48 @@ public class Record {
     }
 
       // Deserialize a byte array into a record object
-    public static Record deserialize(ByteBuffer buffer) {
-        Record record = new Record();
-        try (ByteArrayInputStream bis = new ByteArrayInputStream(data);
-             ObjectInputStream ois = new ObjectInputStream(bis)) {
-            record.values = (ArrayList<Object>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
+    public static Record deserialize(ByteBuffer buffer, String tableName) {
+        ArrayList<AttributeSchema> attributes = Catalog.getTableSchema(tableName).getAttributeSchema();
+        ArrayList<Object> values = new ArrayList<>();
+
+        for(int i = 0; i < attributes.size(); i++){
+            String type = attributes.get(i).getType();
+                        // Now write the bytes depending on what the type is
+                        if(type == "integer"){
+                            Integer attr = buffer.getInt();
+                            values.add(attr);
+                        }
+                        else if(type.startsWith("varchar")){
+                            // Get length of the varchar
+                            int length = buffer.getInt();
+                            // Read the varchar in
+                            byte[] stringBytes = new byte[length];
+                            buffer.get(stringBytes);
+                            // Make it a string
+                            String attr =  new String(stringBytes);
+                            values.add(attr);
+                        }
+                        else if(type.startsWith("char")){
+                            // Get the size of char
+                            int numberOfChars = Integer.parseInt(type.substring(type.indexOf("(")+1, type.indexOf(")")));
+                            byte[] stringBytes = new byte[numberOfChars];
+                            buffer.get(stringBytes);
+                            // Get the string
+                            String attr =  new String(stringBytes);
+                            values.add(attr);
+                        }
+                        else if(type.equals("double")){
+                            Double attr = buffer.getDouble();
+                            values.add(attr);
+                        }
+                        else if(type.equals("boolean")){
+                            boolean attr = buffer.get() != 0;
+                            values.add(attr);
+                        }
         }
-        return record;
+ 
+         return new Record(values);
+        
     }
 
     // Alternate toString method if objects need to be specified

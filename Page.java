@@ -155,7 +155,7 @@ public class Page {
         // Read each record
         List<Record> records = new ArrayList<>();
         for (int i = 0; i < numRecords; i++) {;
-            records.add(Record.deserialize(buffer));
+            records.add(Record.deserialize(buffer,tableName));
         }
 
         // Create and return the Page object
