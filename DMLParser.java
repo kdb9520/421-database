@@ -13,11 +13,11 @@ public class DMLParser {
         }
 
         else if (query.startsWith("display schema ")) {
-            displaySchema(query.substring(14), databaseLocation);
+            displaySchema(query.substring(15), databaseLocation);
         }
 
         else if (query.startsWith("display info ")) {
-            displayInfo(query.substring(12));
+            displayInfo(query.substring(13));
         } else if (query.startsWith("select")) {
             select(query.substring(6));
         }
@@ -153,6 +153,8 @@ public class DMLParser {
 
     private static boolean displaySchema(String tableName, String databaseLocation) {
 
+        tableName = tableName.strip().split(";")[0];
+
         TableSchema tableSchema = Catalog.getTableSchema(tableName);
         if (tableSchema != null) {
 
@@ -168,6 +170,8 @@ public class DMLParser {
     }
 
     private static boolean displayInfo(String tableName) {
+
+        tableName = tableName.strip().split(";")[0];
 
         TableSchema tableSchema = Catalog.getTableSchema(tableName);
 
