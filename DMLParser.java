@@ -39,27 +39,53 @@ public class DMLParser {
 
             ArrayList<AttributeSchema> attributeSchemas = tableSchema.getAttributeSchema();
 
+            try {
             for ( int i = 0; i < attributeSchemas.size(); i++) {
                 String type = attributeSchemas.get(i).getType();
                 String value = attrs[i];
     
                 if (type.equals("integer")) {
-                    values.add(Integer.parseInt(value));
+                    // Check if the value consists only of numeric characters
+                    if (value.matches("\\d+")) {
+                        values.add(Integer.parseInt(value));
+                    } else {
+                        throw new IllegalArgumentException("Invalid value for integer type: " + value);
+                    }
                 }
                 else if (type.equals("string")) {
                     // account for "" on either side of val
-                    values.add(value.substring(1, value.length() - 1));
+                    if (String.valueOf(value.charAt(0)).equals("\"") && String.valueOf(value.charAt(value.length()-1)).equals("\""))
+                        values.add(value.substring(1, value.length() - 1));
+                    else {
+                        throw new IllegalArgumentException("Invalid value for string type: " + value);
+                    }
                 }
                 else if (type.equals("char")) {
                     // account for '' on either side of val
-                    values.add(value.charAt(1));
+                    if (value.length() == 3) { // Check if it's a single character enclosed in single quotes
+                        values.add(value.charAt(1));
+                    } else {
+                        throw new IllegalArgumentException("Invalid value for char type: " + value);
+                    }
                 }
                 else if (type.equals("double")) {
-                    values.add(Double.parseDouble(value));
+                    // Check if the value is a valid double (numeric characters with optional decimal point)
+                    if (value.matches("-?\\d+(\\.\\d+)?")) {
+                        values.add(Double.parseDouble(value));
+                    } else {
+                        throw new IllegalArgumentException("Invalid value for double type: " + value);
+                    } 
                 }
                 else if (type.equals("boolean")) {
-                    values.add(Boolean.parseBoolean(value));
+                    if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
+                        values.add(Boolean.parseBoolean(value));
+                    } else {
+                        throw new IllegalArgumentException("Invalid value for boolean type: " + value);
+                    }
                 }
+            }
+            } catch (Exception e) {
+                // print error and go to command loop
             }
             
             Record record = new Record(values);
