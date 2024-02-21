@@ -3,6 +3,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
@@ -76,8 +78,25 @@ public class StorageManager {
     }
     }
 
- 
+    public static void writeTableToDisk (String tableName) {
+
+        // Create actual table file (they are stored as files)
+
+        try {
+            Path folder = Paths.get(Main.databaseLocation);
+    
+            // Create the file within the folder
+            Path filePath = folder.resolve(tableName);
+    
+            // Write content to the file
+            byte[] bytes = ByteBuffer.allocate(4).putInt(0).array();
         
+            Files.write(filePath, bytes);
+        } catch (Exception e) {
+            System.out.println("Error writing table: " + tableName + " to hardware.");
+        }
+    }
+
 
     public static int readNumberOfPages(String tableName) {
         System.out.println("Getting number of pages from table " + tableName);
