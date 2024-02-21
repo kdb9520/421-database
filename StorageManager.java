@@ -34,7 +34,7 @@ public class StorageManager {
             byte[] pageData = buffer.array();
 
             // Create and return a new Page object
-            Page page = Page.deserialize(pageData, tableName);
+            Page page = Page.deserialize(pageData, tableName, pageNumber);
             if (page != null) {
                 return page;
             }
