@@ -98,4 +98,35 @@ public class Record {
         return record;
     }
 
+    // Alternate toString method if objects need to be specified
+    public String toString(String tableName) {
+        
+        TableSchema tableSchema = Catalog.getTableSchema(tableName);
+
+        ArrayList<AttributeSchema> attributeSchemas = tableSchema.getAttributeSchema();
+        
+        String output = "( ";
+
+        for ( int i = 0; i < attributeSchemas.size(); i++) {
+            String type = attributeSchemas.get(i).getType();
+            Object value = values.get(i);
+
+            if (type.equals("integer")) {
+                int n = (int) value;
+                output = output + n;
+            }
+            else if (type.equals("string")) {
+                String s = (String) value;
+                output = output + s;
+            }
+            else if (type.equals("char")) {
+                char c = (char) value;
+                output = output + c;
+            }
+            output = output + " ";
+        }
+        output = output + ")";
+        return output;
+    }
+
 }

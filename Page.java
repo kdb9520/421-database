@@ -181,7 +181,7 @@ public class Page {
     public String toString() {
         String pageString = "";
         for (Record record : records) {
-            pageString += record.toString();
+            pageString += record.toString(this.tableName);
         }
         return pageString;
     }
