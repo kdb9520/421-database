@@ -67,18 +67,23 @@ public class DMLParser {
                         } else {
                             throw new IllegalArgumentException("Invalid value for integer type: " + value);
                         }
-                    } else if (type.equals("string")) {
+                    } else if (type.startsWith("varchar")) {
                         // account for "" on either side of val
                         if (String.valueOf(value.charAt(0)).equals("\"")
                                 && String.valueOf(value.charAt(value.length() - 1)).equals("\""))
                             values.add(value.substring(1, value.length() - 1));
                         else {
-                            throw new IllegalArgumentException("Invalid value for string type: " + value);
+                            throw new IllegalArgumentException("Invalid value for varchar type: " + value);
                         }
-                    } else if (type.equals("char")) {
+                    } else if (type.startsWith("char")) {
                         // account for '' on either side of val
-                        if (value.length() == 3) { // Check if it's a single character enclosed in single quotes
-                            values.add(value.charAt(1));
+                        // Get the number between ()
+                        int numberOfChars = Integer.parseInt(type.substring(type.indexOf("(")+1, type.indexOf(")")));
+                        // If it has char(size) characters or less, pad if needed and at it
+                        if (value.length() <= numberOfChars+2) { // Check if it's right length excluding the ''
+                            String concatValue = value.substring(1, value.length()-1);
+                            String paddedString = String.format("%-" + numberOfChars + "s", concatValue);
+                            values.add(paddedString);
                         } else {
                             throw new IllegalArgumentException("Invalid value for char type: " + value);
                         }
@@ -132,7 +137,7 @@ public class DMLParser {
 
                     // If its less than the first value of next page (i+1) then it belongs to page i
                     // Type cast appropiately then compare records
-                    if (primaryKeyType.equals("Integer")) {
+                    if (primaryKeyType.equals("integer")) {
                         if ((Integer) record.getAttribute(primaryKeyCol) < (Integer) next.getFirstRecord(i)) {
                             // Add the record to the page. Check if it split page or not
                             Page result = BufferManager.getPage(tableName, i).addRecord(record);
@@ -149,7 +154,7 @@ public class DMLParser {
                             }
                             return;
                         }
-                    } else if (primaryKeyType.equals("String")) {
+                    } else if (primaryKeyType.equals("string")) {
 
                         if (record.getAttribute(primaryKeyCol).toString()
                                 .compareTo(next.getFirstRecord(i).toString()) <= 0) {
@@ -163,8 +168,10 @@ public class DMLParser {
                             }
                             return;
                         }
-                    } else if (primaryKeyType.equals("Char")) {
-                        if ((char) record.getAttribute(primaryKeyCol) < (char) next.getFirstRecord(i)) {
+                    } else if (primaryKeyType.equals("char")) {
+                        String recordString = (String) record.getAttribute(primaryKeyCol);
+                        String nextRecordString = (String)  next.getFirstRecord(i);
+                        if (recordString.compareTo(nextRecordString) <= 0) {
                             // Add the record to the page. Check if it split page or not
                             Page result = BufferManager.getPage(tableName, i).addRecord(record);
                             // If we split then add the new page to our page list.
@@ -209,7 +216,7 @@ public class DMLParser {
                 // Loop through the table and print each page
                 // For each page in table tableName
                 int num_pages = tableSchema.getIndexList().size();
-                for (int i = 0; i <= num_pages; i++) {
+                for (int i = 0; i < num_pages; i++) {
                     Page page = BufferManager.getPage(tableName, i);
                     System.out.println(page.toString());
                 }
