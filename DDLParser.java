@@ -274,11 +274,7 @@ public class DDLParser {
             // insert
             for (Record record: recordsOld){
 
-                // committing right now, but this line might not actually be necessary since it is done in insert
-                record = recordaddAtributeValueHelper(record, attributeType, value);
-                if(record == null){
-                    return;
-                }
+
                 ArrayList<Object> attrs = record.getValues();
                 // build a new query for insert operation
                 StringBuilder tempQuery = new StringBuilder(temp + " values(");
@@ -291,7 +287,7 @@ public class DDLParser {
                     c += 1;
 
                 }
-
+                tempQuery.append(" " + value);
                 tempQuery.append(");");
 
                 // insert the new record
@@ -330,64 +326,4 @@ public class DDLParser {
 
     }
 
-    public static Record recordaddAtributeValueHelper(Record record, String type, String value){
-        try{
-            if (type.equals("integer")) {
-                // Check if the value consists only of numeric characters
-                if (value.matches("\\d+")) {
-                    record.setAttribute(Integer.parseInt(value));
-                    return record;
-                } else {
-                    throw new IllegalArgumentException("Invalid value for integer type: " + value);
-                }
-            } else if (type.equals("string")) {
-                // account for "" on either side of val
-                if (String.valueOf(value.charAt(0)).equals("\"")
-                        && String.valueOf(value.charAt(value.length() - 1)).equals("\"")) {
-                    record.setAttribute(value.substring(1, value.length() - 1));
-                    return record;
-                }
-                else {
-                    throw new IllegalArgumentException("Invalid value for string type: " + value);
-                }
-            } else if (type.equals("char")) {
-                // account for '' on either side of val
-                if (value.length() == 3) { // Check if it's a single character enclosed in single quotes
-                    record.setAttribute(value.charAt(1));
-                    return record;
-                } else {
-                    throw new IllegalArgumentException("Invalid value for char type: " + value);
-                }
-            } else if (type.equals("double")) {
-                // Check if the value is a valid double (numeric characters with optional
-                // decimal point)
-                if (value.matches("-?\\d+(\\.\\d+)?")) {
-                    record.setAttribute(Double.parseDouble(value));
-                    return record;
-                } else {
-                    throw new IllegalArgumentException("Invalid value for double type: " + value);
-                }
-            } else if (type.equals("boolean")) {
-                if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
-                    record.setAttribute(Boolean.parseBoolean(value));
-                    return record;
-                } else {
-                    throw new IllegalArgumentException("Invalid value for boolean type: " + value);
-                }
-            }
-
-            else{
-                System.err.println("Invalid type");
-                return null;
-            }
-        }
-        catch (Exception e){
-            // print error and go to command loop
-            System.out.println("Invalid default value");
-            System.out.println(e.getMessage());
-
-            return null;
-        }
-
-    }
 }
