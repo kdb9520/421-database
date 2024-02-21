@@ -173,31 +173,15 @@ public class DMLParser {
                             // If we split (result != null) then add the new page to our page list.
                             if (result != null) {
                                 // Add new page to our page
-                                tableSchema.getIndexList().add(i + 1, numPages); // TODO maybe need to change this to not be getIndexList. This may work as is
-                                
-                                //update index list
+                                tableSchema.getIndexList().add(i + 1, numPages);
+                                // Update all pages in the buffer pool list to have the correct page number
                                 BufferManager.updatePageNumbersOnSplit(tableName, result.getPageNumber());
-
-                                // To do: 
-                                // All pages actively in the pageBuffer have a pageNumber attribute
-                                // If these aren't updated then when they are written to hardware it will overwrite information
-                                // Example page1 page2 page3 page4
-                                // We split page 1 so now there's a new page (lets call it 1.5) between page 1 and page 2
-                                // page0 page0.5  page1 page2 page3 
-                                // [0,4,1,2,3]
-                                // Issue:
-                                // Once we insert into tableSchema indexList page1.5 in the right index, pushing other values to the side, the page number of all pages in buffermanager must be updated
-                                // to be +1 their current value, otherwise when it asks storageManager to write it storageManager will overwrite this new page we made
-                                // Alterante solution is the value of each item in indexList is not the index the page is stored at, but rather the page number that it is? Idk about this solution
-                                // Would require some changes to Storagemanager to make sure its all written at right spot and may not work
-
-                                // Anyway whatever fix is inserted here needs to be done for the other types as well when they split pages
                                 BufferManager.addPageToBuffer(result);
                                 return;
                             }
                             return;
                         }
-                    } else if (primaryKeyType.equals("string")) {
+                    } else if (primaryKeyType.startsWith("varchar")) {
 
                         if (record.getAttribute(primaryKeyCol).toString()
                                 .compareTo(next.getFirstRecord(i).toString()) <= 0) {
@@ -206,12 +190,14 @@ public class DMLParser {
                             // If we split then add the new page to our page list.
                             if (result != null) {
                                 tableSchema.getIndexList().add(i + 1, numPages);
+                                // Update all pages in the buffer pool list to have the correct page number
+                                BufferManager.updatePageNumbersOnSplit(tableName, result.getPageNumber());
                                 BufferManager.addPageToBuffer(result);
                                 return;
                             }
                             return;
                         }
-                    } else if (primaryKeyType.equals("char")) {
+                    } else if (primaryKeyType.startsWith("char")) {
                         String recordString = (String) record.getAttribute(primaryKeyCol);
                         String nextRecordString = (String)  next.getFirstRecord(i);
                         // If this record is <= next record this is our page!
@@ -221,6 +207,42 @@ public class DMLParser {
                             // If we split then add the new page to our page list.
                             if (result != null) {
                                 tableSchema.getIndexList().add(i + 1, numPages);
+                                // Update all pages in the buffer pool list to have the correct page number
+                                BufferManager.updatePageNumbersOnSplit(tableName, result.getPageNumber());
+                                BufferManager.addPageToBuffer(result);
+                                return;
+                            }
+                            return;
+                        }
+                    } else if (primaryKeyType.equals("double")) {
+                        if ((Double) record.getAttribute(primaryKeyCol) < (Double) next.getFirstRecord(i)) {
+                            // Add the record to the page. Check if it split page or not
+                            // addRecord returns a new Page object if it split
+                            Page result = BufferManager.getPage(tableName, i).addRecord(record);
+
+                            // If we split (result != null) then add the new page to our page list.
+                            if (result != null) {
+                                // Add new page to our page
+                                tableSchema.getIndexList().add(i + 1, numPages);
+                                // Update all pages in the buffer pool list to have the correct page number
+                                BufferManager.updatePageNumbersOnSplit(tableName, result.getPageNumber());
+                                BufferManager.addPageToBuffer(result);
+                                return;
+                            }
+                            return;
+                        }
+                    } else if (primaryKeyType.equals("boolean")) {
+                        if ((Boolean) record.getAttribute(primaryKeyCol) < (Boolean) next.getFirstRecord(i)) {
+                            // Add the record to the page. Check if it split page or not
+                            // addRecord returns a new Page object if it split
+                            Page result = BufferManager.getPage(tableName, i).addRecord(record);
+
+                            // If we split (result != null) then add the new page to our page list.
+                            if (result != null) {
+                                // Add new page to our page
+                                tableSchema.getIndexList().add(i + 1, numPages);
+                                // Update all pages in the buffer pool list to have the correct page number
+                                BufferManager.updatePageNumbersOnSplit(tableName, result.getPageNumber());
                                 BufferManager.addPageToBuffer(result);
                                 return;
                             }
@@ -228,19 +250,22 @@ public class DMLParser {
                         }
                     }
 
+
+                // Cycled through all pages -> Record belongs on the last page of the table
+
+                // Insert the record into the last page of the table
+                Page lastPage = BufferManager.getPage(tableName, numPages - 1).addRecord(record);
+
+                if (lastPage != null) {
+                    tableSchema.getIndexList().add(numPages, numPages); // is this insert right?
+
+                    // Update all pages in the buffer pool list to have the correct page number
+                    BufferManager.updatePageNumbersOnSplit(tableName, lastPage.getPageNumber());
+                    BufferManager.addPageToBuffer(lastPage);
+                    return;
                 }
-                // If we make it here then the record belongs in a new page at the end of the
-                // list.
-                // Create page
-                Page newPage = BufferManager.createPage(tableName, numPages);
-                // Add record to page
-                newPage.addRecord(record);
-                tableSchema.addToIndexList(numPages);
             }
-            // if there are no pages
-
         }
-
     }
 
     public static void select(String query) {
