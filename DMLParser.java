@@ -175,7 +175,9 @@ public class DMLParser {
                                 // Add new page to our page
                                 tableSchema.getIndexList().add(i + 1, numPages); // TODO maybe need to change this to not be getIndexList. This may work as is
                                 
-                                
+                                //update index list
+                                BufferManager.updatePageNumbersOnSplit(tableName, result.getPageNumber());
+
                                 // To do: 
                                 // All pages actively in the pageBuffer have a pageNumber attribute
                                 // If these aren't updated then when they are written to hardware it will overwrite information

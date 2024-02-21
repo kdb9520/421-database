@@ -4,7 +4,6 @@ import java.util.ArrayList;
 public class BufferManager {
     //private Map<Integer, Page> bufferPool; // Map page number to page data
     private static ArrayList<Page> bufferPool;
-    private static final int bufferSize = 50; // Size of buffer pool
 
     static{
         bufferPool = new ArrayList<>();
@@ -19,7 +18,7 @@ public class BufferManager {
         }
             // Page is not in buffer pool, so read it from disk
             Page page = StorageManager.readPageFromDisk(tableName, pageNumber);
-            if (bufferPool.size() + 1 >= bufferSize) {
+            if (bufferPool.size() + 1 >= Main.bufferSize) {
                 // Buffer pool is full, evict a page using some policy (e.g., LRU)
                 evictPage();
             }
@@ -43,7 +42,7 @@ public class BufferManager {
             }
         }
             // Page is not in the buffer pool, add it
-            if (bufferPool.size() + 1 >= bufferSize) {
+            if (bufferPool.size() + 1 >= Main.bufferSize) {
                 // Buffer pool is full, evict a page using some policy (e.g., LRU)
                 evictPage();
             }
@@ -71,7 +70,7 @@ public class BufferManager {
         // First create a page
         Page page = new Page(tableName, pageNumber, null);
         // Add it to buffer
-        if (bufferPool.size() >= bufferSize) {
+        if (bufferPool.size() >= Main.bufferSize) {
             // Buffer pool is full, evict a page using some policy (e.g., LRU)
             evictPage();
         }
@@ -102,11 +101,20 @@ public class BufferManager {
     public static void addPageToBuffer(Page page){
         // First create a page
         // Add it to buffer
-        if (bufferPool.size() + 1 >= bufferSize) {
+        if (bufferPool.size() + 1 >= Main.bufferSize) {
             // Buffer pool is full, evict a page using some policy (e.g., LRU)
             evictPage();
         }
         // Add the new page to buffer pool
         bufferPool.add(page);
+    }
+    // updates the page numbers of all pages in the buffer pool if a page split occurred
+    public static void updatePageNumbersOnSplit (String tableName, int newPageNumber) {
+        for (Page page : bufferPool) {
+            int currentPageNumber = page.getPageNumber();
+            if (page.getTableName().equals(tableName) && currentPageNumber >= newPageNumber) {
+                page.setPageNumber(currentPageNumber + 1);
+            }
+        }
     }
 }
