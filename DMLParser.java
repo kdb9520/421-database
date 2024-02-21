@@ -31,7 +31,13 @@ public class DMLParser {
 
         String[] tuples = remaining.split(",");
 
+        boolean previousRecordFail = false;
         for (String tuple : tuples) {
+            
+            if (previousRecordFail == true) {
+                break;
+            }
+
             String valString = tuple.strip().split("[()]")[1];
             String[] attrs = valString.strip().split(" ");
             
@@ -86,6 +92,12 @@ public class DMLParser {
             }
             } catch (Exception e) {
                 // print error and go to command loop
+                System.out.println("Error with inserting record: " + tuple);
+                System.out.println(e.getMessage());
+                System.out.println("If there were records inputted previous to this record, they have been successfuly inserted.");
+                System.out.println("All records after the failed record were not inserted.");
+                previousRecordFail = true;
+                break;
             }
             
             Record record = new Record(values);
