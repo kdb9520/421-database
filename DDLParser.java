@@ -292,10 +292,6 @@ public class DDLParser {
 
 
 
-            // todo delete old table/schema
-            StorageManager.deleteTable(tableSchemaOld.tableName);
-
-
         }
 
 
