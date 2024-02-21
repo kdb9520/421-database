@@ -112,7 +112,7 @@ public class Catalog {
             if (t.tableName.equals(name)){
                 tableSchemas.remove(t);
                 System.out.println("Schema removed from Catalog");
-                break;
+                return;
 
             }
 

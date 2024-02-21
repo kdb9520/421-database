@@ -283,12 +283,15 @@ public class DDLParser {
             // these are based off insert from the DML
             pageIndexList = tableSchema.getIndexList();
 
-            // rename
-            for(int i = 0; i < numPages; i ++){
+
+            //rename
+            int i = 0;
+            do {
                 Page page = BufferManager.getPage(name,i);
                 page.tableName = name;
+                i ++;
 
-            }
+            }while (i < numPages);
 
 
 
