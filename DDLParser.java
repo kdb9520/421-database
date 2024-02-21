@@ -256,14 +256,17 @@ public class DDLParser {
             // these are based off insert from the DML
             ArrayList<Integer> pageIndexList = tableSchema.getIndexList();
 
-            // add all old records from new array
-            for(int i = 0; i < numPages; i ++){
+            int i = 0;
+
+            // add all old records to new array
+            do {
                 Page page = BufferManager.getPage(name,i);
                 ArrayList<Record> t = page.getRecords();
-
                 recordsOld.addAll(t);
+                i += 1;
+            }while (i < numPages);
 
-            }
+
 
             // set default attribute, if any
             // insert
@@ -285,7 +288,7 @@ public class DDLParser {
 
 
             //rename
-            int i = 0;
+            i = 0;
             do {
                 Page page = BufferManager.getPage(name,i);
                 page.tableName = name;
