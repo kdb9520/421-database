@@ -122,8 +122,8 @@ public class Main {
 
     private static void shutdown() {
         System.out.println("Shutting down database...");
-        BufferManager.purgeBuffer();
         Catalog.writeCatalog(databaseLocation);
+        BufferManager.purgeBuffer();
         System.out.println("Shutdown complete.");
         System.exit(0);
     }
