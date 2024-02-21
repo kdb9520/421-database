@@ -47,10 +47,12 @@ public class DMLParser {
                     values.add(Integer.parseInt(value));
                 }
                 else if (type.equals("string")) {
-                    values.add(value);
+                    // account for "" on either side of val
+                    values.add(value.substring(1, value.length() - 1));
                 }
                 else if (type.equals("char")) {
-                    values.add(value.charAt(0));
+                    // account for '' on either side of val
+                    values.add(value.charAt(1));
                 }
                 else if (type.equals("double")) {
                     values.add(Double.parseDouble(value));
