@@ -26,82 +26,90 @@ public class DMLParser {
     public static void insert(String query) {
         String[] splitQuery = query.split(" ", 3);
         String tableName = splitQuery[0];
-        String remaining = query.substring(query.indexOf('('));
+        String remaining = "";
+        if (query.contains("(")) {
+            remaining = query.substring(query.indexOf('('));
+        } else {
+            System.err.println("Invalid insert no values provided");
+            return;
+        }
         TableSchema tableSchema = Catalog.getTableSchema(tableName);
+        if (tableSchema == null) {
+            System.err.println("Table: " + tableName + "does not exist");
+            return;
+        }
 
         String[] tuples = remaining.split(",");
 
         boolean previousRecordFail = false;
         for (String tuple : tuples) {
-            
+
             if (previousRecordFail == true) {
                 break;
             }
 
             String valString = tuple.strip().split("[()]")[1];
             String[] attrs = valString.strip().split(" ");
-            
+
             ArrayList<Object> values = new ArrayList<>();
 
             ArrayList<AttributeSchema> attributeSchemas = tableSchema.getAttributeSchema();
 
             try {
-            for ( int i = 0; i < attributeSchemas.size(); i++) {
-                String type = attributeSchemas.get(i).getType();
-                String value = attrs[i];
-    
-                if (type.equals("integer")) {
-                    // Check if the value consists only of numeric characters
-                    if (value.matches("\\d+")) {
-                        values.add(Integer.parseInt(value));
-                    } else {
-                        throw new IllegalArgumentException("Invalid value for integer type: " + value);
+                for (int i = 0; i < attributeSchemas.size(); i++) {
+                    String type = attributeSchemas.get(i).getType();
+                    String value = attrs[i];
+
+                    if (type.equals("integer")) {
+                        // Check if the value consists only of numeric characters
+                        if (value.matches("\\d+")) {
+                            values.add(Integer.parseInt(value));
+                        } else {
+                            throw new IllegalArgumentException("Invalid value for integer type: " + value);
+                        }
+                    } else if (type.equals("string")) {
+                        // account for "" on either side of val
+                        if (String.valueOf(value.charAt(0)).equals("\"")
+                                && String.valueOf(value.charAt(value.length() - 1)).equals("\""))
+                            values.add(value.substring(1, value.length() - 1));
+                        else {
+                            throw new IllegalArgumentException("Invalid value for string type: " + value);
+                        }
+                    } else if (type.equals("char")) {
+                        // account for '' on either side of val
+                        if (value.length() == 3) { // Check if it's a single character enclosed in single quotes
+                            values.add(value.charAt(1));
+                        } else {
+                            throw new IllegalArgumentException("Invalid value for char type: " + value);
+                        }
+                    } else if (type.equals("double")) {
+                        // Check if the value is a valid double (numeric characters with optional
+                        // decimal point)
+                        if (value.matches("-?\\d+(\\.\\d+)?")) {
+                            values.add(Double.parseDouble(value));
+                        } else {
+                            throw new IllegalArgumentException("Invalid value for double type: " + value);
+                        }
+                    } else if (type.equals("boolean")) {
+                        if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
+                            values.add(Boolean.parseBoolean(value));
+                        } else {
+                            throw new IllegalArgumentException("Invalid value for boolean type: " + value);
+                        }
                     }
                 }
-                else if (type.equals("string")) {
-                    // account for "" on either side of val
-                    if (String.valueOf(value.charAt(0)).equals("\"") && String.valueOf(value.charAt(value.length()-1)).equals("\""))
-                        values.add(value.substring(1, value.length() - 1));
-                    else {
-                        throw new IllegalArgumentException("Invalid value for string type: " + value);
-                    }
-                }
-                else if (type.equals("char")) {
-                    // account for '' on either side of val
-                    if (value.length() == 3) { // Check if it's a single character enclosed in single quotes
-                        values.add(value.charAt(1));
-                    } else {
-                        throw new IllegalArgumentException("Invalid value for char type: " + value);
-                    }
-                }
-                else if (type.equals("double")) {
-                    // Check if the value is a valid double (numeric characters with optional decimal point)
-                    if (value.matches("-?\\d+(\\.\\d+)?")) {
-                        values.add(Double.parseDouble(value));
-                    } else {
-                        throw new IllegalArgumentException("Invalid value for double type: " + value);
-                    } 
-                }
-                else if (type.equals("boolean")) {
-                    if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
-                        values.add(Boolean.parseBoolean(value));
-                    } else {
-                        throw new IllegalArgumentException("Invalid value for boolean type: " + value);
-                    }
-                }
-            }
             } catch (Exception e) {
                 // print error and go to command loop
                 System.out.println("Error with inserting record: " + tuple);
                 System.out.println(e.getMessage());
-                System.out.println("If there were records inputted previous to this record, they have been successfuly inserted.");
+                System.out.println(
+                        "If there were records inputted previous to this record, they have been successfuly inserted.");
                 System.out.println("All records after the failed record were not inserted.");
                 previousRecordFail = true;
                 break;
             }
-            
-            Record record = new Record(values);
 
+            Record record = new Record(values);
 
             if (tableSchema.getIndexList().size() == 0) {
                 Page newPage = BufferManager.createPage(tableName, 0);
@@ -121,14 +129,14 @@ public class DMLParser {
                         break;
                     }
                     next = BufferManager.getPage(tableName, i + 1);
-    
+
                     // If its less than the first value of next page (i+1) then it belongs to page i
                     // Type cast appropiately then compare records
                     if (primaryKeyType.equals("Integer")) {
                         if ((Integer) record.getAttribute(primaryKeyCol) < (Integer) next.getFirstRecord(i)) {
                             // Add the record to the page. Check if it split page or not
                             Page result = BufferManager.getPage(tableName, i).addRecord(record);
-    
+
                             // If we split then add the new page to our page list.
                             if (result != null) {
                                 // Add new page to our page
@@ -136,13 +144,13 @@ public class DMLParser {
                                 BufferManager.addPageToBuffer(result);
                                 // Go in and update page number of all pages current in here
                                 // Update our pageIndexList, and update pageNumber every Page after this page
-    
+
                                 return;
                             }
                             return;
                         }
                     } else if (primaryKeyType.equals("String")) {
-    
+
                         if (record.getAttribute(primaryKeyCol).toString()
                                 .compareTo(next.getFirstRecord(i).toString()) <= 0) {
                             // Add the record to the page. Check if it split page or not
@@ -168,7 +176,7 @@ public class DMLParser {
                             return;
                         }
                     }
-    
+
                 }
                 // If we make it here then the record belongs in a new page at the end of the
                 // list.
@@ -178,8 +186,7 @@ public class DMLParser {
                 newPage.addRecord(record);
                 tableSchema.getIndexList().add(numPages);
             }
-             // if there are no pages
-
+            // if there are no pages
 
         }
 
@@ -197,16 +204,16 @@ public class DMLParser {
             if (tableSchema != null) {
                 // need to test formating of toStrings
                 System.out.println(tableSchema.toString());
-    
+
                 // Print all values in table
                 // Loop through the table and print each page
                 // For each page in table tableName
                 int num_pages = tableSchema.getIndexList().size();
-                for(int i = 0; i <= num_pages; i++){
+                for (int i = 0; i <= num_pages; i++) {
                     Page page = BufferManager.getPage(tableName, i);
                     System.out.println(page.toString());
                 }
-    
+
             } else {
                 System.err.println("Table: " + tableName + "does not exist");
             }
@@ -248,11 +255,10 @@ public class DMLParser {
             int numOfPages = tableSchema.getIndexList().size();
             int numOfRecords = 0;
 
-            for(int i = 0; i < numOfPages; i++){
+            for (int i = 0; i < numOfPages; i++) {
                 Page page = BufferManager.getPage(tableName, i);
                 numOfRecords += page.getRecords().size();
             }
-
 
             System.out.println("Table: " + tableName + "\nSchema: " + schema + "\nNumber of Pages: " + numOfPages
                     + "\nNumber of Records: " + numOfRecords);
