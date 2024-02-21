@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Page {
-    public static final int PAGE_SIZE = 8;
     int numRecords;
     int pageNumber;
     String tableName;
@@ -31,8 +30,8 @@ public class Page {
             try{ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(pageData);
                 DataInputStream dataInputStream = new DataInputStream(byteArrayInputStream);
         
-                // Read page number
-                int pNum = dataInputStream.readInt();
+                // Read page number; Old implementation may not need
+                // int pNum = dataInputStream.readInt();
         
                 // Read number of records
                 numRecords = dataInputStream.readInt();
@@ -73,7 +72,7 @@ public class Page {
     }
 
     public Page addRecord(Record r) {
-        if (numRecords + 1 > PAGE_SIZE) {
+        if (numRecords + 1 > Main.pageSize) {
             Page newPage = splitPage();
             records.add(r);
             return newPage;

@@ -22,9 +22,10 @@ public class StorageManager {
             // Calculate the position in the file where the page starts
             TableSchema tableSchema = Catalog.getTableSchema(tableName);
             ArrayList<Integer> indexList = tableSchema.getIndexList();
-            long position = indexList.get(pageNumber) * Page.PAGE_SIZE;
+            // Set buffer to position of the right page
+            long position = indexList.get(pageNumber) * Main.pageSize;
             // Allocate a ByteBuffer to hold the page data
-            ByteBuffer buffer = ByteBuffer.allocate(Page.PAGE_SIZE);
+            ByteBuffer buffer = ByteBuffer.allocate(Main.pageSize);
 
             // Read the page data from the file into the buffer
             fileChannel.read(buffer, position);
@@ -33,7 +34,11 @@ public class StorageManager {
             byte[] pageData = buffer.array();
 
             // Create and return a new Page object
-            return new Page(tableName, pageNumber, pageData);
+            Page page = Page.deserialize(pageData, tableName);
+            if (page != null) {
+                return page;
+            }
+            throw new IllegalArgumentException("Error reading from table: " + tableName);
         } catch (IOException e) {
             // Handle the exception (e.g., log it or throw a runtime exception)
             e.printStackTrace();
@@ -55,27 +60,25 @@ public class StorageManager {
             
             // Create the file if it doesn't exist
             if (!file.exists()) {
-                file.createNewFile();
+                System.out.println("Error: Table: " + page.getTableName() + " does not exist");
             }
-
-        try (FileOutputStream fos = new FileOutputStream(file, true)) {
+            FileOutputStream fos = new FileOutputStream(file, true);
+       
             // Calculate the offset where this page should be written
             TableSchema tableSchema = Catalog.getTableSchema(page.getTableName());
             ArrayList<Integer> indexList = tableSchema.getIndexList();
             //Integer pageIndex = ;
-            long offset = indexList.get(page.getPageNumber()) * Page.PAGE_SIZE;
+            long offset = indexList.get(page.getPageNumber()) * Main.pageSize;
             // Move the file pointer to the correct position
             fos.getChannel().position(offset);
             // Write the page data to the file
             fos.write(page.serialize());
+            fos.close();
         } catch (IOException e) {
             // Handle the exception (e.g., log it or throw a runtime exception)
             e.printStackTrace();
         }
-    } catch (IOException e) {
-        // Handle the exception (e.g., log it or throw a runtime exception)
-        e.printStackTrace();
-    }
+
     }
 
     public static void writeTableToDisk (String tableName) {
