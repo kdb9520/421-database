@@ -272,6 +272,7 @@ public class DDLParser {
             // insert
             for (Record record: recordsOld){
                 record.setAttribute(value);
+
                 StorageManager.insert(temp, record, tableSchema);
 
             }
