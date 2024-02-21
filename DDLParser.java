@@ -275,7 +275,7 @@ public class DDLParser {
 
             // remove old table from catalog and StorageManager
             Catalog.removeSchema(name);
-            StorageManager.deleteTable(name);
+            BufferManager.deleteTable(name, numPages);
 
             //rename to the new table
             numPages = tableSchema.getIndexList().size();
