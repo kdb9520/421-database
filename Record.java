@@ -119,12 +119,12 @@ public class Record {
                 int n = (int) value;
                 output = output + n;
             }
-            else if (type.equals("string")) {
+            else if (type.startsWith("varchar")) {
                 String s = (String) value;
                 output = output + s;
             }
-            else if (type.equals("char")) {
-                char c = (char) value;
+            else if (type.startsWith("char")) {
+                String c = (String) value;
                 output = output + c;
             }
             else if (type.equals("double")) {
