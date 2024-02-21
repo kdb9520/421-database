@@ -52,6 +52,10 @@ public class Record {
         return size;
     }
 
+    public ArrayList<Object> getValues(){
+        return this.values;
+    }
+
     // Helper method to calculate the size of a list
     private int calculateListSize(ArrayList<Object> list) {
         int size = 4; // For the list size (integer is 4 bytes)
