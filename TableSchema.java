@@ -20,7 +20,7 @@ public class TableSchema {
     public TableSchema(TableSchema old){
         this.tableName = old.tableName;
         this.tableNumber = old.tableNumber;
-        this.attributes = old.attributes;
+        this.attributes = new ArrayList<>(old.attributes);
         this.pageIndexes = old.pageIndexes;
 
 

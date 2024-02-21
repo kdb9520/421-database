@@ -107,10 +107,12 @@ public class Catalog {
      *
      */
     public static void removeSchema(String name){
-        for(TableSchema t : tableSchemas){
+        for(int i = 0; i < tableSchemas.size(); i ++){
+            TableSchema t = tableSchemas.get(i);
             if (t.tableName.equals(name)){
                 tableSchemas.remove(t);
                 System.out.println("Schema removed from Catalog");
+                break;
 
             }
 
