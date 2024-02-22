@@ -299,6 +299,9 @@ public class DDLParser {
                 value = parsed[7];
                 value = value.substring(0, value.length() - 1);
             }
+            else{
+                value = "null";
+            }
 
             // make a new attribute schema
             AttributeSchema a = new AttributeSchema(attributeName, parsed[5], null);
