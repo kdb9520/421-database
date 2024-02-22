@@ -295,7 +295,6 @@ public class DMLParser {
 
     public static void select(String query) {
         String[] splitQuery = query.strip().split(" ");
-        System.out.println(splitQuery[0]);
         if (splitQuery[0].equals("*")) {
             String tableName = splitQuery[2];
             // gets rid of semicolon after table name
