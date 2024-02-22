@@ -85,12 +85,21 @@ public class DMLParser {
                                 throw new IllegalArgumentException("Invalid value for integer type: " + value);
                             }
                         } else if (type.startsWith("varchar")) {
+                            int numberOfChars = Integer.parseInt(type.substring(type.indexOf("(") + 1, type.indexOf(")")));
                             // account for "" on either side of val
-                            if (String.valueOf(value.charAt(0)).equals("\"")
-                                    && String.valueOf(value.charAt(value.length() - 1)).equals("\""))
+                            if (String.valueOf(value.charAt(0)).equals("'")
+                                    && String.valueOf(value.charAt(value.length() - 1)).equals("'"))
                                 values.add(value.substring(1, value.length() - 1));
                             else {
                                 throw new IllegalArgumentException("Invalid value for varchar type: " + value);
+                            }
+                            // If it has char(size) characters or less, pad if needed and at it
+                            if (value.length() <= numberOfChars + 2) { // Check if it's right length excluding the ''
+                                String concatValue = value.substring(1, value.length() - 1);
+                                String paddedString = String.format("%-" + numberOfChars + "s", concatValue);
+                                values.add(paddedString);
+                            } else {
+                                throw new IllegalArgumentException("Invalid value for char type: " + value);
                             }
                         } else if (type.startsWith("char")) {
                             // account for '' on either side of val
