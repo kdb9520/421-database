@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.ServiceConfigurationError;
 
 // todo make static
 
@@ -69,6 +70,11 @@ public class DDLParser {
 
             String[] attribute_data = arg.split(" ");
             String attribute = attribute_data[0].trim();
+            if(attribute_data.length < 2){
+                System.err.println("Invalid query!");
+                System.out.println("");
+                return;
+            }
             String type = attribute_data[1].trim();
             String[] constraints = Arrays.copyOfRange(attribute_data, 2, attribute_data.length);
             if(type.contains("varchar") || type.contains("char")){

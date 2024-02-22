@@ -31,8 +31,8 @@ public class Main {
             if (started) {
                 Scanner scanner = new Scanner(System.in);
                 StringBuilder commandBuilder = new StringBuilder();
-
                 while (true) {
+                    System.out.print("> ");
                     String line = readCommand(scanner);
                     commandBuilder.append(line).append("\n");
 
@@ -65,7 +65,7 @@ public class Main {
 
     // Helper method to read a command from the user
     private static String readCommand(Scanner scanner) {
-        System.out.print("> ");
+
         return scanner.nextLine().trim();
     }
 
