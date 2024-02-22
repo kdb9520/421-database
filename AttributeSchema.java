@@ -33,10 +33,10 @@ public class AttributeSchema {
         this.defaultValue = dVal;
     }
 
-    public AttributeSchema(String attrName, String attrType, boolean isNull, boolean isPK, boolean isUN) {
+    public AttributeSchema(String attrName, String attrType, boolean isNotNull, boolean isPK, boolean isUN) {
         this.attrName = attrName;
         this.attrType = attrType;
-        this.isNotNull = !isNull;
+        this.isNotNull = isNotNull;
         this.isPrimaryKey = isPK;
         this.isUnique = isUN;
     }
@@ -92,7 +92,7 @@ public class AttributeSchema {
             dataOutputStream.write(attrTypeBytes);
 
         
-              // Serialize isNull, isPK, and isUN directly
+              // Serialize isNotNull, isPK, and isUN directly
               dataOutputStream.writeBoolean(isNotNull);
               dataOutputStream.writeBoolean(isPrimaryKey);
               dataOutputStream.writeBoolean(isUnique);
@@ -112,11 +112,11 @@ public class AttributeSchema {
         buffer.get(stringBytes);
         String attrName =  new String(stringBytes);
         String attrType = readString(buffer);
-        boolean isNull = buffer.get() != 0;
+        boolean isNotNull = buffer.get() != 0;
         boolean isPK = buffer.get() != 0;
         boolean isUN = buffer.get() != 0;
 
-        return new AttributeSchema(attrName, attrType, isNull, isPK, isUN);
+        return new AttributeSchema(attrName, attrType, isNotNull, isPK, isUN);
     }
 
     private static String readString(ByteBuffer buffer) {
@@ -131,7 +131,7 @@ public class AttributeSchema {
         return "AttributeSchema{" +
                 "attrName='" + attrName + '\'' +
                 ", attrType='" + attrType + '\'' +
-                ", isNull=" + isNotNull +
+                ", isNotNull=" + isNotNull +
                 ", isPK=" + isPrimaryKey +
                 ", isUN=" + isUnique +
                 '}';
