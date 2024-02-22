@@ -45,7 +45,7 @@ public class DMLParser {
         boolean previousRecordFail = false;
         for (String tuple : tuples) {
 
-            if (previousRecordFail == true) {
+            if (previousRecordFail) {
                 break;
             }
 

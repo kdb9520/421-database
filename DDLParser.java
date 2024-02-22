@@ -1,3 +1,4 @@
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -306,6 +307,7 @@ public class DDLParser {
             // make a new attribute schema
             AttributeSchema a = new AttributeSchema(attributeName, parsed[5], null);
             tableSchema.addAttribute(a);
+            ArrayList<AttributeSchema> attributeSchemas= tableSchema.attributes;
 
 
             // get the old records
@@ -338,13 +340,23 @@ public class DDLParser {
                 ArrayList<Object> attrs = record.getValues();
                 // build a new query for insert operation
                 StringBuilder tempQuery = new StringBuilder(temp + " values(");
-                int c = 0;
-                for(Object attr : attrs){
-                    tempQuery.append(attr.toString());
+
+                for(int c = 0; c < attrs.size(); c ++){
+                    Object v = attrs.get(c);
+                    String attribute = attributeSchemas.get(c).attrType;
+                    if(attribute.contains("varchar") || attribute.contains("char")){
+                        tempQuery.append("'");
+                    }
+                    tempQuery.append(v.toString().trim());
+                    if(attribute.contains("varchar") || attribute.contains("char")){
+                        tempQuery.append("'");
+                    }
                     if(c != attrs.size() - 1){
                         tempQuery.append(" ");
                     }
-                    c += 1;
+
+
+
 
                 }
                 tempQuery.append(" " + value);
