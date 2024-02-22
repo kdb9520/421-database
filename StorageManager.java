@@ -47,14 +47,15 @@ public class StorageManager {
     }
 
     public static void writePageToDisk(Page page) {
-        System.out.println("Writing page " + page.getPageNumber() + " to disk: " + page);
-
         try {
             File file = new File(Main.databaseLocation + File.separator + page.getTableName());
             
             // Create the file if it doesn't exist
             if (!file.exists()) {
-                System.out.println("Error: Table: " + page.getTableName() + " does not exist");
+                // If file does not exist this means the table was dropped when page was still in page buffer
+                // Just return and we good to go
+                return;
+                //System.out.println("Error: Table: " + page.getTableName() + " does not exist");
             }
             FileOutputStream fos = new FileOutputStream(file);
         
@@ -151,7 +152,17 @@ public class StorageManager {
     }
 
     public static void deleteTable(String tableName){
+        Path filePath = Paths.get(Main.databaseLocation, tableName);
+        File f = new File(Main.databaseLocation + File.separator + tableName);
 
+        if(f.exists() && !f.isDirectory()) { 
+            try{
+            
+                Files.delete(filePath);
+            } catch(Exception e){
+                e.printStackTrace();
+            }
+        }
     }
 
 }

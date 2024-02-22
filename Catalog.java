@@ -3,6 +3,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Vector;
 
@@ -107,9 +108,21 @@ public class Catalog {
      *
      */
     public static void removeSchema(String name){
+        Path filePath = Paths.get(Main.databaseLocation + "/Schema", name);
+        File f = new File(Main.databaseLocation + "/Schema" + File.separator + name);
+        if(f.exists() && !f.isDirectory()) { 
+            try{
+            
+                Files.delete(filePath);
+            } catch(Exception e){
+                e.printStackTrace();
+            }
+        }
+       
+       
         for(int i = 0; i < tableSchemas.size(); i ++){
             TableSchema t = tableSchemas.get(i);
-            if (t.tableName.equals(name)){
+            if (t.tableName.equals(name)){ // We found the tableschema to remove!
                 tableSchemas.remove(t);
                 System.out.println("Schema removed from Catalog");
                 return;
@@ -117,7 +130,7 @@ public class Catalog {
             }
 
         }
-        System.err.println("Error removing table schema from catalog");
+        System.err.println("Error: Table " + name + " does not exist");
     }
 
     /**

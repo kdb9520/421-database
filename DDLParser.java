@@ -153,7 +153,7 @@ public class DDLParser {
         }
 
         String name = args[2];
-
+        name = name.substring(0,name.length()-1); // Remove the ; from end
 
         StorageManager.deleteTable(name);
         Catalog.removeSchema(name);
