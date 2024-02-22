@@ -73,6 +73,10 @@ public class AttributeSchema {
         return this.attrType;
     }
 
+    public boolean getIsNotNull () {
+        return this.isNotNull;
+    }
+
     // Serialize in format: [AttrNameSize,AttrName,AttrTypeSize,AttrType,isNull,isPK,isUN,defaultValue]
     public byte[] serialize() {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
