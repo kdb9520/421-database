@@ -220,6 +220,7 @@ public class DDLParser {
             Catalog.updateCatalog(tableSchemaOld);                     // adds the copy to the catalog
             String temp = "temp";
             tableSchema.tableName = temp;                               // temp name for other copy
+            StorageManager.writeTableToDisk(temp);
 
             // if invalid args, return
             if(parsed.length != 6 && parsed.length != 8){
@@ -259,7 +260,7 @@ public class DDLParser {
 
 
             // get the number of pages
-            int numPages = tableSchema.getIndexList().size();
+            int numPages = tableSchemaOld.getIndexList().size();
 
             // these are based off insert from the DML
             ArrayList<Integer> pageIndexList = tableSchema.getIndexList();
@@ -304,7 +305,7 @@ public class DDLParser {
 
             // remove old table from catalog and StorageManager
             Catalog.removeSchema(name);
-            BufferManager.deleteTable(name, numPages);
+            BufferManager.deleteTable(name);
 
             //rename to the new table
             numPages = tableSchema.getIndexList().size();

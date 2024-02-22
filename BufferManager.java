@@ -79,9 +79,9 @@ public class BufferManager {
         return page;
     }
 
-    public static void deleteTable(String tableName, int pageNumber){
+    public static void deleteTable(String tableName){
         for(Page p : bufferPool){
-            if(p.getTableName().equals(tableName) && p.getPageNumber() == pageNumber){
+            if(p.getTableName().equals(tableName)){
                 bufferPool.remove(p);
             }
 
