@@ -148,6 +148,11 @@ public class TableSchema {
         this.pageIndexes.add(pageIndex);
     }
 
+    public int getRecordSize(){
+        // Get the size of a record
+        return 0;
+    }
+
     @Override
     public String toString() {
         return "TableSchema{" +
