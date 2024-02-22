@@ -229,4 +229,48 @@ public class Record {
         output = output + ")";
         return output;
     }
+
+    // Gets the size of a given record
+    // Requires  tablename to get schema for the attributes
+    // Record format: [int bitMapSize] [bitMap] [value 1] [value 2] [value 3] [value 5] example: value 4 is null
+    public int getRecordSize(String tableName){
+        int size = 0;
+        try{
+            
+            size += 4; // bitMapSize integer
+            size += nullBitmap.toByteArray().length; // Add amount of bytes the nullbitmap is
+            TableSchema tableSchema = Catalog.getTableSchema(tableName);
+            ArrayList<AttributeSchema> attributes = tableSchema.getAttributeSchema();
+
+            // Go through each attribute/value, only add the size of the values that are not null
+            for (int i = 0; i < values.size(); i++) {
+                if(!nullBitmap.get(i)){ // If this value is not null
+                    String type = attributes.get(i).getType(); // Get what type it is
+                    // Now increment size depending on what type it is
+                    if (type.equals("integer")) {
+                        size += Integer.SIZE; // Integer is size 4, no padding or values before it
+                        } else if (type.startsWith("varchar")) {
+                            size += 4; // Varchar is stored as [sizeofString] [string], add integer to size
+                            // Convert object to string
+                            String value = (String) values.get(i);
+                            // Get how many bytes the actual string is
+                            size += value.getBytes("UTF-8").length;
+                            } else if (type.startsWith("char")) {
+                                // Char is already padded
+                                // We need to change this formula after we alter when we pad char TODO
+                                String value = (String) values.get(i);
+                                size += value.getBytes("UTF-8").length;
+                            } else if (type.equals("double")) {
+                                size += Double.SIZE;
+                            } else if (type.equals("boolean")) {
+                                size += 1; // Its 1 bit not byte??
+                            }
+                }
+                }
+        } catch(Exception e){
+            System.out.println("Error when calculating record size");
+        }
+        
+        return size;
+    }
 }

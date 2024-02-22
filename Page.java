@@ -103,7 +103,15 @@ public class Page {
 
     // This needs to be done in order oof
     public Page addRecord(Record r) {
-        if (this.records.size() + 1 > Main.pageSize) {
+        // Get the size of this record
+        int size_of_this_record = r.getRecordSize(tableName);
+        // Check if adding this record will put us above the size
+        int curPageSize = 0;
+        // Calculate current size of page
+        for(Record tempRecord : records){
+            curPageSize += tempRecord.getRecordSize(tableName);
+        }
+        if (curPageSize + size_of_this_record > Main.pageSize) {
             Page newPage = splitPage();
             // Find where to insert it in the page
             for(int i = 0; i < records.size(); i++){
