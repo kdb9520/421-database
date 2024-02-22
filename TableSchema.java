@@ -2,6 +2,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.rmi.ServerError;
 import java.util.ArrayList;
 
 public class TableSchema {
@@ -31,10 +32,15 @@ public class TableSchema {
         this.tableName = tableName;
     }
 
-    public void dropAttribute(String attrName) {
+    public Boolean dropAttribute(String attrName) {
         // remove an attribute and its data from the table
         int i = findAttribute(attrName);
+        if(attributes.get(i).isPrimaryKey){
+            System.err.println("This column is a primary key, cannot be removed");
+            return false;
+        }
         this.attributes.remove(i);
+        return true;
     }
 
     public void addAttribute(AttributeSchema a) {

@@ -227,6 +227,10 @@ public class DDLParser {
                 System.err.println("Invalid syntax");
                 return;
             }
+
+            if(!tableSchema.dropAttribute(parsed[4])){
+                return;
+            }
             int position = tableSchema.findAttribute(parsed[4]);
 
 
@@ -241,7 +245,7 @@ public class DDLParser {
                 page.removeValue(position);
                 i += 1;
             }while (i < numPages);
-            tableSchema.dropAttribute(parsed[4]);
+
 
         }
 
