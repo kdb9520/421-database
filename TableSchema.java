@@ -43,6 +43,7 @@ public class TableSchema {
     }
 
     public int findAttribute(String attrName){
+        attrName = attrName.substring(0, attrName.length() - 1);
         for (int i = 0; i < attributes.size(); i++){
             if (attrName.equals(attributes.get(i).attrName)){
                 return i;

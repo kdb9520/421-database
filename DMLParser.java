@@ -75,7 +75,12 @@ public class DMLParser {
                     String value = attrs[i];
 
                     if (value.equals("null")) {
+                        
+                        if (attributeSchemas.get(i).getIsNotNull()) {
+                            throw new IllegalArgumentException("Invalid 'null' value for not null attribute");
+                        }
                         values.add(null);
+
                     } else {
                         if (type.equals("integer")) {
                             // Check if the value consists only of numeric characters
