@@ -163,7 +163,8 @@ public class DDLParser {
 
         StorageManager.deleteTable(name);
         Catalog.removeSchema(name);
-
+        // get rid of all pages in the buffermanager with that name are removed
+        BufferManager.deleteTable(name);
     }
 
     /**
