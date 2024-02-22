@@ -2,6 +2,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.rmi.ServerError;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ServiceConfigurationError;
@@ -67,6 +68,7 @@ public class DDLParser {
         ArrayList <AttributeSchema> attributes = new ArrayList<>();
         ArrayList <String> attributeNames = new ArrayList<>();
 
+        Boolean primaryKeyExists = false;
         // for each "column" in the create table query, perform validation
         // and create new attribute objects
         for (String arg : args) {
@@ -95,6 +97,11 @@ public class DDLParser {
                 type = type.substring(0, type.indexOf('('));
             }
             typeValid = checkTypes(type);
+            for(String p : constraints){
+                if(p.equals("primarykey")){
+                    primaryKeyExists = true;
+                }
+            }
             constraintsValid = checkConstraint(constraints);
             if (typeValid && constraintsValid) {
                 AttributeSchema a = new AttributeSchema(attribute, attribute_data[1], constraints);
@@ -112,6 +119,12 @@ public class DDLParser {
             }
 
         }
+
+        if(!primaryKeyExists){
+            System.err.println("No primary key in this table, not being created");
+            return;
+        }
+
 
         //create new table schema
         TableSchema tableSchema = new TableSchema(tableName, attributes);
