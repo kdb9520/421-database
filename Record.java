@@ -31,7 +31,7 @@ public class Record {
     public void calculateBitSet() {
         for (int i = 0; i < values.size(); i++) {
             if (this.values.get(i) == null && !this.nullBitmap.get(i)) {
-                this.nullBitmap.flip(i);
+                this.nullBitmap.set(i);
             }
         }
     }
@@ -204,8 +204,11 @@ public class Record {
         for (int i = 0; i < attributeSchemas.size(); i++) {
             String type = attributeSchemas.get(i).getType();
             Object value = values.get(i);
-
-            if (type.equals("integer")) {
+            if (value.equals("null")){
+                String s = "null";
+                output = output + s;
+            }
+            else if (type.equals("integer")) {
                 Integer n = (Integer) value;
                 output = output + n;
             } else if (type.startsWith("varchar")) {
