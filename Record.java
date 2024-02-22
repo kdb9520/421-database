@@ -19,7 +19,7 @@ public class Record {
 
     public Record(ArrayList<Object> newValues) {
         this.values = newValues;
-        this.nullBitmap = new BitSet();
+        this.nullBitmap = new BitSet(this.values.size());
         calculateBitSet();
     }
 
@@ -105,9 +105,11 @@ public class Record {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 DataOutputStream dataOutputStream = new DataOutputStream(bos);) {
             // write null bitmap
-            byte[] nullBitmapBytes = nullBitmap.toByteArray();
-            dataOutputStream.writeInt(nullBitmapBytes.length);
-            dataOutputStream.write(nullBitmapBytes);
+            int[] nullBitmapIndices = nullBitmap.stream().toArray();
+            dataOutputStream.writeInt(nullBitmapIndices.length);
+            for (int i : nullBitmapIndices) {
+                dataOutputStream.writeInt(i);
+            }
 
             // For each attribute we need to know its type before writing to hardware
             for (int i = 0; i < attributes.size(); i++) {
@@ -146,10 +148,10 @@ public class Record {
 
         // reads null Bitmap
         BitSet nullBitmap = new BitSet();
-        int nullBitmapSize = buffer.getInt();
-        byte[] nullBitmapBytes = new byte[nullBitmapSize];
-        buffer.get(nullBitmapBytes);
-        nullBitmap = BitSet.valueOf(nullBitmapBytes);
+        int numIntsToRead = buffer.getInt();
+        for (int i = 0; i < numIntsToRead; i++) {
+            nullBitmap.set(buffer.getInt());
+        }
 
         for (int i = 0; i < attributes.size(); i++) {
             // check if type is not null
@@ -204,7 +206,7 @@ public class Record {
         for (int i = 0; i < attributeSchemas.size(); i++) {
             String type = attributeSchemas.get(i).getType();
             Object value = values.get(i);
-            if (value.equals("null")){
+            if (value == null){
                 String s = "null";
                 output = output + s;
             }
