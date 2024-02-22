@@ -279,8 +279,7 @@ public class DMLParser {
                     Page lastPage = BufferManager.getPage(tableName, numPages - 1).addRecord(record);
 
                     if (lastPage != null) {
-                        tableSchema.getIndexList().add(numPages, numPages);
-
+                        tableSchema.addToIndexList(numPages);
                         // Update all pages in the buffer pool list to have the correct page number
                         BufferManager.updatePageNumbersOnSplit(tableName, lastPage.getPageNumber());
                         BufferManager.addPageToBuffer(lastPage);
@@ -296,7 +295,6 @@ public class DMLParser {
 
     public static void select(String query) {
         String[] splitQuery = query.strip().split(" ");
-        System.out.println(splitQuery[0]);
         if (splitQuery[0].equals("*")) {
             String tableName = splitQuery[2];
             // gets rid of semicolon after table name
