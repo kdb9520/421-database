@@ -222,6 +222,25 @@ public class DDLParser {
 
 
         if(operation.equals("drop")){
+            // create a copy
+            if(parsed.length != 5){
+                System.err.println("Invalid syntax");
+                return;
+            }
+            int position = tableSchema.findAttribute(parsed[4]);
+
+
+            int numPages = tableSchema.getIndexList().size();
+            ArrayList<Record> recordsOld = new ArrayList<>();
+            // these are based off insert from the DML
+
+            int i = 0;
+            // add all old records to new array
+            do {
+                Page page = BufferManager.getPage(name,i);
+                page.removeValue(position);
+                i += 1;
+            }while (i < numPages);
             tableSchema.dropAttribute(parsed[4]);
 
         }

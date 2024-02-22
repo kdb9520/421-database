@@ -101,6 +101,12 @@ public class Page {
         this.tableName = tableName;
     }
 
+    public void removeValue(int pos){
+        for(int i = 0; i < this.records.size(); i ++){
+            this.records.get(i).getValues().remove(pos);
+
+        }
+    }
     // This needs to be done in order oof
     public Page addRecord(Record r) {
         // Get the size of this record
