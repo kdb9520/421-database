@@ -74,53 +74,57 @@ public class DMLParser {
                     String type = attributeSchemas.get(i).getType();
                     String value = attrs[i];
 
-                    if (type.equals("integer")) {
-                        // Check if the value consists only of numeric characters
-                        if (value.matches("\\d+")) {
-                            values.add(Integer.parseInt(value));
-                        } else {
-                            throw new IllegalArgumentException("Invalid value for integer type: " + value);
-                        }
-                    } else if (type.startsWith("varchar")) {
-                        // account for "" on either side of val
-                        if (String.valueOf(value.charAt(0)).equals("\"")
-                                && String.valueOf(value.charAt(value.length() - 1)).equals("\""))
-                            values.add(value.substring(1, value.length() - 1));
-                        else {
-                            throw new IllegalArgumentException("Invalid value for varchar type: " + value);
-                        }
-                    } else if (type.startsWith("char")) {
-                        // account for '' on either side of val
-                        // Get the number between ()
-                        int numberOfChars = Integer.parseInt(type.substring(type.indexOf("(")+1, type.indexOf(")")));
+                    if (value.equals("null")) {
+                        values.add(null);
+                    } else {
+                        if (type.equals("integer")) {
+                            // Check if the value consists only of numeric characters
+                            if (value.matches("\\d+")) {
+                                values.add(Integer.parseInt(value));
+                            } else {
+                                throw new IllegalArgumentException("Invalid value for integer type: " + value);
+                            }
+                        } else if (type.startsWith("varchar")) {
+                            // account for "" on either side of val
+                            if (String.valueOf(value.charAt(0)).equals("\"")
+                                    && String.valueOf(value.charAt(value.length() - 1)).equals("\""))
+                                values.add(value.substring(1, value.length() - 1));
+                            else {
+                                throw new IllegalArgumentException("Invalid value for varchar type: " + value);
+                            }
+                        } else if (type.startsWith("char")) {
+                            // account for '' on either side of val
+                            // Get the number between ()
+                            int numberOfChars = Integer.parseInt(type.substring(type.indexOf("(") + 1, type.indexOf(")")));
 
-                        // If not wrapped in a '' then we know its not a char
-                        if(!value.startsWith("'") || !value.endsWith("'")){
-                            throw new IllegalArgumentException("Invalid value for char type: " + value);
-                        }
+                            // If not wrapped in a '' then we know its not a char
+                            if (!value.startsWith("'") || !value.endsWith("'")) {
+                                throw new IllegalArgumentException("Invalid value for char type: " + value);
+                            }
 
-                        // If it has char(size) characters or less, pad if needed and at it
-                        if (value.length() <= numberOfChars+2) { // Check if it's right length excluding the ''
-                            String concatValue = value.substring(1, value.length()-1);
-                            String paddedString = String.format("%-" + numberOfChars + "s", concatValue);
-                            values.add(paddedString);
-                        } else {
-                            throw new IllegalArgumentException("Invalid value for char type: " + value);
-                        }
+                            // If it has char(size) characters or less, pad if needed and at it
+                            if (value.length() <= numberOfChars + 2) { // Check if it's right length excluding the ''
+                                String concatValue = value.substring(1, value.length() - 1);
+                                String paddedString = String.format("%-" + numberOfChars + "s", concatValue);
+                                values.add(paddedString);
+                            } else {
+                                throw new IllegalArgumentException("Invalid value for char type: " + value);
+                            }
 
-                    } else if (type.equals("double")) {
-                        // Check if the value is a valid double (numeric characters with optional
-                        // decimal point)
-                        if (value.matches("-?\\d+(\\.\\d+)?")) {
-                            values.add(Double.parseDouble(value));
-                        } else {
-                            throw new IllegalArgumentException("Invalid value for double type: " + value);
-                        }
-                    } else if (type.equals("boolean")) {
-                        if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
-                            values.add(Boolean.parseBoolean(value));
-                        } else {
-                            throw new IllegalArgumentException("Invalid value for boolean type: " + value);
+                        } else if (type.equals("double")) {
+                            // Check if the value is a valid double (numeric characters with optional
+                            // decimal point)
+                            if (value.matches("-?\\d+(\\.\\d+)?")) {
+                                values.add(Double.parseDouble(value));
+                            } else {
+                                throw new IllegalArgumentException("Invalid value for double type: " + value);
+                            }
+                        } else if (type.equals("boolean")) {
+                            if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
+                                values.add(Boolean.parseBoolean(value));
+                            } else {
+                                throw new IllegalArgumentException("Invalid value for boolean type: " + value);
+                            }
                         }
                     }
                 }
