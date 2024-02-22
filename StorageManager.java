@@ -62,7 +62,6 @@ public class StorageManager {
             // Calculate the offset where this page should be written
             TableSchema tableSchema = Catalog.getTableSchema(page.getTableName());
             ArrayList<Integer> indexList = tableSchema.getIndexList();
-
             // First we update the num_pages if it changed
             
             // Read the current num_pages to see if its up to date
@@ -72,7 +71,7 @@ public class StorageManager {
                 fos.write(bytes);
             }
             //Integer pageIndex = ;
-            long offset = indexList.get(page.getPageNumber()) * Main.pageSize + 4;
+            long offset = (indexList.get(page.getPageNumber()) * Main.pageSize) + 4;
             // Move the file pointer to the correct position
             fos.getChannel().position(offset);
             // Write the page data to the file

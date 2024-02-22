@@ -97,6 +97,10 @@ public class Page {
         return false;
     }
 
+    public void setTableName(String tableName){
+        this.tableName = tableName;
+    }
+
     // This needs to be done in order oof
     public Page addRecord(Record r) {
         if (this.records.size() + 1 > Main.pageSize) {
@@ -146,6 +150,8 @@ public class Page {
 
         // Add the second half of records to the new page
         newPage.records.addAll(page2);
+        newPage.setTableName(tableName);
+        
         return newPage;
         // Ask buffer manager to create empty page then throw values into it
 

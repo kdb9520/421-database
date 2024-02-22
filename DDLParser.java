@@ -54,6 +54,12 @@ public class DDLParser {
         // get table name
         String tableName = query.substring(12, startIndex).trim();
 
+        // Check if table with that name already exists
+        if (Catalog.getTableSchema(tableName) != null) {
+            System.err.println("Error table: '" + tableName + "' already exists.");
+            return;
+        }
+
         //todo look into format string "create table %s (%s)"
         String[] args = query.substring(startIndex  + 1, endIndex).split(",");  // each "attribute and its type/constraint"
         Boolean typeValid = true;
@@ -163,7 +169,8 @@ public class DDLParser {
 
         StorageManager.deleteTable(name);
         Catalog.removeSchema(name);
-
+        // get rid of all pages in the buffermanager with that name are removed
+        BufferManager.deleteTable(name);
     }
 
     /**
