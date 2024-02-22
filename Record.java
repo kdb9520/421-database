@@ -111,23 +111,26 @@ public class Record {
 
             // For each attribute we need to know its type before writing to hardware
             for (int i = 0; i < attributes.size(); i++) {
-                String type = attributes.get(i).getType();
-                // Now write the bytes depending on what the type is
-                if (type.equals("integer")) {
-                    dataOutputStream.writeInt((Integer) values.get(i));
-                } else if (type.startsWith("varchar")) {
-                    // Convert object to string, write how many bytes it is and write the string
-                    String value = (String) values.get(i);
-                    dataOutputStream.writeInt(value.length());
-                    dataOutputStream.write(value.getBytes("UTF-8"));
-                } else if (type.startsWith("char")) {
-                    String value = (String) values.get(i);
-                    dataOutputStream.write(value.getBytes("UTF-8"));
-                } else if (type.equals("double")) {
-                    dataOutputStream.writeDouble((Double) values.get(i));
-                } else if (type.equals("boolean")) {
-                    dataOutputStream.writeBoolean((boolean) values.get(i));
+                if (!nullBitmap.get(i)) {
+                    String type = attributes.get(i).getType();
+                    // Now write the bytes depending on what the type is
+                    if (type.equals("integer")) {
+                        dataOutputStream.writeInt((Integer) values.get(i));
+                    } else if (type.startsWith("varchar")) {
+                        // Convert object to string, write how many bytes it is and write the string
+                        String value = (String) values.get(i);
+                        dataOutputStream.writeInt(value.length());
+                        dataOutputStream.write(value.getBytes("UTF-8"));
+                    } else if (type.startsWith("char")) {
+                        String value = (String) values.get(i);
+                        dataOutputStream.write(value.getBytes("UTF-8"));
+                    } else if (type.equals("double")) {
+                        dataOutputStream.writeDouble((Double) values.get(i));
+                    } else if (type.equals("boolean")) {
+                        dataOutputStream.writeBoolean((boolean) values.get(i));
+                    }
                 }
+
             }
             return bos.toByteArray();
         } catch (IOException e) {
