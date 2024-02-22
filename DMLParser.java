@@ -1,3 +1,4 @@
+import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -73,53 +74,57 @@ public class DMLParser {
                     String type = attributeSchemas.get(i).getType();
                     String value = attrs[i];
 
-                    if (type.equals("integer")) {
-                        // Check if the value consists only of numeric characters
-                        if (value.matches("\\d+")) {
-                            values.add(Integer.parseInt(value));
-                        } else {
-                            throw new IllegalArgumentException("Invalid value for integer type: " + value);
-                        }
-                    } else if (type.startsWith("varchar")) {
-                        // account for "" on either side of val
-                        if (String.valueOf(value.charAt(0)).equals("\"")
-                                && String.valueOf(value.charAt(value.length() - 1)).equals("\""))
-                            values.add(value.substring(1, value.length() - 1));
-                        else {
-                            throw new IllegalArgumentException("Invalid value for varchar type: " + value);
-                        }
-                    } else if (type.startsWith("char")) {
-                        // account for '' on either side of val
-                        // Get the number between ()
-                        int numberOfChars = Integer.parseInt(type.substring(type.indexOf("(")+1, type.indexOf(")")));
+                    if (value.equals("null")) {
+                        values.add(null);
+                    } else {
+                        if (type.equals("integer")) {
+                            // Check if the value consists only of numeric characters
+                            if (value.matches("\\d+")) {
+                                values.add(Integer.parseInt(value));
+                            } else {
+                                throw new IllegalArgumentException("Invalid value for integer type: " + value);
+                            }
+                        } else if (type.startsWith("varchar")) {
+                            // account for "" on either side of val
+                            if (String.valueOf(value.charAt(0)).equals("\"")
+                                    && String.valueOf(value.charAt(value.length() - 1)).equals("\""))
+                                values.add(value.substring(1, value.length() - 1));
+                            else {
+                                throw new IllegalArgumentException("Invalid value for varchar type: " + value);
+                            }
+                        } else if (type.startsWith("char")) {
+                            // account for '' on either side of val
+                            // Get the number between ()
+                            int numberOfChars = Integer.parseInt(type.substring(type.indexOf("(") + 1, type.indexOf(")")));
 
-                        // If not wrapped in a '' then we know its not a char
-                        if(!value.startsWith("'") || !value.endsWith("'")){
-                            throw new IllegalArgumentException("Invalid value for char type: " + value);
-                        }
+                            // If not wrapped in a '' then we know its not a char
+                            if (!value.startsWith("'") || !value.endsWith("'")) {
+                                throw new IllegalArgumentException("Invalid value for char type: " + value);
+                            }
 
-                        // If it has char(size) characters or less, pad if needed and at it
-                        if (value.length() <= numberOfChars+2) { // Check if it's right length excluding the ''
-                            String concatValue = value.substring(1, value.length()-1);
-                            String paddedString = String.format("%-" + numberOfChars + "s", concatValue);
-                            values.add(paddedString);
-                        } else {
-                            throw new IllegalArgumentException("Invalid value for char type: " + value);
-                        }
+                            // If it has char(size) characters or less, pad if needed and at it
+                            if (value.length() <= numberOfChars + 2) { // Check if it's right length excluding the ''
+                                String concatValue = value.substring(1, value.length() - 1);
+                                String paddedString = String.format("%-" + numberOfChars + "s", concatValue);
+                                values.add(paddedString);
+                            } else {
+                                throw new IllegalArgumentException("Invalid value for char type: " + value);
+                            }
 
-                    } else if (type.equals("double")) {
-                        // Check if the value is a valid double (numeric characters with optional
-                        // decimal point)
-                        if (value.matches("-?\\d+(\\.\\d+)?")) {
-                            values.add(Double.parseDouble(value));
-                        } else {
-                            throw new IllegalArgumentException("Invalid value for double type: " + value);
-                        }
-                    } else if (type.equals("boolean")) {
-                        if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
-                            values.add(Boolean.parseBoolean(value));
-                        } else {
-                            throw new IllegalArgumentException("Invalid value for boolean type: " + value);
+                        } else if (type.equals("double")) {
+                            // Check if the value is a valid double (numeric characters with optional
+                            // decimal point)
+                            if (value.matches("-?\\d+(\\.\\d+)?")) {
+                                values.add(Double.parseDouble(value));
+                            } else {
+                                throw new IllegalArgumentException("Invalid value for double type: " + value);
+                            }
+                        } else if (type.equals("boolean")) {
+                            if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
+                                values.add(Boolean.parseBoolean(value));
+                            } else {
+                                throw new IllegalArgumentException("Invalid value for boolean type: " + value);
+                            }
                         }
                     }
                 }
@@ -149,124 +154,141 @@ public class DMLParser {
             } else {
                 // Get the primary key and its type so we can compare
                 int numPages = tableSchema.getIndexList().size();
+
                 // Get primary key col number so we can figure out where to insert this record
                 int primaryKeyCol = tableSchema.findPrimaryKeyColNum();
                 String primaryKeyType = tableSchema.getPrimaryKeyType();
-                // Loop through pages and find which one to insert record into. Look ahead algorithim
-                Page next = null;
+
+                boolean primaryKeyOverwriting = false;
                 for (int i = 0; i < numPages; i++) {
-                    // See if we are going to be out of bounds
-                    if (i + 1 >= numPages) {
-                        break;
-                    }
-                    // Get the next page (must use BufferManager to get it)
-                    next = BufferManager.getPage(tableName, i + 1);
-
-                    // If its less than the first value of next page (i+1) then it belongs to page i
-                    // Type cast appropiately then compare records
-                    if (primaryKeyType.equals("integer")) {
-                        if ((Integer) record.getAttribute(primaryKeyCol) < (Integer) next.getFirstRecord(i)) {
-                            // Add the record to the page. Check if it split page or not
-                            // addRecord returns a new Page object if it split
-                            Page result = BufferManager.getPage(tableName, i).addRecord(record);
-
-                            // If we split (result != null) then add the new page to our page list.
-                            if (result != null) {
-                                // Add new page to our page
-                                tableSchema.getIndexList().add(i + 1, numPages);
-                                // Update all pages in the buffer pool list to have the correct page number
-                                BufferManager.updatePageNumbersOnSplit(tableName, result.getPageNumber());
-                                BufferManager.addPageToBuffer(result);
-                                return;
-                            }
-                            return;
-                        }
-                    } else if (primaryKeyType.startsWith("varchar")) {
-
-                        if (record.getAttribute(primaryKeyCol).toString()
-                                .compareTo(next.getFirstRecord(i).toString()) <= 0) {
-                            // Add the record to the page. Check if it split page or not
-                            Page result = BufferManager.getPage(tableName, i).addRecord(record);
-                            // If we split then add the new page to our page list.
-                            if (result != null) {
-                                tableSchema.getIndexList().add(i + 1, numPages);
-                                // Update all pages in the buffer pool list to have the correct page number
-                                BufferManager.updatePageNumbersOnSplit(tableName, result.getPageNumber());
-                                BufferManager.addPageToBuffer(result);
-                                return;
-                            }
-                            return;
-                        }
-                    } else if (primaryKeyType.startsWith("char")) {
-                        String recordString = (String) record.getAttribute(primaryKeyCol);
-                        String nextRecordString = (String)  next.getFirstRecord(i);
-                        // If this record is <= next record this is our page!
-                        if (recordString.compareTo(nextRecordString) <= 0) {
-                            // Add the record to the page. Check if it split page or not
-                            Page result = BufferManager.getPage(tableName, i).addRecord(record);
-                            // If we split then add the new page to our page list.
-                            if (result != null) {
-                                tableSchema.getIndexList().add(i + 1, numPages);
-                                // Update all pages in the buffer pool list to have the correct page number
-                                BufferManager.updatePageNumbersOnSplit(tableName, result.getPageNumber());
-                                BufferManager.addPageToBuffer(result);
-                                return;
-                            }
-                            return;
-                        }
-                    } else if (primaryKeyType.equals("double")) {
-                        if ((Double) record.getAttribute(primaryKeyCol) < (Double) next.getFirstRecord(i)) {
-                            // Add the record to the page. Check if it split page or not
-                            // addRecord returns a new Page object if it split
-                            Page result = BufferManager.getPage(tableName, i).addRecord(record);
-
-                            // If we split (result != null) then add the new page to our page list.
-                            if (result != null) {
-                                // Add new page to our page
-                                tableSchema.getIndexList().add(i + 1, numPages);
-                                // Update all pages in the buffer pool list to have the correct page number
-                                BufferManager.updatePageNumbersOnSplit(tableName, result.getPageNumber());
-                                BufferManager.addPageToBuffer(result);
-                                return;
-                            }
-                            return;
-                        }
-                    } else if (primaryKeyType.equals("boolean")) {
-                        
-                        Boolean recordBoolean = (Boolean) record.getAttribute(primaryKeyCol);
-                        Boolean nextRecordBoolean = (Boolean)  next.getFirstRecord(i);
-                        
-                        if (recordBoolean.compareTo(nextRecordBoolean) <= 0) {
-                            // Add the record to the page. Check if it split page or not
-                            // addRecord returns a new Page object if it split
-                            Page result = BufferManager.getPage(tableName, i).addRecord(record);
-
-                            // If we split (result != null) then add the new page to our page list.
-                            if (result != null) {
-                                // Add new page to our page
-                                tableSchema.getIndexList().add(i + 1, numPages);
-                                // Update all pages in the buffer pool list to have the correct page number
-                                BufferManager.updatePageNumbersOnSplit(tableName, result.getPageNumber());
-                                BufferManager.addPageToBuffer(result);
-                                return;
-                            }
-                            return;
+                    Page page = BufferManager.getPage(tableName, i);
+                    for (Record r : page.getRecords()) {
+                        if (r.getAttribute(primaryKeyCol).equals(record.getAttribute(primaryKeyCol))) {
+                            primaryKeyOverwriting = true;
                         }
                     }
                 }
 
-                // Cycled through all pages -> Record belongs on the last page of the table
+                if (primaryKeyOverwriting == false) {
+                    // Loop through pages and find which one to insert record into. Look ahead algorithim
+                    Page next = null;
+                    for (int i = 0; i < numPages; i++) {
+                        // See if we are going to be out of bounds
+                        if (i + 1 >= numPages) {
+                            break;
+                        }
+                        // Get the next page (must use BufferManager to get it)
+                        next = BufferManager.getPage(tableName, i + 1);
 
-                // Insert the record into the last page of the table
-                Page lastPage = BufferManager.getPage(tableName, numPages - 1).addRecord(record);
+                        // If its less than the first value of next page (i+1) then it belongs to page i
+                        // Type cast appropiately then compare records
+                        if (primaryKeyType.equals("integer")) {
+                            if ((Integer) record.getAttribute(primaryKeyCol) < (Integer) next.getFirstRecord(i)) {
+                                // Add the record to the page. Check if it split page or not
+                                // addRecord returns a new Page object if it split
+                                Page result = BufferManager.getPage(tableName, i).addRecord(record);
 
-                if (lastPage != null) {
-                    tableSchema.getIndexList().add(numPages, numPages);
+                                // If we split (result != null) then add the new page to our page list.
+                                if (result != null) {
+                                    // Add new page to our page
+                                    tableSchema.getIndexList().add(i + 1, numPages);
+                                    // Update all pages in the buffer pool list to have the correct page number
+                                    BufferManager.updatePageNumbersOnSplit(tableName, result.getPageNumber());
+                                    BufferManager.addPageToBuffer(result);
+                                    return;
+                                }
+                                return;
+                            }
+                        } else if (primaryKeyType.startsWith("varchar")) {
 
-                    // Update all pages in the buffer pool list to have the correct page number
-                    BufferManager.updatePageNumbersOnSplit(tableName, lastPage.getPageNumber());
-                    BufferManager.addPageToBuffer(lastPage);
-                    return;
+                            if (record.getAttribute(primaryKeyCol).toString()
+                                    .compareTo(next.getFirstRecord(i).toString()) <= 0) {
+                                // Add the record to the page. Check if it split page or not
+                                Page result = BufferManager.getPage(tableName, i).addRecord(record);
+                                // If we split then add the new page to our page list.
+                                if (result != null) {
+                                    tableSchema.getIndexList().add(i + 1, numPages);
+                                    // Update all pages in the buffer pool list to have the correct page number
+                                    BufferManager.updatePageNumbersOnSplit(tableName, result.getPageNumber());
+                                    BufferManager.addPageToBuffer(result);
+                                    return;
+                                }
+                                return;
+                            }
+                        } else if (primaryKeyType.startsWith("char")) {
+                            String recordString = (String) record.getAttribute(primaryKeyCol);
+                            String nextRecordString = (String)  next.getFirstRecord(i);
+                            // If this record is <= next record this is our page!
+                            if (recordString.compareTo(nextRecordString) <= 0) {
+                                // Add the record to the page. Check if it split page or not
+                                Page result = BufferManager.getPage(tableName, i).addRecord(record);
+                                // If we split then add the new page to our page list.
+                                if (result != null) {
+                                    tableSchema.getIndexList().add(i + 1, numPages);
+                                    // Update all pages in the buffer pool list to have the correct page number
+                                    BufferManager.updatePageNumbersOnSplit(tableName, result.getPageNumber());
+                                    BufferManager.addPageToBuffer(result);
+                                    return;
+                                }
+                                return;
+                            }
+                        } else if (primaryKeyType.equals("double")) {
+                            if ((Double) record.getAttribute(primaryKeyCol) < (Double) next.getFirstRecord(i)) {
+                                // Add the record to the page. Check if it split page or not
+                                // addRecord returns a new Page object if it split
+                                Page result = BufferManager.getPage(tableName, i).addRecord(record);
+
+                                // If we split (result != null) then add the new page to our page list.
+                                if (result != null) {
+                                    // Add new page to our page
+                                    tableSchema.getIndexList().add(i + 1, numPages);
+                                    // Update all pages in the buffer pool list to have the correct page number
+                                    BufferManager.updatePageNumbersOnSplit(tableName, result.getPageNumber());
+                                    BufferManager.addPageToBuffer(result);
+                                    return;
+                                }
+                                return;
+                            }
+                        } else if (primaryKeyType.equals("boolean")) {
+                            
+                            Boolean recordBoolean = (Boolean) record.getAttribute(primaryKeyCol);
+                            Boolean nextRecordBoolean = (Boolean)  next.getFirstRecord(i);
+                            
+                            if (recordBoolean.compareTo(nextRecordBoolean) <= 0) {
+                                // Add the record to the page. Check if it split page or not
+                                // addRecord returns a new Page object if it split
+                                Page result = BufferManager.getPage(tableName, i).addRecord(record);
+
+                                // If we split (result != null) then add the new page to our page list.
+                                if (result != null) {
+                                    // Add new page to our page
+                                    tableSchema.getIndexList().add(i + 1, numPages);
+                                    // Update all pages in the buffer pool list to have the correct page number
+                                    BufferManager.updatePageNumbersOnSplit(tableName, result.getPageNumber());
+                                    BufferManager.addPageToBuffer(result);
+                                    return;
+                                }
+                                return;
+                            }
+                        }
+                    }
+
+                    // Cycled through all pages -> Record belongs on the last page of the table
+
+                    // Insert the record into the last page of the table
+                    Page lastPage = BufferManager.getPage(tableName, numPages - 1).addRecord(record);
+
+                    if (lastPage != null) {
+                        tableSchema.getIndexList().add(numPages, numPages);
+
+                        // Update all pages in the buffer pool list to have the correct page number
+                        BufferManager.updatePageNumbersOnSplit(tableName, lastPage.getPageNumber());
+                        BufferManager.addPageToBuffer(lastPage);
+                        return;
+                    }
+                } else {
+                    System.out.println("Error: A record with that primary key already exists.");
+                    System.out.println("Tuple " + tuple + " not inserted!\n");
                 }
             }
         }

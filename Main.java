@@ -52,9 +52,9 @@ public class Main {
                             commandBuilder.append(line.substring(index + 1).trim()).append("\n");
                         }
                     }
-                    else {
-                        System.out.println("Invalid Command: Semicolon required at the end of each command");
-                    }
+//                    else {
+//                        System.out.println("Invalid Command: Semicolon required at the end of each command");
+//                    }
                 }
             }
             else {
