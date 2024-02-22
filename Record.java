@@ -6,23 +6,40 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-
+import java.util.BitSet;
 
 public class Record {
     private ArrayList<Object> values;
+    private BitSet nullBitmap;
 
     public Record() {
         this.values = new ArrayList<>();
+        this.nullBitmap = new BitSet();
     }
 
-    public Record(ArrayList<Object> newValues){
+    public Record(ArrayList<Object> newValues) {
         this.values = newValues;
+        this.nullBitmap = new BitSet();
+        calculateBitSet();
     }
 
+    public Record(ArrayList<Object> newValues, BitSet nullBitmap) {
+        this.values = newValues;
+        this.nullBitmap = nullBitmap;
+    }
 
-    public void modifyAttribute(Object newValue, int index){
+    public void calculateBitSet() {
+        for (int i = 0; i < values.size(); i++) {
+            if (this.values.get(i) == null && !this.nullBitmap.get(i)) {
+                this.nullBitmap.flip(i);
+            }
+        }
+    }
+
+    public void modifyAttribute(Object newValue, int index) {
         this.values.set(index, newValue);
     }
+
     // Set the value of an attribute
     public void setAttribute(Object value) {
         values.add(value);
@@ -47,14 +64,14 @@ public class Record {
         size += calculateListSize(values);
 
         // Add sizes of attribute names and their corresponding values
-        for (Object attribute: values) {
+        for (Object attribute : values) {
             size += calculateObjectSize(attribute);
         }
 
         return size;
     }
 
-    public ArrayList<Object> getValues(){
+    public ArrayList<Object> getValues() {
         return this.values;
     }
 
@@ -66,13 +83,14 @@ public class Record {
         }
         return size;
     }
+
     // Helper method to calculate the size of an object (if it's serializable)
     private int calculateObjectSize(Object obj) {
         if (obj == null) {
             return 0;
         }
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-             ObjectOutputStream oos = new ObjectOutputStream(bos)) {
+                ObjectOutputStream oos = new ObjectOutputStream(bos)) {
             oos.writeObject(obj);
             return bos.size();
         } catch (IOException e) {
@@ -86,113 +104,120 @@ public class Record {
 
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 DataOutputStream dataOutputStream = new DataOutputStream(bos);) {
+            // write null bitmap
+            byte[] nullBitmapBytes = nullBitmap.toByteArray();
+            dataOutputStream.writeInt(nullBitmapBytes.length);
+            dataOutputStream.write(nullBitmapBytes);
 
-                    // For each attribute we need to know its type before writing to hardware
-                    for(int i = 0; i < attributes.size(); i++){
-                        String type = attributes.get(i).getType();
-                        // Now write the bytes depending on what the type is
-                        if(type.equals("integer")){
-                            dataOutputStream.writeInt((Integer) values.get(i));
-                        }
-                        else if(type.startsWith("varchar")){
-                            // Convert object to string, write how many bytes it is and write the string
-                            String value = (String) values.get(i);
-                            dataOutputStream.writeInt(value.length());
-                            dataOutputStream.write(value.getBytes("UTF-8"));
-                        }
-                        else if(type.startsWith("char")){
-                            String value = (String) values.get(i);
-                            dataOutputStream.write(value.getBytes("UTF-8"));
-                        }
-                        else if(type.equals("double")){
-                            dataOutputStream.writeDouble((Double) values.get(i));
-                        }
-                        else if(type.equals("boolean")){
-                            dataOutputStream.writeBoolean((boolean) values.get(i));
-                        }
+            // For each attribute we need to know its type before writing to hardware
+            for (int i = 0; i < attributes.size(); i++) {
+                if (!nullBitmap.get(i)) {
+                    String type = attributes.get(i).getType();
+                    // Now write the bytes depending on what the type is
+                    if (type.equals("integer")) {
+                        dataOutputStream.writeInt((Integer) values.get(i));
+                    } else if (type.startsWith("varchar")) {
+                        // Convert object to string, write how many bytes it is and write the string
+                        String value = (String) values.get(i);
+                        dataOutputStream.writeInt(value.length());
+                        dataOutputStream.write(value.getBytes("UTF-8"));
+                    } else if (type.startsWith("char")) {
+                        String value = (String) values.get(i);
+                        dataOutputStream.write(value.getBytes("UTF-8"));
+                    } else if (type.equals("double")) {
+                        dataOutputStream.writeDouble((Double) values.get(i));
+                    } else if (type.equals("boolean")) {
+                        dataOutputStream.writeBoolean((boolean) values.get(i));
                     }
-                    return bos.toByteArray();
+                }
+
+            }
+            return bos.toByteArray();
         } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
     }
 
-      // Deserialize a byte array into a record object
+    // Deserialize a byte array into a record object
     public static Record deserialize(ByteBuffer buffer, String tableName) {
         ArrayList<AttributeSchema> attributes = Catalog.getTableSchema(tableName).getAttributeSchema();
         ArrayList<Object> values = new ArrayList<>();
 
-        for(int i = 0; i < attributes.size(); i++){
-            String type = attributes.get(i).getType();
-                        // Now write the bytes depending on what the type is
-                        if(type.equals("integer")){
-                            Integer attr = buffer.getInt();
-                            values.add(attr);
-                        }
-                        else if(type.startsWith("varchar")){
-                            // Get length of the varchar
-                            int length = buffer.getInt();
-                            // Read the varchar in
-                            byte[] stringBytes = new byte[length];
-                            buffer.get(stringBytes);
-                            // Make it a string
-                            String attr =  new String(stringBytes);
-                            values.add(attr);
-                        }
-                        else if(type.startsWith("char")){
-                            // Get the size of char
-                            int numberOfChars = Integer.parseInt(type.substring(type.indexOf("(")+1, type.indexOf(")")));
-                            byte[] stringBytes = new byte[numberOfChars];
-                            buffer.get(stringBytes);
-                            // Get the string
-                            String attr =  new String(stringBytes);
-                            values.add(attr);
-                        }
-                        else if(type.equals("double")){
-                            Double attr = buffer.getDouble();
-                            values.add(attr);
-                        }
-                        else if(type.equals("boolean")){
-                            boolean attr = buffer.get() != 0;
-                            values.add(attr);
-                        }
+        // reads null Bitmap
+        BitSet nullBitmap = new BitSet();
+        int nullBitmapSize = buffer.getInt();
+        byte[] nullBitmapBytes = new byte[nullBitmapSize];
+        buffer.get(nullBitmapBytes);
+        nullBitmap = BitSet.valueOf(nullBitmapBytes);
+
+        for (int i = 0; i < attributes.size(); i++) {
+            // check if type is not null
+            if (!nullBitmap.get(i)) {
+                String type = attributes.get(i).getType();
+                // Now write the bytes depending on what the type is
+                if (type.equals("integer")) {
+                    Integer attr = buffer.getInt();
+                    values.add(attr);
+                } else if (type.startsWith("varchar")) {
+                    // Get length of the varchar
+                    int length = buffer.getInt();
+                    // Read the varchar in
+                    byte[] stringBytes = new byte[length];
+                    buffer.get(stringBytes);
+                    // Make it a string
+                    String attr = new String(stringBytes);
+                    values.add(attr);
+                } else if (type.startsWith("char")) {
+                    // Get the size of char
+                    int numberOfChars = Integer.parseInt(type.substring(type.indexOf("(") + 1, type.indexOf(")")));
+                    byte[] stringBytes = new byte[numberOfChars];
+                    buffer.get(stringBytes);
+                    // Get the string
+                    String attr = new String(stringBytes);
+                    values.add(attr);
+                } else if (type.equals("double")) {
+                    Double attr = buffer.getDouble();
+                    values.add(attr);
+                } else if (type.equals("boolean")) {
+                    boolean attr = buffer.get() != 0;
+                    values.add(attr);
+                }
+            } else {
+                values.add(null);
+            }
         }
- 
-         return new Record(values);
-        
+
+        return new Record(values, nullBitmap);
+
     }
 
     // Alternate toString method if objects need to be specified
     public String toString(String tableName) {
-        
+
         TableSchema tableSchema = Catalog.getTableSchema(tableName);
 
         ArrayList<AttributeSchema> attributeSchemas = tableSchema.getAttributeSchema();
-        
+
         String output = "( ";
 
-        for ( int i = 0; i < attributeSchemas.size(); i++) {
+        for (int i = 0; i < attributeSchemas.size(); i++) {
             String type = attributeSchemas.get(i).getType();
             Object value = values.get(i);
 
             if (type.equals("integer")) {
                 Integer n = (Integer) value;
                 output = output + n;
-            }
-            else if (type.startsWith("varchar")) {
+            } else if (type.startsWith("varchar")) {
                 String s = (String) value;
                 output = output + s;
-            }
-            else if (type.startsWith("char")) {
+            } else if (type.startsWith("char")) {
                 String c = (String) value;
                 output = output + c;
-            }
-            else if (type.equals("double")) {
+            } else if (type.equals("double")) {
                 double d = (double) value;
                 output = output + d;
-            }
-            else if (type.equals("boolean")) {
+            } else if (type.equals("boolean")) {
                 boolean b = (boolean) value;
                 output = output + b;
             }
