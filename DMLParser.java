@@ -279,8 +279,7 @@ public class DMLParser {
                     Page lastPage = BufferManager.getPage(tableName, numPages - 1).addRecord(record);
 
                     if (lastPage != null) {
-                        tableSchema.getIndexList().add(numPages, numPages);
-
+                        tableSchema.addToIndexList(numPages);
                         // Update all pages in the buffer pool list to have the correct page number
                         BufferManager.updatePageNumbersOnSplit(tableName, lastPage.getPageNumber());
                         BufferManager.addPageToBuffer(lastPage);
