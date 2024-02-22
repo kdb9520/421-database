@@ -253,7 +253,7 @@ public class DDLParser {
 
 
             // get the number of pages
-            int numPages = tableSchema.getIndexList().size();
+            int numPages = tableSchemaOld.getIndexList().size();
 
             // these are based off insert from the DML
             ArrayList<Integer> pageIndexList = tableSchema.getIndexList();
