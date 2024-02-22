@@ -148,7 +148,7 @@ public class Record {
 
         // reads null Bitmap
         BitSet nullBitmap = new BitSet();
-        int numIntsToRead = buffer.getInt();
+        Integer numIntsToRead = buffer.getInt();
         for (int i = 0; i < numIntsToRead; i++) {
             nullBitmap.set(buffer.getInt());
         }
