@@ -65,6 +65,7 @@ public class DDLParser {
         Boolean typeValid = true;
         Boolean constraintsValid = true;
         ArrayList <AttributeSchema> attributes = new ArrayList<>();
+        ArrayList <String> attributeNames = new ArrayList<>();
 
         // for each "column" in the create table query, perform validation
         // and create new attribute objects
@@ -77,10 +78,16 @@ public class DDLParser {
             String[] attribute_data = arg.split(" ");
             String attribute = attribute_data[0].trim();
             if(attribute_data.length < 2){
-                System.err.println("Invalid query!");
-                System.out.println("");
+                System.err.println("Invalid query!\n");
                 return;
             }
+            if(attributeNames.contains(attribute)) {
+                System.err.println("Invalid query!");
+                System.err.println("Table has attributes with matching names.\n");
+                return;
+            }
+            attributeNames.add(attribute);
+
             String type = attribute_data[1].trim();
             String[] constraints = Arrays.copyOfRange(attribute_data, 2, attribute_data.length);
             if(type.contains("varchar") || type.contains("char")){
