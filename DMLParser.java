@@ -171,6 +171,7 @@ public class DMLParser {
 
                 // Get primary key col number so we can figure out where to insert this record
                 int primaryKeyCol = tableSchema.findPrimaryKeyColNum();
+                String primaryKeyType = tableSchema.getPrimaryKeyType();
 
                 boolean primaryKeyOverwriting = false;
                 for (int i = 0; i < numPages; i++) {
@@ -187,6 +188,7 @@ public class DMLParser {
                     Page next = null;
                     for (int i = 0; i < tableSchema.getIndexList().size(); i++) {
                         // See if we are going to be out of bounds
+                        int sizetest = tableSchema.getIndexList().size();
                         if (i + 1 >= tableSchema.getIndexList().size()) {
                             break;
                         }
@@ -239,7 +241,8 @@ public class DMLParser {
             TableSchema tableSchema = Catalog.getTableSchema(tableName);
             if (tableSchema != null) {
                 // need to test formating of toStrings
-                System.out.println(tableSchema.toString());
+                // todo: update the padding to be the highest varchar length or something like that
+                System.out.println(tableSchema.prettyPrint());
 
                 // Print all values in table
                 // Loop through the table and print each page
@@ -247,7 +250,7 @@ public class DMLParser {
                 int num_pages = tableSchema.getIndexList().size();
                 for (int i = 0; i < num_pages; i++) {
                     Page page = BufferManager.getPage(tableName, i);
-                    System.out.println(page.toString());
+                    System.out.println(page.prettyPrint());
                 }
 
             } else {

@@ -1,9 +1,7 @@
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 
 public class AttributeSchema {
     String attrName;
@@ -128,6 +126,10 @@ public class AttributeSchema {
         byte[] stringBytes = new byte[length];
         buffer.get(stringBytes);
         return new String(stringBytes);
+    }
+
+    public String prettyPrint() {
+        return String.format("%10s", attrName);
     }
 
     @Override

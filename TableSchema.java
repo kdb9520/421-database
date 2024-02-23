@@ -1,8 +1,15 @@
+/**
+ * @file:   TableSchema.java
+ * @authors:    Kyle, Derek, Kellen, Jaron, Beckett
+ * The TableSchema holds the information about the structure of the table.  It has a unique tableName and tableNumber,
+ * along with a list of the AttributeSchemas for the attributes in the table and a list of the pageIndexes for the pages
+ * holding the information in the table.
+ */
+
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.rmi.ServerError;
 import java.util.ArrayList;
 
 public class TableSchema {
@@ -12,6 +19,12 @@ public class TableSchema {
     ArrayList<AttributeSchema> attributes;
     ArrayList<Integer> pageIndexes;
 
+    /**
+     * Constructor for TableSchema.  Will take the name (unique) and a list of AttributeSchemas corresponding to the
+     * attributes that will be in the table.  This will initialize an empty list of pageIndexes.
+     * @param tableName String - name of the table (should be unique).
+     * @param attributes ArrayList<AttributeSchema> - list of attributes in the table.
+     */
     public TableSchema(String tableName, ArrayList<AttributeSchema> attributes) {
         this.tableName = tableName;
         this.pageIndexes = new ArrayList<>();
@@ -23,24 +36,22 @@ public class TableSchema {
         this.tableNumber = old.tableNumber;
         this.attributes = new ArrayList<>(old.attributes);
         this.pageIndexes = old.pageIndexes;
-
-
     }
+
     public TableSchema(ArrayList<AttributeSchema> attributeList, ArrayList<Integer> pageIndexes, String tableName) {
         this.attributes = attributeList;
         this.pageIndexes = pageIndexes;
         this.tableName = tableName;
     }
 
-    public int dropAttribute(String attrName) {
+    public void dropAttribute(String attrName) {
         // remove an attribute and its data from the table
         int i = findAttribute(attrName);
         if(attributes.get(i).isPrimaryKey){
             System.err.println("This column is a primary key, cannot be removed");
-            return -1;
+            return;
         }
         this.attributes.remove(i);
-        return i;
     }
 
     public void addAttribute(AttributeSchema a) {
@@ -48,6 +59,13 @@ public class TableSchema {
         
     }
 
+    /**
+     * TableSchema.findAttribute(String attrName) takes in a string representing the attribute we want to find.
+     * This method looks through the attributes in the TableSchema and will try to match the string to the name of an
+     * attribute.  If no match is found this method returns -1.
+     * @param attrName  Name of the attribute to find.
+     * @return  int - index of the attribute; -1 if not found.
+     */
     public int findAttribute(String attrName){
         attrName = attrName.substring(0, attrName.length() - 1);
         for (int i = 0; i < attributes.size(); i++){
@@ -58,6 +76,11 @@ public class TableSchema {
         return -1;
     }
 
+    /**
+     * TableSchema.findPrimaryKeyColNum() will search through the attributes associated with the instance of the
+     * TableSchema, returning the index of the primary key when it is found.
+     * @return  int - index of the primary key; -1 if not found.
+     */
     public int findPrimaryKeyColNum(){
         for (int i = 0; i < attributes.size(); i++){
             if(attributes.get(i).isPrimaryKey){
@@ -67,10 +90,14 @@ public class TableSchema {
         return -1;
     }
 
+    /**
+     * TableSchema.getPrimaryKeyType() will find the primary key in the attributes if they exist.  It will then get the
+     * type from the primary key AttributeSchema and return it.
+     * @return String - type of the primary key; null if not found.
+     */
     public String getPrimaryKeyType(){
-        if (this.attributes.size() > 0) {
+        if (!this.attributes.isEmpty()) {
             AttributeSchema primaryKeySchema = attributes.get(findPrimaryKeyColNum());
-            //todo - removed regex because it seemed unnecessary, unless it was for varchar or char?
             return primaryKeySchema.attrType.strip().split("[(]")[0];
         } 
         return null;
@@ -160,6 +187,13 @@ public class TableSchema {
     public int getRecordSize(){
         // Get the size of a record
         return 0;
+    }
+
+    public String prettyPrint() {
+        StringBuilder str = new StringBuilder();
+        attributes.forEach(a -> str.append("|").append(a.prettyPrint()).append("|"));
+        str.append(String.format("\n%" + str.length() + "s", " ").replace(" ", "-"));
+        return str.toString();
     }
 
     @Override
