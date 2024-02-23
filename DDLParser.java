@@ -253,9 +253,12 @@ public class DDLParser {
             }
 
             int numPages = tableSchema.getIndexList().size();
+            if(numPages == 0){
+                tableSchema.dropAttribute(parsed[4]);
+                return;
+            }
             ArrayList<Record> recordsOld = new ArrayList<>();
             // these are based off insert from the DML
-
             int i = 0;
             // add all old records to new array
             do {
