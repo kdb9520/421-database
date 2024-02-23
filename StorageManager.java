@@ -169,4 +169,37 @@ public class StorageManager {
         }
     }
 
+    public static void deleteRecord(String tableName, Object primaryKey) {
+
+        TableSchema tableSchema = Catalog.getTableSchema(tableName);
+
+        if (tableSchema == null) {
+            System.err.println("Table: " + tableName + "does not exist");
+            return;
+        }
+
+        ArrayList<AttributeSchema> attributeSchemas = tableSchema.getAttributeSchema();
+
+
+        // Get the primary key and its type so we can compare
+        int numPages = tableSchema.getIndexList().size();
+
+        // Get primary key col number so we can figure out where to insert this record
+        int primaryKeyCol = tableSchema.findPrimaryKeyColNum();
+        String primaryKeyType = tableSchema.getPrimaryKeyType();
+
+
+        for (int i = 0; i < numPages; i++) {
+            Page page = BufferManager.getPage(tableName, i);
+            for (Record r : page.getRecords()) {
+                if (r.getAttribute(primaryKeyCol).equals(primaryKey)) {
+                    // delete the record
+                    
+                }
+            }
+        }
+
+
+    }
+
 }
