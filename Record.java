@@ -38,11 +38,13 @@ public class Record {
 
     public void modifyAttribute(Object newValue, int index) {
         this.values.set(index, newValue);
+        this.calculateBitSet();
     }
 
     // Set the value of an attribute
     public void setAttribute(Object value) {
         values.add(value);
+        this.calculateBitSet();
     }
 
     // Get the value of an attribute
@@ -52,9 +54,10 @@ public class Record {
 
     // Get the value of an attribute
     public Object deleteAttribute(int index) {
-        return values.remove(index);
+        Object v = values.remove(index);
+        this.calculateBitSet();
+        return v;
     }
-    // }
 
     // Calculate the size of the record in bytes
     public int calculateRecordSize() {

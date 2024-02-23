@@ -242,9 +242,14 @@ public class DDLParser {
                 return;
             }
 
-            int position = tableSchema.dropAttribute(parsed[4]);
+            int position = tableSchema.findAttribute(parsed[4]);
 
             if(position == -1){
+                return;
+            }
+
+            if(tableSchema.getAttributeSchema().get(position).isPrimaryKey){
+                System.err.println("This column is a primary key, cannot be removed");
                 return;
             }
 
@@ -260,6 +265,7 @@ public class DDLParser {
                 i += 1;
             }while (i < numPages);
 
+            tableSchema.dropAttribute(parsed[4]);
 
         }
 
@@ -280,8 +286,12 @@ public class DDLParser {
             }
 
             String attributeName = parsed[4];   // name of attribute
-            String attributeType = parsed[5];   // name of type
 
+            int semicolon = parsed[5].indexOf(';');
+            String attributeType = parsed[5];
+            if (semicolon != -1) {
+                attributeType = attributeType.substring(0, semicolon);   // name of type
+            }
 
             // check for nested ()
             if(attributeType.contains("varchar") || attributeType.contains("char")){
