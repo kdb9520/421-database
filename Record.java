@@ -312,9 +312,9 @@ public class Record {
             Integer n = (Integer) value;
             str = n.toString();
         } else if (type.startsWith("varchar")) {
-            str = (String) value;
+            str = "\"" + value.toString().strip() + "\"";
         } else if (type.startsWith("char")) {
-            str = (String) value;
+            str = "\"" + value.toString().strip() + "\"";
         } else if (type.equals("double")) {
             Double d = (Double) value;
             str = d.toString();
