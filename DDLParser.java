@@ -206,7 +206,7 @@ public class DDLParser {
             return;
         }
 
-        String[] parsed = query.split(" ");
+        String[] parsed = query.split(" ", 8);
         name = parsed[2]; // name of table
         operation = parsed[3]; // operation, drop or add
 

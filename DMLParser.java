@@ -50,16 +50,16 @@ public class DMLParser {
             }
 
             String valString = tuple.strip().split("[()]")[1];
-            String[] attrs = valString.strip().split(" ");
+            ArrayList<String> attrs = parseStringValues(valString);
 
             ArrayList<Object> values = new ArrayList<>();
 
             ArrayList<AttributeSchema> attributeSchemas = tableSchema.getAttributeSchema();
 
-            if(attrs.length > attributeSchemas.size() || attrs.length < attributeSchemas.size()){
+            if(attrs.size() > attributeSchemas.size() || attrs.size() < attributeSchemas.size()){
                 // print error and go to command loop
                 System.out.println("Error with inserting record: " + tuple);
-                System.out.println("Expected " + attributeSchemas.size() + " values but got " + attrs.length + " values");
+                System.out.println("Expected " + attributeSchemas.size() + " values but got " + attrs.size() + " values");
 
                 System.out.println(
                         "If there were records inputted previous to this record, they have been successfuly inserted.");
@@ -72,7 +72,7 @@ public class DMLParser {
             try {
                 for (int i = 0; i < attributeSchemas.size(); i++) {
                     String type = attributeSchemas.get(i).getType();
-                    String value = attrs[i];
+                    String value = attrs.get(i);
 
                     if (value.equals("null")) {
                         
@@ -90,7 +90,6 @@ public class DMLParser {
                                 throw new IllegalArgumentException("Invalid value for integer type: " + value);
                             }
                         } else if (type.startsWith("varchar")) {
-                            int numberOfChars = Integer.parseInt(type.substring(type.indexOf("(") + 1, type.indexOf(")")));
                             // account for "" on either side of val
                             if ((value.startsWith("\"") && value.endsWith("\"")) ||
                                     (value.startsWith("'") && value.endsWith("'")))
@@ -146,6 +145,7 @@ public class DMLParser {
             } catch (Exception e) {
                 // print error and go to command loop
                 System.out.println("Error with inserting record: " + tuple);
+                e.printStackTrace();
                 System.out.println(e.getMessage());
                 System.out.println(
                         "If there were records inputted previous to this record, they have been successfuly inserted.");
@@ -231,6 +231,42 @@ public class DMLParser {
                     //System.out.println("Tuple " + tuple + " not inserted!\n");
                 //}
         }
+    }
+
+    public static ArrayList<String> parseStringValues(String input) {
+        ArrayList<String> values = new ArrayList<>();
+        boolean inQuotes = false;
+        StringBuilder currentValue = new StringBuilder();
+
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+
+            if (c == '"' && (i == 0 || input.charAt(i - 1) != '\\')) { // Check for non-escaped quote
+                inQuotes = !inQuotes;
+                // Include quotes as part of the output
+                currentValue.append(c);
+                // If closing quote, add to list and reset the builder
+                if (!inQuotes) {
+                    values.add(currentValue.toString());
+                    currentValue = new StringBuilder();
+                }
+            } else if (c == ' ' && !inQuotes) {
+                // If whitespace outside quotes and current value is not empty, add to list
+                if (currentValue.length() > 0) {
+                    values.add(currentValue.toString());
+                    currentValue = new StringBuilder();
+                }
+            } else {
+                currentValue.append(c);
+            }
+        }
+
+        // Add the last value if exists
+        if (currentValue.length() > 0) {
+            values.add(currentValue.toString());
+        }
+
+        return values;
     }
 
     public static void select(String query) {
