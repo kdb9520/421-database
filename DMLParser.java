@@ -172,9 +172,7 @@ public class DMLParser {
 
                 // Get primary key col number so we can figure out where to insert this record
                 int primaryKeyCol = tableSchema.findPrimaryKeyColNum();
-                String primaryKeyType = tableSchema.getPrimaryKeyType();
 
-                boolean primaryKeyOverwriting = false;
                 for (int i = 0; i < numPages; i++) {
                     Page page = BufferManager.getPage(tableName, i);
                     for (Record r : page.getRecords()) {
@@ -186,52 +184,50 @@ public class DMLParser {
                     }
                 }
 
-                if (primaryKeyOverwriting == false) {
-                    // Loop through pages and find which one to insert record into. Look ahead algorithim
-                    Page next = null;
-                    for (int i = 0; i < tableSchema.getIndexList().size(); i++) {
-                        // See if we are going to be out of bounds
-                        int sizetest = tableSchema.getIndexList().size();
-                        if (i + 1 >= tableSchema.getIndexList().size()) {
-                            break;
-                        }
-                        // Get the next page (must use BufferManager to get it)
-                        next = BufferManager.getPage(tableName, i + 1);
-                        Record firstRecordOfNextPage = next.getFirstRecord();
+                boolean wasInserted = false;
+                // Loop through pages and find which one to insert record into. Look ahead algorithim
+                Page next = null;
+                for (int i = 0; i < tableSchema.getIndexList().size(); i++) {
+                    // See if we are going to be out of bounds
+                    if (i + 1 >= tableSchema.getIndexList().size()) {
+                        break;
+                    }
+                    // Get the next page (must use BufferManager to get it)
+                    next = BufferManager.getPage(tableName, i + 1);
+                    Record firstRecordOfNextPage = next.getFirstRecord();
 
-                        // If its less than the first value of next page (i+1) then it belongs to page i
-                        // Type cast appropiately then compare records
-                        if(Page.isLessThan(record, firstRecordOfNextPage, tableName)){
-                            // Add record to current page
-                            Page page = BufferManager.getPage(tableName, i);
-                            Page splitPage = page.addRecord(record);
-                            if (splitPage != null) { // If we split update stuff as needed
-                                tableSchema.addToIndexList(numPages);
-                                // Update all pages in the buffer pool list to have the correct page number
-                                BufferManager.updatePageNumbersOnSplit(tableName, splitPage.getPageNumber());
-                                BufferManager.addPageToBuffer(splitPage);
-                            }
-                        }
+                    // If its less than the first value of next page (i+1) then it belongs to page i
+                    // Type cast appropiately then compare records
+                    if(Page.isLessThan(record, firstRecordOfNextPage, tableName)){
+                        // Add record to current page
+                        Page page = BufferManager.getPage(tableName, i);
+                        Page splitPage = page.addRecord(record);
+                        wasInserted = true;
+                        if (splitPage != null) { // If we split update stuff as needed
+                            tableSchema.addToIndexList(numPages);
+                            // Update all pages in the buffer pool list to have the correct page number
+                            BufferManager.updatePageNumbersOnSplit(tableName, splitPage.getPageNumber());
+                            BufferManager.addPageToBuffer(splitPage);
                         }
                     }
+                    }
+                    
 
-                    // Cycled through all pages -> Record belongs on the last page of the table
+                
+                // Cycled through all pages -> Record belongs on the last page of the table
 
-                    // Insert the record into the last page of the table
+                if(!wasInserted){
+                     // Insert the record into the last page of the table
                     Page lastPage = BufferManager.getPage(tableName, numPages - 1).addRecord(record);
 
-                if (lastPage != null) {
+                    if (lastPage != null) {
                         tableSchema.addToIndexList(numPages);
                         // Update all pages in the buffer pool list to have the correct page number
                         BufferManager.updatePageNumbersOnSplit(tableName, lastPage.getPageNumber());
                         BufferManager.addPageToBuffer(lastPage);
                     }
-                
+                }
             }
-            //else {
-                    //System.out.println("Error: A record with that primary key already exists.");
-                    //System.out.println("Tuple " + tuple + " not inserted!\n");
-                //}
         }
     }
 
