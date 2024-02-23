@@ -243,14 +243,14 @@ public class Record {
             size += nullBitmap.toByteArray().length; // Add amount of bytes the nullbitmap is
             TableSchema tableSchema = Catalog.getTableSchema(tableName);
             ArrayList<AttributeSchema> attributes = tableSchema.getAttributeSchema();
-
+            size += 4 * attributes.size(); // Nullmap is stored as [int][int]..[int] for each attribute marking if its null or not
             // Go through each attribute/value, only add the size of the values that are not null
             for (int i = 0; i < values.size(); i++) {
                 if(!nullBitmap.get(i)){ // If this value is not null
                     String type = attributes.get(i).getType(); // Get what type it is
                     // Now increment size depending on what type it is
                     if (type.equals("integer")) {
-                        size += Integer.SIZE; // Integer is size 4, no padding or values before it
+                        size += 4; // Integer is size 4, no padding or values before it
                         } else if (type.startsWith("varchar")) {
                             size += 4; // Varchar is stored as [sizeofString] [string], add integer to size
                             // Convert object to string
@@ -263,7 +263,7 @@ public class Record {
                                 String value = (String) values.get(i);
                                 size += value.getBytes("UTF-8").length;
                             } else if (type.equals("double")) {
-                                size += Double.SIZE;
+                                size += 8;
                             } else if (type.equals("boolean")) {
                                 size += 1; // Its 1 bit not byte??
                             }
