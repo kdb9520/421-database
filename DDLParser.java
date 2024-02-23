@@ -244,12 +244,12 @@ public class DDLParser {
 
             int position = tableSchema.findAttribute(parsed[4]);
 
-            if(tableSchema.getAttributeSchema().get(position).isPrimaryKey){
-                System.err.println("This column is a primary key, cannot be removed");
+            if(position == -1){
                 return;
             }
 
-            if(position == -1){
+            if(tableSchema.getAttributeSchema().get(position).isPrimaryKey){
+                System.err.println("This column is a primary key, cannot be removed");
                 return;
             }
 
