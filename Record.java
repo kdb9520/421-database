@@ -250,7 +250,7 @@ public class Record {
                     String type = attributes.get(i).getType(); // Get what type it is
                     // Now increment size depending on what type it is
                     if (type.equals("integer")) {
-                        size += Integer.SIZE; // Integer is size 4, no padding or values before it
+                        size += 4; // Integer is size 4, no padding or values before it
                         } else if (type.startsWith("varchar")) {
                             size += 4; // Varchar is stored as [sizeofString] [string], add integer to size
                             // Convert object to string
@@ -263,7 +263,7 @@ public class Record {
                                 String value = (String) values.get(i);
                                 size += value.getBytes("UTF-8").length;
                             } else if (type.equals("double")) {
-                                size += Double.SIZE;
+                                size += 8;
                             } else if (type.equals("boolean")) {
                                 size += 1; // Its 1 bit not byte??
                             }
