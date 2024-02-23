@@ -77,6 +77,10 @@ public class AttributeSchema {
         return this.isNotNull;
     }
 
+    public boolean getIsUnique () {
+        return this.isUnique;
+    }
+
     // Serialize in format: [AttrNameSize,AttrName,AttrTypeSize,AttrType,isNull,isPK,isUN,defaultValue]
     public byte[] serialize() {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
