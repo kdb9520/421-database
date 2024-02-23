@@ -223,6 +223,7 @@ public class Page {
 
         // Read number of records
         int numRecords = buffer.getInt();
+        
         // Read each record
         List<Record> records = new ArrayList<>();
         for (int i = 0; i < numRecords; i++) {;

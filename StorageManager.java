@@ -1,6 +1,8 @@
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
@@ -57,7 +59,9 @@ public class StorageManager {
                 return;
                 //System.out.println("Error: Table: " + page.getTableName() + " does not exist");
             }
-            FileOutputStream fos = new FileOutputStream(file);
+
+            RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");
+            //FileOutputStream fos = new FileOutputStream(file); Depreceated cant use this
         
             // Calculate the offset where this page should be written
             TableSchema tableSchema = Catalog.getTableSchema(page.getTableName());
@@ -65,18 +69,21 @@ public class StorageManager {
             // First we update the num_pages if it changed
             
             // Read the current num_pages to see if its up to date
-            int written_num_pages = readNumberOfPages(page.getTableName());
-            if(page.getPageNumber() >  written_num_pages){
-                byte[] bytes = ByteBuffer.allocate(4).putInt(written_num_pages + 1).array();
-                fos.write(bytes);
+            int written_num_pages = readNumberOfPages(file);
+            
+            if(page.getPageNumber() + 1 >  written_num_pages){
+                ByteBuffer buffer = ByteBuffer.allocate(4);
+                buffer.putInt(written_num_pages + 1);
+                byte[] bytes = buffer.array();
+                randomAccessFile.write(bytes);
             }
             //Integer pageIndex = ;
             long offset = (indexList.get(page.getPageNumber()) * Main.pageSize) + 4;
             // Move the file pointer to the correct position
-            fos.getChannel().position(offset);
+            randomAccessFile.seek(offset);
             // Write the page data to the file
-            fos.write(page.serialize());
-            fos.close();
+            randomAccessFile.write(page.serialize());
+            randomAccessFile.close();
         } catch (IOException e) {
             // Handle the exception (e.g., log it or throw a runtime exception)
             e.printStackTrace();
@@ -125,22 +132,20 @@ public class StorageManager {
     }
 
 
-    public static int readNumberOfPages(String tableName) {
-        System.out.println("Getting number of pages from table " + tableName);
-        final int INTEGER_SIZE = 4; // Assuming an integer is 4 bytes
-        try (FileChannel fileChannel = FileChannel.open(Paths.get(Main.databaseLocation, tableName), StandardOpenOption.READ)) {
+    public static int readNumberOfPages(File file) {
+        try (FileInputStream fis = new FileInputStream(file)) {
+            byte[] buffer = new byte[4];
+            int bytesRead = fis.read(buffer);
 
-            // Allocate a ByteBuffer to hold the integer data
-            ByteBuffer buffer = ByteBuffer.allocate(INTEGER_SIZE);
+            if (bytesRead == -1) {
+                // End of file reached, handle it as appropriate for your application
+                return -1; // You might want to choose an appropriate default value
+            }
 
-            // Read an integer from the buffer
-            fileChannel.read(buffer, 0);
-            
-            // Reset the position to read from the beginning of the buffer
-            buffer.rewind();
+            // Convert the byte array to an integer
+            int written_num_pages = ByteBuffer.wrap(buffer).getInt();
 
-            // Return the integer value
-            return buffer.getInt();
+            return written_num_pages;
 
         } catch (IOException e) {
             // Handle the exception (e.g., log it or throw a runtime exception)
