@@ -165,6 +165,13 @@ public class DMLParser {
             if (tableSchema.getIndexList().size() == 0) {
                 // Create new page (using bufferManager)
                 Page newPage = BufferManager.createPage(tableName, 0);
+                
+                if (!checkUnique(tableName, record, attributeSchemas)) {
+                    System.out.println("\nError: A record with that unique value already exists.");
+                    System.out.println("Tuple " + tuple + " not inserted!\n");
+                    return;
+                }
+
                 // add this entry to a new page
                 newPage.addRecord(record);
                 tableSchema.addToIndexList(0);
@@ -205,6 +212,11 @@ public class DMLParser {
                     if (Page.isLessThan(record, firstRecordOfNextPage, tableName)) {
                         // Add record to current page
                         Page page = BufferManager.getPage(tableName, i);
+                        if (!checkUnique(tableName, record, attributeSchemas)) {
+                            System.out.println("\nError: A record with that unique value already exists.");
+                            System.out.println("Tuple " + tuple + " not inserted!\n");
+                            return;
+                        }
                         Page splitPage = page.addRecord(record);
                         wasInserted = true;
                         if (splitPage != null) { // If we split update stuff as needed
@@ -375,7 +387,7 @@ public class DMLParser {
                 Page page = BufferManager.getPage(tableName, i);
                 for (Record r : page.getRecords()) {
                     for (int j = 0; j < indeciesOfUnique.size(); j++) {
-                        if (r.getAttribute(indeciesOfUnique.get(i))
+                        if (r.getAttribute(indeciesOfUnique.get(i)) != null && r.getAttribute(indeciesOfUnique.get(i))
                                 .equals(record.getAttribute(indeciesOfUnique.get(i)))) {
                             return false;
                         }
