@@ -1,12 +1,5 @@
-import java.lang.reflect.Array;
-import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.rmi.ServerError;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.ServiceConfigurationError;
 
 // todo make static
 
@@ -63,12 +56,12 @@ public class DDLParser {
         // todo look into format string "create table %s (%s)"
         String[] args = query.substring(startIndex + 1, endIndex).split(","); // each "attribute and its
                                                                               // type/constraint"
-        Boolean typeValid = true;
-        Boolean constraintsValid = true;
+        boolean typeValid = true;
+        boolean constraintsValid = true;
         ArrayList<AttributeSchema> attributes = new ArrayList<>();
         ArrayList<String> attributeNames = new ArrayList<>();
 
-        Boolean primaryKeyExists = false;
+        boolean primaryKeyExists = false;
         // for each "column" in the create table query, perform validation
         // and create new attribute objects
         for (String arg : args) {
@@ -138,7 +131,7 @@ public class DDLParser {
      * Checks if a constraint is valid
      * 
      * @param params - the list of constraints supplied by the user
-     * @return - true if valid false if not
+     * @return - true if valid; false if not
      */
     private static Boolean checkConstraint(String[] params) {
         if (params.length < 1) {
@@ -156,7 +149,7 @@ public class DDLParser {
      * Checks if type is valid
      * 
      * @param param - the type given by the user
-     * @return - true if valid false if not
+     * @return - true if valid; false if not
      */
     private static Boolean checkTypes(String param) {
         if (param.equals("integer") || param.equals("double") || param.equals("boolean")
@@ -186,7 +179,7 @@ public class DDLParser {
         }
 
         String name = args[2];
-        name = name.substring(0, name.length() - 1); // Remove the ; from end
+        name = name.substring(0, name.length() - 1); // Remove the ';' from end
 
         StorageManager.deleteTable(name);
         Catalog.removeSchema(name);
@@ -330,7 +323,7 @@ public class DDLParser {
             }
 
             // make a new attribute schema
-            AttributeSchema a = new AttributeSchema(attributeName, parsed[5], null);
+            AttributeSchema a = new AttributeSchema(attributeName, attributeType, null);
             tableSchema.addAttribute(a);
             ArrayList<AttributeSchema> attributeSchemas = tableSchema.attributes;
 
