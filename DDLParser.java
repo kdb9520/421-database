@@ -71,6 +71,10 @@ public class DDLParser {
 
             String[] attribute_data = arg.split(" ");
             String attribute = attribute_data[0].trim();
+            if(attributeNames.contains(attribute)){
+                System.err.println("Error: Invalid table. May not have multiple columns of same name\n");
+                return;
+            }
             if (attribute_data.length < 2) {
                 System.err.println("Invalid query!\n");
                 return;
