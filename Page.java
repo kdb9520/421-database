@@ -239,6 +239,12 @@ public class Page {
         return records;
     }
 
+    public String prettyPrint() {
+        StringBuilder result = new StringBuilder();
+        records.forEach(r -> result.append(r.prettyPrint(this.tableName)).append("\n"));
+        return result.toString();
+    }
+
     @Override
     public String toString() {
         String pageString = "";

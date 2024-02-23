@@ -7,6 +7,7 @@ import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.function.Consumer;
 
 public class Record {
     private ArrayList<Object> values;
@@ -278,4 +279,48 @@ public class Record {
         
         return size;
     }
+
+    public String prettyPrint(String tableName) {
+        TableSchema tableSchema = Catalog.getTableSchema(tableName);
+
+        ArrayList<AttributeSchema> attributeSchemas = tableSchema.getAttributeSchema();
+
+        StringBuilder output = new StringBuilder("|");
+
+        for (int i = 0; i < attributeSchemas.size(); i++) {
+            String str = getString(attributeSchemas, i);
+
+            output.append(String.format("%10s", str));
+
+            if (i < attributeSchemas.size() - 1) {
+                output.append("||");
+            }
+        }
+        output.append("|");
+        return output.toString();
+    }
+
+    private String getString(ArrayList<AttributeSchema> attributeSchemas, int i) {
+        String type = attributeSchemas.get(i).getType();
+        Object value = values.get(i);
+        String str = "";
+        if (value == null) {
+            str = "null";
+        } else if (type.equals("integer")) {
+            Integer n = (Integer) value;
+            str = n.toString();
+        } else if (type.startsWith("varchar")) {
+            str = (String) value;
+        } else if (type.startsWith("char")) {
+            str = (String) value;
+        } else if (type.equals("double")) {
+            Double d = (Double) value;
+            str = d.toString();
+        } else if (type.equals("boolean")) {
+            Boolean b = (Boolean) value;
+            str = b.toString();
+        }
+        return str;
+    }
+
 }
