@@ -39,10 +39,12 @@ public class DatabaseStart {
                 folder = Paths.get(databaseLocation);
                 Path filePath = folder.resolve("page_size");
                 
-                // Overwrite the file content with the new number
-                String newContent = String.valueOf(pageSize);
-                Files.write(filePath, newContent.getBytes());
-
+                 // Read the content of the file as a string
+                String content = Files.readString(filePath);
+                // Parse the integer value from the content
+                int ps = Integer.parseInt(content);
+                // Overwrite the command arg page size user provided with the size stored in files
+                Main.pageSize = ps;
                 success = true;
             }
             else {

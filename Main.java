@@ -3,7 +3,7 @@ import java.util.Scanner;
 //Imports
 
 // Main class for the project
-// Authors:
+// Authors: Group 15
 
 public class Main {
 
@@ -11,6 +11,9 @@ public class Main {
     public static int bufferSize;
     public static String databaseLocation;
 
+    // Grab command args in form [DB_Location] [Page_Size] [Buffer_Size]
+    // [Page_Size] = integer saying max size of a Page in bytes
+    // [Buffer_Size] = integer setting how many Pages a Page Buffer may hold at once
     public static void main (String[] args) {
 
         if (args.length != 3) {
@@ -23,7 +26,7 @@ public class Main {
 
             // restart / create the database
             // Jaron Handling start up of dbint started = DatabaseStart.initiateDatabase(dbLoc, pageSize, bufferSize);
-
+            // This will override pageSize command arg if DB exists already
             boolean started = DatabaseStart.initiateDatabase(databaseLocation, pageSize, bufferSize);
 
             Catalog.readCatalog(databaseLocation);
