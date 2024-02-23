@@ -280,8 +280,12 @@ public class DDLParser {
             }
 
             String attributeName = parsed[4];   // name of attribute
-            String attributeType = parsed[5];   // name of type
 
+            int semicolon = parsed[5].indexOf(';');
+            String attributeType = parsed[5];
+            if (semicolon != -1) {
+                attributeType = attributeType.substring(0, semicolon);   // name of type
+            }
 
             // check for nested ()
             if(attributeType.contains("varchar") || attributeType.contains("char")){
