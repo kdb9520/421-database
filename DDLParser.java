@@ -199,7 +199,6 @@ public class DDLParser {
      * @param query - query given by user
      */
     public static void alterTable(String query){
-
         // create a table called temp based off new schema
         // copy the data over
         // drop the old table
@@ -244,19 +243,22 @@ public class DDLParser {
 
             int position = tableSchema.findAttribute(parsed[4]);
 
+            if(position == -1){
+                return;
+            }
+
             if(tableSchema.getAttributeSchema().get(position).isPrimaryKey){
                 System.err.println("This column is a primary key, cannot be removed");
                 return;
             }
 
-            if(position == -1){
+            int numPages = tableSchema.getIndexList().size();
+            if(numPages == 0){
+                tableSchema.dropAttribute(parsed[4]);
                 return;
             }
-
-            int numPages = tableSchema.getIndexList().size();
             ArrayList<Record> recordsOld = new ArrayList<>();
             // these are based off insert from the DML
-
             int i = 0;
             // add all old records to new array
             do {
@@ -273,6 +275,13 @@ public class DDLParser {
 
         //todo - right now this only has been tested with a default value
         if(operation.equals("add")){
+            ArrayList<AttributeSchema> as = tableSchema.getAttributeSchema();
+            for (AttributeSchema a : as){
+                if(a.attrName.equals(name)){
+                    System.err.println("Name already exists in schema");
+                    return;
+                }
+            }
             TableSchema tableSchemaOld = new TableSchema(tableSchema); // make a deep copy
             Catalog.updateCatalog(tableSchemaOld);                     // adds the copy to the catalog
             String temp = "temp";
@@ -295,6 +304,10 @@ public class DDLParser {
 
             // check for nested ()
             if(attributeType.contains("varchar") || attributeType.contains("char")){
+                if(attributeType.indexOf('(') == -1 || attributeType.indexOf(')') == -1){
+                    System.err.println("Invalid varchar or char syntax");
+                    return;
+                }
                 String value = attributeType.substring(attributeType.indexOf('(') + 1, attributeType.indexOf(')'));
                 attributeType = attributeType.substring(0, attributeType.indexOf('('));
             }
