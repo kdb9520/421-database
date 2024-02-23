@@ -215,17 +215,18 @@ public class DMLParser {
                     // Insert the record into the last page of the table
                     Page lastPage = BufferManager.getPage(tableName, numPages - 1).addRecord(record);
 
-                    if (lastPage != null) {
+                if (lastPage != null) {
                         tableSchema.addToIndexList(numPages);
                         // Update all pages in the buffer pool list to have the correct page number
                         BufferManager.updatePageNumbersOnSplit(tableName, lastPage.getPageNumber());
                         BufferManager.addPageToBuffer(lastPage);
                     }
-                else {
-                    System.out.println("Error: A record with that primary key already exists.");
-                    System.out.println("Tuple " + tuple + " not inserted!\n");
-                }
+                
             }
+            //else {
+                    //System.out.println("Error: A record with that primary key already exists.");
+                    //System.out.println("Tuple " + tuple + " not inserted!\n");
+                //}
         }
     }
 
