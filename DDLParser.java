@@ -279,10 +279,6 @@ public class DDLParser {
                     return;
                 }
             }
-            int numPages2 = tableSchema.getIndexList().size();
-            if (numPages2 == 0) {
-                return;
-            }
             TableSchema tableSchemaOld = new TableSchema(tableSchema); // make a deep copy
             Catalog.updateCatalog(tableSchemaOld); // adds the copy to the catalog
             String temp = "temp";
@@ -320,9 +316,15 @@ public class DDLParser {
             }
             String value = "";
             // if there is a default value
+            // get the number of pages
+            int numPages = tableSchemaOld.getIndexList().size();
             if (parsed.length == 8) {
                 value = parsed[7];
                 value = value.substring(0, value.length() - 1);
+                if (numPages == 0) {
+                    System.err.println("Cannot insert default value because table has no values");
+                    return;
+                }
             } else {
                 value = "null";
             }
@@ -336,20 +338,23 @@ public class DDLParser {
             ArrayList<Record> recordsOld = new ArrayList<>(); // old records
 
             // get the number of pages
-            int numPages = tableSchemaOld.getIndexList().size();
+            numPages = tableSchemaOld.getIndexList().size();
 
             // these are based off insert from the DML
             ArrayList<Integer> pageIndexList = tableSchema.getIndexList();
 
             int i = 0;
 
-            // add all old records to new array
-            do {
-                Page page = BufferManager.getPage(name, i);
-                ArrayList<Record> t = page.getRecords();
-                recordsOld.addAll(t);
-                i += 1;
-            } while (i < numPages);
+            if (numPages != 0) {
+
+                // add all old records to new array
+                do {
+                    Page page = BufferManager.getPage(name, i);
+                    ArrayList<Record> t = page.getRecords();
+                    recordsOld.addAll(t);
+                    i += 1;
+                } while (i < numPages);
+            }
 
             // set default attribute, if any
             // insert
@@ -398,13 +403,15 @@ public class DDLParser {
             pageIndexList = tableSchema.getIndexList();
 
             // rename all the pages
-            i = 0;
-            do {
-                Page page = BufferManager.getPage(temp, i);
-                page.tableName = name;
-                i++;
+            if (numPages != 0) {
+                i = 0;
+                do {
+                    Page page = BufferManager.getPage(temp, i);
+                    page.tableName = name;
+                    i++;
 
-            } while (i < numPages);
+                } while (i < numPages);
+            }
 
             // rename schema in Catalog
             Catalog.renameSchema(name);
