@@ -23,7 +23,7 @@ public class StorageManager {
             TableSchema tableSchema = Catalog.getTableSchema(tableName);
             ArrayList<Integer> indexList = tableSchema.getIndexList();
             // Set buffer to position of the right page
-            long position = indexList.get(pageNumber) * Main.pageSize + 4; // Add 4 since num_pages is stored at beginning
+            long position = (indexList.get(pageNumber) * Main.pageSize) + 4; // Add 4 since num_pages is stored at beginning
             // Allocate a ByteBuffer to hold the page data
             ByteBuffer buffer = ByteBuffer.allocate(Main.pageSize);
 
