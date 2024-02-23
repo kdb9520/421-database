@@ -36,7 +36,7 @@ public class DMLParser {
         }
         TableSchema tableSchema = Catalog.getTableSchema(tableName);
         if (tableSchema == null) {
-            System.err.println("Table: " + tableName + "does not exist");
+            System.err.println("Table: " + tableName + " does not exist");
             return;
         }
 
