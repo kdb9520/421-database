@@ -25,7 +25,7 @@ public class DMLParser {
     }
 
     public static void insert(String query) {
-        String[] splitQuery = query.split(" ", 3);
+        String[] splitQuery = query.split(" ", 2);
         String tableName = splitQuery[0];
         String remaining = "";
         if (query.contains("(")) {
@@ -235,33 +235,38 @@ public class DMLParser {
 
     public static ArrayList<String> parseStringValues(String input) {
         ArrayList<String> values = new ArrayList<>();
-        boolean inQuotes = false;
         StringBuilder currentValue = new StringBuilder();
+        boolean inQuotes = false;
+        char quoteType = '\0'; // Tracks the current type of quote
 
         for (int i = 0; i < input.length(); i++) {
             char c = input.charAt(i);
 
-            if (c == '"' && (i == 0 || input.charAt(i - 1) != '\\')) { // Check for non-escaped quote
-                inQuotes = !inQuotes;
-                // Include quotes as part of the output
-                currentValue.append(c);
-                // If closing quote, add to list and reset the builder
-                if (!inQuotes) {
-                    values.add(currentValue.toString());
-                    currentValue = new StringBuilder();
+            // Check for quote characters only if we're not currently escaping characters
+            if ((c == '"' || c == '\'') && (i == 0 || input.charAt(i - 1) != '\\')) {
+                if (inQuotes) {
+                    // If we're inside quotes and see the same quote type, we're closing it
+                    if (c == quoteType) {
+                        inQuotes = false; // We're closing the quote
+                    }
+                } else {
+                    inQuotes = true; // Opening quotes
+                    quoteType = c; // Remember the quote type
                 }
+                currentValue.append(c); // Append quote to current value
             } else if (c == ' ' && !inQuotes) {
-                // If whitespace outside quotes and current value is not empty, add to list
+                // If we encounter a space outside of quotes, add the current value to the list (if not empty)
                 if (currentValue.length() > 0) {
                     values.add(currentValue.toString());
-                    currentValue = new StringBuilder();
+                    currentValue.setLength(0); // Reset the StringBuilder for the next value
                 }
             } else {
+                // Append the current character to the current value
                 currentValue.append(c);
             }
         }
 
-        // Add the last value if exists
+        // Don't forget to add the last value if it exists
         if (currentValue.length() > 0) {
             values.add(currentValue.toString());
         }
