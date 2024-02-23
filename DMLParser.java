@@ -186,9 +186,10 @@ public class DMLParser {
                 if (primaryKeyOverwriting == false) {
                     // Loop through pages and find which one to insert record into. Look ahead algorithim
                     Page next = null;
-                    for (int i = 0; i < numPages; i++) {
+                    for (int i = 0; i < tableSchema.getIndexList().size(); i++) {
                         // See if we are going to be out of bounds
-                        if (i + 1 >= numPages) {
+                        int sizetest = tableSchema.getIndexList().size();
+                        if (i + 1 >= tableSchema.getIndexList().size()) {
                             break;
                         }
                         // Get the next page (must use BufferManager to get it)
@@ -326,7 +327,6 @@ public class DMLParser {
                         // Update all pages in the buffer pool list to have the correct page number
                         BufferManager.updatePageNumbersOnSplit(tableName, lastPage.getPageNumber());
                         BufferManager.addPageToBuffer(lastPage);
-                        return;
                     }
                 } else {
                     System.out.println("Error: A record with that primary key already exists.");
