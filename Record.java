@@ -243,7 +243,7 @@ public class Record {
             size += nullBitmap.toByteArray().length; // Add amount of bytes the nullbitmap is
             TableSchema tableSchema = Catalog.getTableSchema(tableName);
             ArrayList<AttributeSchema> attributes = tableSchema.getAttributeSchema();
-
+            size += 4 * attributes.size(); // Nullmap is stored as [int][int]..[int] for each attribute marking if its null or not
             // Go through each attribute/value, only add the size of the values that are not null
             for (int i = 0; i < values.size(); i++) {
                 if(!nullBitmap.get(i)){ // If this value is not null
