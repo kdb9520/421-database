@@ -315,8 +315,7 @@ public class DDLParser {
                 value = parsed[7];
                 value = value.substring(0, value.length() - 1);
                 if (numPages == 0) {
-                    System.err.println("Cannot insert default value because table has no values");
-                    return;
+                    System.err.println("No default values to insert");
                 }
             } else {
                 value = "null";
