@@ -121,7 +121,6 @@ public class StorageManager {
             try (FileOutputStream fos = new FileOutputStream(filePath)) {
                 // Write the integer 0 to the file
                 fos.write(ByteBuffer.allocate(4).putInt(0).array());
-                System.out.println("Integer written to file successfully.");
             } catch (IOException e) {
                 e.printStackTrace();
             }
