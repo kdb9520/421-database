@@ -92,8 +92,8 @@ public class DMLParser {
                         } else if (type.startsWith("varchar")) {
                             int numberOfChars = Integer.parseInt(type.substring(type.indexOf("(") + 1, type.indexOf(")")));
                             // account for "" on either side of val
-                            if (String.valueOf(value.charAt(0)).equals("'")
-                                    && String.valueOf(value.charAt(value.length() - 1)).equals("'"))
+                            if ((value.startsWith("\"") && value.endsWith("\"")) ||
+                                    (value.startsWith("'") && value.endsWith("'")))
                                 values.add(value.substring(1, value.length() - 1));
                             else {
                                 throw new IllegalArgumentException("Invalid value for varchar type: " + value);
@@ -112,7 +112,8 @@ public class DMLParser {
                             int numberOfChars = Integer.parseInt(type.substring(type.indexOf("(") + 1, type.indexOf(")")));
 
                             // If not wrapped in a '' then we know its not a char
-                            if (!value.startsWith("'") || !value.endsWith("'")) {
+                            if ((!value.startsWith("'") || !value.endsWith("'")) &&
+                                    (!value.startsWith("\"") || !value.endsWith("\""))) {
                                 throw new IllegalArgumentException("Invalid value for char type: " + value);
                             }
 

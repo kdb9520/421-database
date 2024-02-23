@@ -361,13 +361,17 @@ public class DDLParser {
 
                 for (int c = 0; c < attrs.size(); c++) {
                     Object v = attrs.get(c);
-                    String attribute = attributeSchemas.get(c).attrType;
-                    if (attribute.contains("varchar") || attribute.contains("char")) {
-                        tempQuery.append("'");
-                    }
-                    tempQuery.append(v.toString().trim());
-                    if (attribute.contains("varchar") || attribute.contains("char")) {
-                        tempQuery.append("'");
+                    if (v != null) {
+                        String attribute = attributeSchemas.get(c).attrType;
+                        if (attribute.contains("varchar") || attribute.contains("char")) {
+                            tempQuery.append("'");
+                        }
+                        tempQuery.append(v.toString().trim());
+                        if (attribute.contains("varchar") || attribute.contains("char")) {
+                            tempQuery.append("'");
+                        }
+                    } else {
+                        tempQuery.append("null");
                     }
                     if (c != attrs.size() - 1) {
                         tempQuery.append(" ");
