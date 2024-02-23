@@ -179,7 +179,9 @@ public class DMLParser {
                     Page page = BufferManager.getPage(tableName, i);
                     for (Record r : page.getRecords()) {
                         if (r.getAttribute(primaryKeyCol).equals(record.getAttribute(primaryKeyCol))) {
-                            primaryKeyOverwriting = true;
+                            System.out.println("Error: A record with that primary key already exists.");
+                            System.out.println("Tuple " + tuple + " not inserted!\n");
+                            return;
                         }
                     }
                 }
