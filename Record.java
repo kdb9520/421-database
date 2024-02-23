@@ -210,19 +210,18 @@ public class Record {
         for (int i = 0; i < attributeSchemas.size(); i++) {
             String type = attributeSchemas.get(i).getType();
             Object value = values.get(i);
-            if (value == null){
+            if (value == null) {
                 String s = "null";
                 output = output + s;
-            }
-            else if (type.equals("integer")) {
+            } else if (type.equals("integer")) {
                 Integer n = (Integer) value;
                 output = output + n;
             } else if (type.startsWith("varchar")) {
                 String s = (String) value;
-                output = output + s;
+                output = output + s.strip();
             } else if (type.startsWith("char")) {
                 String c = (String) value;
-                output = output + c;
+                output = output + c.strip();
             } else if (type.equals("double")) {
                 double d = (double) value;
                 output = output + d;
@@ -237,46 +236,49 @@ public class Record {
     }
 
     // Gets the size of a given record
-    // Requires  tablename to get schema for the attributes
-    // Record format: [int bitMapSize] [bitMap] [value 1] [value 2] [value 3] [value 5] example: value 4 is null
-    public int getRecordSize(String tableName){
+    // Requires tablename to get schema for the attributes
+    // Record format: [int bitMapSize] [bitMap] [value 1] [value 2] [value 3] [value
+    // 5] example: value 4 is null
+    public int getRecordSize(String tableName) {
         int size = 0;
-        try{
-            
+        try {
+
             size += 4; // bitMapSize integer
             size += nullBitmap.toByteArray().length; // Add amount of bytes the nullbitmap is
             TableSchema tableSchema = Catalog.getTableSchema(tableName);
             ArrayList<AttributeSchema> attributes = tableSchema.getAttributeSchema();
-            size += 4 * attributes.size(); // Nullmap is stored as [int][int]..[int] for each attribute marking if its null or not
-            // Go through each attribute/value, only add the size of the values that are not null
+            size += 4 * attributes.size(); // Nullmap is stored as [int][int]..[int] for each attribute marking if its
+                                           // null or not
+            // Go through each attribute/value, only add the size of the values that are not
+            // null
             for (int i = 0; i < values.size(); i++) {
-                if(!nullBitmap.get(i)){ // If this value is not null
+                if (!nullBitmap.get(i)) { // If this value is not null
                     String type = attributes.get(i).getType(); // Get what type it is
                     // Now increment size depending on what type it is
                     if (type.equals("integer")) {
                         size += 4; // Integer is size 4, no padding or values before it
-                        } else if (type.startsWith("varchar")) {
-                            size += 4; // Varchar is stored as [sizeofString] [string], add integer to size
-                            // Convert object to string
-                            String value = (String) values.get(i);
-                            // Get how many bytes the actual string is
-                            size += value.getBytes("UTF-8").length;
-                            } else if (type.startsWith("char")) {
-                                // Char is already padded
-                                // We need to change this formula after we alter when we pad char TODO
-                                String value = (String) values.get(i);
-                                size += value.getBytes("UTF-8").length;
-                            } else if (type.equals("double")) {
-                                size += 8;
-                            } else if (type.equals("boolean")) {
-                                size += 1; // Its 1 bit not byte??
-                            }
+                    } else if (type.startsWith("varchar")) {
+                        size += 4; // Varchar is stored as [sizeofString] [string], add integer to size
+                        // Convert object to string
+                        String value = (String) values.get(i);
+                        // Get how many bytes the actual string is
+                        size += value.getBytes("UTF-8").length;
+                    } else if (type.startsWith("char")) {
+                        // Char is already padded
+                        // We need to change this formula after we alter when we pad char TODO
+                        String value = (String) values.get(i);
+                        size += value.getBytes("UTF-8").length;
+                    } else if (type.equals("double")) {
+                        size += 8;
+                    } else if (type.equals("boolean")) {
+                        size += 1; // Its 1 bit not byte??
+                    }
                 }
-                }
-        } catch(Exception e){
+            }
+        } catch (Exception e) {
             System.out.println("Error when calculating record size");
         }
-        
+
         return size;
     }
 
