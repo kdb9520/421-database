@@ -118,16 +118,24 @@ public class Page {
             curPageSize += tempRecord.getRecordSize(tableName);
         }
         if (curPageSize + size_of_this_record > Main.pageSize) {
-            Page newPage = splitPage();
+            
+            // First insert the record into the page at right location
             // Find where to insert it in the page
+            Boolean inserted = false;
             for(int i = 0; i < records.size(); i++){
                 if(isLessThan(r,records.get(i),tableName)){
                     records.add(i, r);
-                    return newPage;
+                    inserted = true;
                 }
             }
-            // Add it at the end if it belongs there
-            records.add(records.size(), r);
+
+            // If we did not insert then it belongs at end of record
+            if(!inserted){
+                records.add(r);
+            }
+
+            // Split it now! Ex: [1][2][3][4] -> [1][2]   [3] [4]
+            Page newPage = splitPage();
             return newPage;
         }
 
@@ -157,7 +165,7 @@ public class Page {
 
         // Cut array in half, remove second half of values, add second half of erecords
         // to new page
-        int cutoffIndex = records.size() / 2 - 1;
+        int cutoffIndex = (records.size() / 2);
         ArrayList<Record> page2 = new ArrayList<>(records.subList(cutoffIndex, records.size()));
         // Remove the second half of records from the current page
         records.subList(cutoffIndex, records.size()).clear();
@@ -165,6 +173,7 @@ public class Page {
         // Add the second half of records to the new page
         newPage.records.addAll(page2);
         newPage.setTableName(tableName);
+        newPage.setPageNumber(this.pageNumber + 1);
         
         return newPage;
         // Ask buffer manager to create empty page then throw values into it
