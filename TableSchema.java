@@ -32,15 +32,15 @@ public class TableSchema {
         this.tableName = tableName;
     }
 
-    public Boolean dropAttribute(String attrName) {
+    public int dropAttribute(String attrName) {
         // remove an attribute and its data from the table
         int i = findAttribute(attrName);
         if(attributes.get(i).isPrimaryKey){
             System.err.println("This column is a primary key, cannot be removed");
-            return false;
+            return -1;
         }
         this.attributes.remove(i);
-        return true;
+        return i;
     }
 
     public void addAttribute(AttributeSchema a) {

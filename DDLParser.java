@@ -242,11 +242,11 @@ public class DDLParser {
                 return;
             }
 
-            if(!tableSchema.dropAttribute(parsed[4])){
+            int position = tableSchema.dropAttribute(parsed[4]);
+
+            if(position == -1){
                 return;
             }
-            int position = tableSchema.findAttribute(parsed[4]);
-
 
             int numPages = tableSchema.getIndexList().size();
             ArrayList<Record> recordsOld = new ArrayList<>();
