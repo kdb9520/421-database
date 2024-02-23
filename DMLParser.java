@@ -98,14 +98,14 @@ public class DMLParser {
                             else {
                                 throw new IllegalArgumentException("Invalid value for varchar type: " + value);
                             }
-                            // If it has char(size) characters or less, pad if needed and at it
-                            if (value.length() <= numberOfChars + 2) { // Check if it's right length excluding the ''
-                                String concatValue = value.substring(1, value.length() - 1);
-                                String paddedString = String.format("%-" + numberOfChars + "s", concatValue);
-                                values.add(paddedString);
-                            } else {
-                                throw new IllegalArgumentException("Invalid value for char type: " + value);
-                            }
+//                            // If it has char(size) characters or less, pad if needed and at it
+//                            if (value.length() <= numberOfChars + 2) { // Check if it's right length excluding the ''
+//                                String concatValue = value.substring(1, value.length() - 1);
+//                                String paddedString = String.format("%-" + numberOfChars + "s", concatValue);
+//                                values.add(paddedString);
+//                            } else {
+//                                throw new IllegalArgumentException("Invalid value for char type: " + value);
+//                            }
                         } else if (type.startsWith("char")) {
                             // account for '' on either side of val
                             // Get the number between ()
