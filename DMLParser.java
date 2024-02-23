@@ -200,6 +200,12 @@ public class DMLParser {
                             if ((Integer) record.getAttribute(primaryKeyCol) < (Integer) next.getFirstRecord(i)) {
                                 // Add the record to the page. Check if it split page or not
                                 // addRecord returns a new Page object if it split
+
+                                if (!checkUnique(tableName, record, attributeSchemas)) {
+                                    System.err.println("Error: inserting a record!\nUnique attribute was going to be overwritten!");
+                                    break;
+                                }
+
                                 Page result = BufferManager.getPage(tableName, i).addRecord(record);
 
                                 // If we split (result != null) then add the new page to our page list.
@@ -217,6 +223,11 @@ public class DMLParser {
 
                             if (record.getAttribute(primaryKeyCol).toString()
                                     .compareTo(next.getFirstRecord(i).toString()) <= 0) {
+                                
+                                if (!checkUnique(tableName, record, attributeSchemas)) {
+                                    System.err.println("Error: inserting a record!\nUnique attribute was going to be overwritten!");
+                                    break;
+                                }
                                 // Add the record to the page. Check if it split page or not
                                 Page result = BufferManager.getPage(tableName, i).addRecord(record);
                                 // If we split then add the new page to our page list.
@@ -234,6 +245,12 @@ public class DMLParser {
                             String nextRecordString = (String)  next.getFirstRecord(i);
                             // If this record is <= next record this is our page!
                             if (recordString.compareTo(nextRecordString) <= 0) {
+                                
+                                if (!checkUnique(tableName, record, attributeSchemas)) {
+                                    System.err.println("Error: inserting a record!\nUnique attribute was going to be overwritten!");
+                                    break;
+                                }
+                                
                                 // Add the record to the page. Check if it split page or not
                                 Page result = BufferManager.getPage(tableName, i).addRecord(record);
                                 // If we split then add the new page to our page list.
@@ -248,6 +265,12 @@ public class DMLParser {
                             }
                         } else if (primaryKeyType.equals("double")) {
                             if ((Double) record.getAttribute(primaryKeyCol) < (Double) next.getFirstRecord(i)) {
+                                
+                                if (!checkUnique(tableName, record, attributeSchemas)) {
+                                    System.err.println("Error: inserting a record!\nUnique attribute was going to be overwritten!");
+                                    break;
+                                }
+
                                 // Add the record to the page. Check if it split page or not
                                 // addRecord returns a new Page object if it split
                                 Page result = BufferManager.getPage(tableName, i).addRecord(record);
@@ -269,6 +292,12 @@ public class DMLParser {
                             Boolean nextRecordBoolean = (Boolean)  next.getFirstRecord(i);
                             
                             if (recordBoolean.compareTo(nextRecordBoolean) <= 0) {
+                                
+                                if (!checkUnique(tableName, record, attributeSchemas)) {
+                                    System.err.println("Error: inserting a record!\nUnique attribute was going to be overwritten!");
+                                    break;
+                                }
+                                
                                 // Add the record to the page. Check if it split page or not
                                 // addRecord returns a new Page object if it split
                                 Page result = BufferManager.getPage(tableName, i).addRecord(record);
@@ -383,4 +412,37 @@ public class DMLParser {
         return false;
     }
 
+    // Returns true if either no attrs are isUnique or if the isUnique rule is held successfully
+    // Returns false if there is a unique value about to be overwritten
+    private static boolean checkUnique (String tableName, Record record, ArrayList<AttributeSchema> attrSchemas) {
+
+        ArrayList<Integer> indeciesOfUnique = new ArrayList<>();
+        for (int i = 0; i < attrSchemas.size(); i++) {
+            if (attrSchemas.get(i).getIsUnique()) {
+                indeciesOfUnique.add(i);
+            }
+        }
+
+        if (indeciesOfUnique.size() >= 0) {
+            
+            TableSchema tableSchema = Catalog.getTableSchema(tableName);
+
+            int numPages = tableSchema.getIndexList().size();
+
+            for (int i = 0; i < numPages; i++) {
+                Page page = BufferManager.getPage(tableName, i);
+                for (Record r : page.getRecords()) {
+                    for (int j = 0; j < indeciesOfUnique.size(); j++) {
+                        if (r.getAttribute(indeciesOfUnique.get(i)).equals(record.getAttribute(indeciesOfUnique.get(i)))) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            return true;
+        }
+        return true;
+    }
 }
