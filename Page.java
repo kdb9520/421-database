@@ -42,7 +42,7 @@ public class Page {
         }
     }
 
-    public boolean isLessThan(Record r1, Record r2, String tableName){
+    public static boolean isLessThan(Record r1, Record r2, String tableName){
         TableSchema tableSchema = Catalog.getTableSchema(tableName);
         // Get primary key col number so we can figure out where to insert this record
         int primaryKeyCol = tableSchema.findPrimaryKeyColNum();
@@ -123,7 +123,7 @@ public class Page {
             // Find where to insert it in the page
             Boolean inserted = false;
             for(int i = 0; i < records.size(); i++){
-                if(isLessThan(r,records.get(i),tableName)){
+                if(isLessThan(r,records.get(i),tableName) && !inserted){
                     records.add(i, r);
                     inserted = true;
                 }
@@ -150,8 +150,8 @@ public class Page {
         return null;
     }
 
-    public Object getFirstRecord(int primaryKey) {
-        return this.records.get(0).getAttribute(primaryKey);
+    public Record getFirstRecord() {
+        return this.records.get(0);
     }
 
     public int getPageSize() {

@@ -171,7 +171,6 @@ public class DMLParser {
 
                 // Get primary key col number so we can figure out where to insert this record
                 int primaryKeyCol = tableSchema.findPrimaryKeyColNum();
-                String primaryKeyType = tableSchema.getPrimaryKeyType();
 
                 boolean primaryKeyOverwriting = false;
                 for (int i = 0; i < numPages; i++) {
@@ -188,132 +187,26 @@ public class DMLParser {
                     Page next = null;
                     for (int i = 0; i < tableSchema.getIndexList().size(); i++) {
                         // See if we are going to be out of bounds
-                        int sizetest = tableSchema.getIndexList().size();
                         if (i + 1 >= tableSchema.getIndexList().size()) {
                             break;
                         }
                         // Get the next page (must use BufferManager to get it)
                         next = BufferManager.getPage(tableName, i + 1);
+                        Record firstRecordOfNextPage = next.getFirstRecord();
 
                         // If its less than the first value of next page (i+1) then it belongs to page i
                         // Type cast appropiately then compare records
-                        if (primaryKeyType.equals("integer")) {
-                            if ((Integer) record.getAttribute(primaryKeyCol) < (Integer) next.getFirstRecord(i)) {
-                                // Add the record to the page. Check if it split page or not
-                                // addRecord returns a new Page object if it split
-
-                                if (!checkUnique(tableName, record, attributeSchemas)) {
-                                    System.err.println("Error: inserting a record!\nUnique attribute was going to be overwritten!");
-                                    break;
-                                }
-
-                                Page result = BufferManager.getPage(tableName, i).addRecord(record);
-
-                                // If we split (result != null) then add the new page to our page list.
-                                if (result != null) {
-                                    // Add new page to our page
-                                    tableSchema.getIndexList().add(i + 1, numPages);
-                                    // Update all pages in the buffer pool list to have the correct page number
-                                    BufferManager.updatePageNumbersOnSplit(tableName, result.getPageNumber());
-                                    BufferManager.addPageToBuffer(result);
-                                    return;
-                                }
-                                return;
+                        if(Page.isLessThan(record, firstRecordOfNextPage, tableName)){
+                            // Add record to current page
+                            Page page = BufferManager.getPage(tableName, i);
+                            Page splitPage = page.addRecord(record);
+                            if (splitPage != null) { // If we split update stuff as needed
+                                tableSchema.addToIndexList(numPages);
+                                // Update all pages in the buffer pool list to have the correct page number
+                                BufferManager.updatePageNumbersOnSplit(tableName, splitPage.getPageNumber());
+                                BufferManager.addPageToBuffer(splitPage);
                             }
-                        } else if (primaryKeyType.startsWith("varchar")) {
-
-                            if (record.getAttribute(primaryKeyCol).toString()
-                                    .compareTo(next.getFirstRecord(i).toString()) <= 0) {
-                                
-                                if (!checkUnique(tableName, record, attributeSchemas)) {
-                                    System.err.println("Error: inserting a record!\nUnique attribute was going to be overwritten!");
-                                    break;
-                                }
-                                // Add the record to the page. Check if it split page or not
-                                Page result = BufferManager.getPage(tableName, i).addRecord(record);
-                                // If we split then add the new page to our page list.
-                                if (result != null) {
-                                    tableSchema.getIndexList().add(i + 1, numPages);
-                                    // Update all pages in the buffer pool list to have the correct page number
-                                    BufferManager.updatePageNumbersOnSplit(tableName, result.getPageNumber());
-                                    BufferManager.addPageToBuffer(result);
-                                    return;
-                                }
-                                return;
-                            }
-                        } else if (primaryKeyType.startsWith("char")) {
-                            String recordString = (String) record.getAttribute(primaryKeyCol);
-                            String nextRecordString = (String)  next.getFirstRecord(i);
-                            // If this record is <= next record this is our page!
-                            if (recordString.compareTo(nextRecordString) <= 0) {
-                                
-                                if (!checkUnique(tableName, record, attributeSchemas)) {
-                                    System.err.println("Error: inserting a record!\nUnique attribute was going to be overwritten!");
-                                    break;
-                                }
-                                
-                                // Add the record to the page. Check if it split page or not
-                                Page result = BufferManager.getPage(tableName, i).addRecord(record);
-                                // If we split then add the new page to our page list.
-                                if (result != null) {
-                                    tableSchema.getIndexList().add(i + 1, numPages);
-                                    // Update all pages in the buffer pool list to have the correct page number
-                                    BufferManager.updatePageNumbersOnSplit(tableName, result.getPageNumber());
-                                    BufferManager.addPageToBuffer(result);
-                                    return;
-                                }
-                                return;
-                            }
-                        } else if (primaryKeyType.equals("double")) {
-                            if ((Double) record.getAttribute(primaryKeyCol) < (Double) next.getFirstRecord(i)) {
-                                
-                                if (!checkUnique(tableName, record, attributeSchemas)) {
-                                    System.err.println("Error: inserting a record!\nUnique attribute was going to be overwritten!");
-                                    break;
-                                }
-
-                                // Add the record to the page. Check if it split page or not
-                                // addRecord returns a new Page object if it split
-                                Page result = BufferManager.getPage(tableName, i).addRecord(record);
-
-                                // If we split (result != null) then add the new page to our page list.
-                                if (result != null) {
-                                    // Add new page to our page
-                                    tableSchema.getIndexList().add(i + 1, numPages);
-                                    // Update all pages in the buffer pool list to have the correct page number
-                                    BufferManager.updatePageNumbersOnSplit(tableName, result.getPageNumber());
-                                    BufferManager.addPageToBuffer(result);
-                                    return;
-                                }
-                                return;
-                            }
-                        } else if (primaryKeyType.equals("boolean")) {
-                            
-                            Boolean recordBoolean = (Boolean) record.getAttribute(primaryKeyCol);
-                            Boolean nextRecordBoolean = (Boolean)  next.getFirstRecord(i);
-                            
-                            if (recordBoolean.compareTo(nextRecordBoolean) <= 0) {
-                                
-                                if (!checkUnique(tableName, record, attributeSchemas)) {
-                                    System.err.println("Error: inserting a record!\nUnique attribute was going to be overwritten!");
-                                    break;
-                                }
-                                
-                                // Add the record to the page. Check if it split page or not
-                                // addRecord returns a new Page object if it split
-                                Page result = BufferManager.getPage(tableName, i).addRecord(record);
-
-                                // If we split (result != null) then add the new page to our page list.
-                                if (result != null) {
-                                    // Add new page to our page
-                                    tableSchema.getIndexList().add(i + 1, numPages);
-                                    // Update all pages in the buffer pool list to have the correct page number
-                                    BufferManager.updatePageNumbersOnSplit(tableName, result.getPageNumber());
-                                    BufferManager.addPageToBuffer(result);
-                                    return;
-                                }
-                                return;
-                            }
+                        }
                         }
                     }
 
@@ -328,7 +221,7 @@ public class DMLParser {
                         BufferManager.updatePageNumbersOnSplit(tableName, lastPage.getPageNumber());
                         BufferManager.addPageToBuffer(lastPage);
                     }
-                } else {
+                else {
                     System.out.println("Error: A record with that primary key already exists.");
                     System.out.println("Tuple " + tuple + " not inserted!\n");
                 }
