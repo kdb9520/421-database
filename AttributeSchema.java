@@ -134,13 +134,13 @@ public class AttributeSchema {
 
     @Override
     public String toString() {
-        return "AttributeSchema{" +
-                "attrName='" + attrName + '\'' +
-                ", attrType='" + attrType + '\'' +
-                ", isNotNull=" + isNotNull +
-                ", isPK=" + isPrimaryKey +
-                ", isUN=" + isUnique +
-                '}';
+        return "\n\t\tAttributeSchema{" +
+                "\n\t\t\tAttribute Name='" + attrName + '\'' +
+                "\n\t\t\tAttribute Type='" + attrType + '\'' +
+                "\n\t\t\tNot Null=" + isNotNull +
+                "\n\t\t\tPrimary Key=" + isPrimaryKey +
+                "\n\t\t\tUnique=" + isUnique +
+                "\n\t\t}";
     }
 }
 
