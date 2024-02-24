@@ -231,6 +231,12 @@ public class DMLParser {
                 // Cycled through all pages -> Record belongs on the last page of the table
 
                 if (!wasInserted) {
+                    if (!checkUnique(tableName, record, attributeSchemas)) {
+                        System.out.println("\nError: A record with that unique value already exists.");
+                        System.out.println("Tuple " + tuple + " not inserted!\n");
+                        return;
+                    }
+                    
                     // Insert the record into the last page of the table
                     Page lastPage = BufferManager.getPage(tableName, numPages - 1).addRecord(record);
 
@@ -387,8 +393,8 @@ public class DMLParser {
                 Page page = BufferManager.getPage(tableName, i);
                 for (Record r : page.getRecords()) {
                     for (int j = 0; j < indeciesOfUnique.size(); j++) {
-                        if (r.getAttribute(indeciesOfUnique.get(i)) != null && r.getAttribute(indeciesOfUnique.get(i))
-                                .equals(record.getAttribute(indeciesOfUnique.get(i)))) {
+                        if (r.getAttribute(indeciesOfUnique.get(j)) != null && r.getAttribute(indeciesOfUnique.get(j))
+                                .equals(record.getAttribute(indeciesOfUnique.get(j)))) {
                             return false;
                         }
                     }
