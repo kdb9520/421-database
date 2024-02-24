@@ -203,8 +203,10 @@ public class TableSchema {
     @Override
     public String toString() {
         return "TableSchema{" +
-                "attributes=" + attributes +
-                '}';
+                "\n\tName=" + this.tableName +
+                "\n\tTable Number=" + this.tableNumber +
+                "\n\tAttributes=" + this.attributes +
+                "\n}";
     }
 }
 

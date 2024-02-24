@@ -161,6 +161,12 @@ public class DMLParser {
             // We now have the record made corectly, we need to insert it into right place
             Record record = new Record(values);
 
+            if (!checkUnique(tableName, record, attributeSchemas)) {
+                System.out.println("\nError: A record with that unique value already exists.");
+                System.out.println("Tuple " + tuple + " not inserted!\n");
+                return;
+            }
+
             // If the table is empty, no pages exist. Create a new page
             if (tableSchema.getIndexList().size() == 0) {
                 // Create new page (using bufferManager)
@@ -213,11 +219,7 @@ public class DMLParser {
                     if (Page.isLessThan(record, firstRecordOfNextPage, tableName)) {
                         // Add record to current page
                         Page page = BufferManager.getPage(tableName, i);
-                        if (!checkUnique(tableName, record, attributeSchemas)) {
-                            System.out.println("\nError: A record with that unique value already exists.");
-                            System.out.println("Tuple " + tuple + " not inserted!\n");
-                            return;
-                        }
+                        
                         Page splitPage = page.addRecord(record);
                         wasInserted = true;
                         if (splitPage != null) { // If we split update stuff as needed
@@ -228,6 +230,7 @@ public class DMLParser {
                             // Break out of for loop; go to next row to insert
                             break;
                         }
+                        break;
                     }
                 }
 
