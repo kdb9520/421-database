@@ -80,7 +80,10 @@ public class Main {
 
     private static void handleQuery (String query, String dbloc) {
         
-        query = query.toLowerCase();
+        query = query.toLowerCase().replaceAll("\\s+", " ");
+        if (query.substring(query.length() - 2).equals(" ;")) {
+            query = query.substring(0, query.length() - 2) + ";";
+        }
 
         if(query.startsWith("quit")) {
             shutdown();
