@@ -13,8 +13,8 @@ public class DMLParser {
             insert(query.substring(12));
         }
 
-        else if (query.startsWith("display schema ")) {
-            displaySchema(query.substring(15), databaseLocation);
+        else if (query.strip().equals("display schema;")) {
+            displaySchema(databaseLocation);
         }
 
         else if (query.startsWith("display info ")) {
@@ -323,22 +323,12 @@ public class DMLParser {
 
     }
 
-    private static boolean displaySchema(String tableName, String databaseLocation) {
+    private static void displaySchema(String databaseLocation) {
 
-        tableName = tableName.strip().split(";")[0];
+        System.out.println("Database Location: " + databaseLocation + "\nPage Size: " + Main.pageSize
+                + "\nBuffer Size: " + Main.bufferSize + "\nTable Schema: ");
 
-        TableSchema tableSchema = Catalog.getTableSchema(tableName);
-        if (tableSchema != null) {
-
-            String schema = tableSchema.toString();
-
-            System.out.println("Database Location: " + databaseLocation + "\nPage Size: " + Main.pageSize
-                    + "\nBuffer Size: " + Main.bufferSize + "Table Schema: " + schema);
-            return true;
-        } else {
-            System.out.println("Error: Table '" + tableName + "' not found");
-        }
-        return false;
+        Catalog.getTableSchemas().forEach((System.out::println));
     }
 
     private static boolean displayInfo(String tableName) {

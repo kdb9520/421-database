@@ -92,7 +92,7 @@ public class Main {
             DDLParser.alterTable(query);
         }
         else if (query.startsWith("insert into ") ||
-            query.startsWith("display schema ") ||
+            query.strip().equals("display schema;") ||
             query.startsWith("display info ") ||
             query.startsWith("select ")) {
 

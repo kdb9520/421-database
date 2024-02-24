@@ -164,6 +164,8 @@ public class Catalog {
         return Catalog.catalog;
     }
 
+    public static ArrayList<TableSchema> getTableSchemas() { return tableSchemas; }
+
     /**
      * Renames the schema from temp to the tableName - used by Alter Table in DDL Parser
      * @param name - the real table name
