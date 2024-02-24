@@ -101,7 +101,7 @@ public class BufferManager {
     public static void addPageToBuffer(Page page){
         // First create a page
         // Add it to buffer
-        if (bufferPool.size() + 1 >= Main.bufferSize) {
+        if (bufferPool.size() + 1 > Main.bufferSize) {
             // Buffer pool is full, evict a page using some policy (e.g., LRU)
             evictPage();
         }

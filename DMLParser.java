@@ -198,6 +198,7 @@ public class DMLParser {
                     }
                     // Get the next page (must use BufferManager to get it)
                     next = BufferManager.getPage(tableName, i + 1);
+
                     Record firstRecordOfNextPage = next.getFirstRecord();
 
                     // If its less than the first value of next page (i+1) then it belongs to page i
@@ -208,10 +209,12 @@ public class DMLParser {
                         Page splitPage = page.addRecord(record);
                         wasInserted = true;
                         if (splitPage != null) { // If we split update stuff as needed
-                            tableSchema.addToIndexList(numPages);
+                            tableSchema.addToIndexList(i+1,numPages);
                             // Update all pages in the buffer pool list to have the correct page number
                             BufferManager.updatePageNumbersOnSplit(tableName, splitPage.getPageNumber());
                             BufferManager.addPageToBuffer(splitPage);
+                            // Break out of for loop; go to next row to insert
+                            break;
                         }
                     }
                 }

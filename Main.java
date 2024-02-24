@@ -34,31 +34,37 @@ public class Main {
             if (started) {
                 Scanner scanner = new Scanner(System.in);
                 StringBuilder commandBuilder = new StringBuilder();
-                while (true) {
-                    System.out.print("> ");
-                    String line = readCommand(scanner);
-                    commandBuilder.append(line).append("\n");
-
-                    // SCAN UNTIL SEMICOLON
-                    // CLEAN OUT ALL WHITE SPACE AND REPLACE WITH SPACES
-
-                    if (line.contains(";")) {
-                        String command = commandBuilder.toString().trim().replaceAll("\\s+", " ");
-                        handleQuery(command, databaseLocation);
-                        if (line.endsWith(";")) {
-                            // Clear the command builder if the semicolon is at the end of the line
-                            commandBuilder.setLength(0);
-                        } else {
-                            // If the semicolon is not at the end, reset the builder to the part after the semicolon
-                            int index = line.lastIndexOf(";");
-                            commandBuilder.setLength(0);
-                            commandBuilder.append(line.substring(index + 1).trim()).append("\n");
+            
+                    while (true) {
+                        try{
+                            System.out.print("> ");
+                            String line = readCommand(scanner);
+                            commandBuilder.append(line).append("\n");
+        
+                            // SCAN UNTIL SEMICOLON
+                            // CLEAN OUT ALL WHITE SPACE AND REPLACE WITH SPACES
+        
+                            if (line.contains(";")) {
+                                String command = commandBuilder.toString().trim().replaceAll("\\s+", " ");
+                                handleQuery(command, databaseLocation);
+                                if (line.endsWith(";")) {
+                                    // Clear the command builder if the semicolon is at the end of the line
+                                    commandBuilder.setLength(0);
+                                } else {
+                                    // If the semicolon is not at the end, reset the builder to the part after the semicolon
+                                    int index = line.lastIndexOf(";");
+                                    commandBuilder.setLength(0);
+                                    commandBuilder.append(line.substring(index + 1).trim()).append("\n");
+                                }
+                            }
+                        } catch(Exception e){
+                            System.out.println("Error with command. Debugging statement:");
+                            e.printStackTrace();
                         }
+                        
                     }
-//                    else {
-//                        System.out.println("Invalid Command: Semicolon required at the end of each command");
-//                    }
-                }
+
+                
             }
             else {
                 displayUsage();

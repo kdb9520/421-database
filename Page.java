@@ -126,6 +126,7 @@ public class Page {
                 if(isLessThan(r,records.get(i),tableName) && !inserted){
                     records.add(i, r);
                     inserted = true;
+                    break;
                 }
             }
 
@@ -145,6 +146,7 @@ public class Page {
                 return null;
             }
         }
+
         // Add it at the end if it belongs there
         records.add(records.size(), r);
         return null;

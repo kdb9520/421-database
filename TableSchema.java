@@ -184,6 +184,10 @@ public class TableSchema {
         this.pageIndexes.add(pageIndex);
     }
 
+    public void addToIndexList(Integer indexToInsertInto, Integer pageIndex){
+        this.pageIndexes.add(indexToInsertInto, pageIndex);
+    }
+
     public int getRecordSize(){
         // Get the size of a record
         return 0;
