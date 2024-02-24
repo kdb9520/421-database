@@ -80,10 +80,23 @@ public class Main {
 
     private static void handleQuery (String query, String dbloc) {
         
-        query = query.toLowerCase().replaceAll("\\s+", " ");
+        query = query.replaceAll("\\s+", " ");
         if (query.substring(query.length() - 2).equals(" ;")) {
             query = query.substring(0, query.length() - 2) + ";";
         }
+
+        char[] chars = query.toCharArray();
+        boolean insideQuotes = false;
+        for (int i = 0; i < chars.length; i++) {
+            if (chars[i] == '\'' || chars[i] == '"') {
+                insideQuotes = !insideQuotes;
+            } else if (!insideQuotes) {
+            chars[i] = Character.toLowerCase(chars[i]);
+            }
+        }
+
+        query = new String(chars);
+        System.out.println("Processed Query: " + query);
 
         if(query.startsWith("quit")) {
             shutdown();
