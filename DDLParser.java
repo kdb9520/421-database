@@ -271,7 +271,7 @@ public class DDLParser {
         if (operation.equals("add")) {
             ArrayList<AttributeSchema> as = tableSchema.getAttributeSchema();
             for (AttributeSchema a : as) {
-                if (a.attrName.equals(name)) {
+                if (a.attrName.equals(parsed[4])) {
                     System.err.println("Name already exists in schema");
                     return;
                 }

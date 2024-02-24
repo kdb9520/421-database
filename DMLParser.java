@@ -13,8 +13,8 @@ public class DMLParser {
             insert(query.substring(12));
         }
 
-        else if (query.startsWith("display schema ")) {
-            displaySchema(query.substring(15), databaseLocation);
+        else if (query.strip().equals("display schema;")) {
+            displaySchema(databaseLocation);
         }
 
         else if (query.startsWith("display info ")) {
@@ -165,6 +165,13 @@ public class DMLParser {
             if (tableSchema.getIndexList().size() == 0) {
                 // Create new page (using bufferManager)
                 Page newPage = BufferManager.createPage(tableName, 0);
+                
+                if (!checkUnique(tableName, record, attributeSchemas)) {
+                    System.out.println("\nError: A record with that unique value already exists.");
+                    System.out.println("Tuple " + tuple + " not inserted!\n");
+                    return;
+                }
+
                 // add this entry to a new page
                 newPage.addRecord(record);
                 tableSchema.addToIndexList(0);
@@ -206,6 +213,11 @@ public class DMLParser {
                     if (Page.isLessThan(record, firstRecordOfNextPage, tableName)) {
                         // Add record to current page
                         Page page = BufferManager.getPage(tableName, i);
+                        if (!checkUnique(tableName, record, attributeSchemas)) {
+                            System.out.println("\nError: A record with that unique value already exists.");
+                            System.out.println("Tuple " + tuple + " not inserted!\n");
+                            return;
+                        }
                         Page splitPage = page.addRecord(record);
                         wasInserted = true;
                         if (splitPage != null) { // If we split update stuff as needed
@@ -222,6 +234,12 @@ public class DMLParser {
                 // Cycled through all pages -> Record belongs on the last page of the table
 
                 if (!wasInserted) {
+                    if (!checkUnique(tableName, record, attributeSchemas)) {
+                        System.out.println("\nError: A record with that unique value already exists.");
+                        System.out.println("Tuple " + tuple + " not inserted!\n");
+                        return;
+                    }
+                    
                     // Insert the record into the last page of the table
                     Page lastPage = BufferManager.getPage(tableName, numPages - 1).addRecord(record);
 
@@ -308,22 +326,12 @@ public class DMLParser {
 
     }
 
-    private static boolean displaySchema(String tableName, String databaseLocation) {
+    private static void displaySchema(String databaseLocation) {
 
-        tableName = tableName.strip().split(";")[0];
+        System.out.println("Database Location: " + databaseLocation + "\nPage Size: " + Main.pageSize
+                + "\nBuffer Size: " + Main.bufferSize + "\nTable Schema: ");
 
-        TableSchema tableSchema = Catalog.getTableSchema(tableName);
-        if (tableSchema != null) {
-
-            String schema = tableSchema.toString();
-
-            System.out.println("Database Location: " + databaseLocation + "\nPage Size: " + Main.pageSize
-                    + "\nBuffer Size: " + Main.bufferSize + "Table Schema: " + schema);
-            return true;
-        } else {
-            System.out.println("Error: Table '" + tableName + "' not found");
-        }
-        return false;
+        Catalog.getTableSchemas().forEach((System.out::println));
     }
 
     private static boolean displayInfo(String tableName) {
@@ -378,8 +386,8 @@ public class DMLParser {
                 Page page = BufferManager.getPage(tableName, i);
                 for (Record r : page.getRecords()) {
                     for (int j = 0; j < indeciesOfUnique.size(); j++) {
-                        if (r.getAttribute(indeciesOfUnique.get(i))
-                                .equals(record.getAttribute(indeciesOfUnique.get(i)))) {
+                        if (r.getAttribute(indeciesOfUnique.get(j)) != null && r.getAttribute(indeciesOfUnique.get(j))
+                                .equals(record.getAttribute(indeciesOfUnique.get(j)))) {
                             return false;
                         }
                     }
