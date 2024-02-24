@@ -157,7 +157,7 @@ public class DDLParser {
      */
     private static Boolean checkTypes(String param) {
         if (param.equals("integer") || param.equals("double") || param.equals("boolean")
-                || param.equals("boolean") || param.equals("char") || param.equals("varchar")) {
+                || param.equals("boolean") || param.startsWith("char") || param.startsWith("varchar")) {
             return true;
         }
 
@@ -303,7 +303,7 @@ public class DDLParser {
                     return;
                 }
                 String value = attributeType.substring(attributeType.indexOf('(') + 1, attributeType.indexOf(')'));
-                attributeType = attributeType.substring(0, attributeType.indexOf('('));
+                attributeType = attributeType.substring(0, attributeType.indexOf(')')+1);
             }
 
             // if invalid types

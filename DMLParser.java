@@ -169,14 +169,16 @@ public class DMLParser {
 
             // If the table is empty, no pages exist. Create a new page
             if (tableSchema.getIndexList().size() == 0) {
-                // Create new page (using bufferManager)
-                Page newPage = BufferManager.createPage(tableName, 0);
-                
+
                 if (!checkUnique(tableName, record, attributeSchemas)) {
                     System.out.println("\nError: A record with that unique value already exists.");
                     System.out.println("Tuple " + tuple + " not inserted!\n");
                     return;
                 }
+                // Create new page (using bufferManager)
+                Page newPage = BufferManager.createPage(tableName, 0);
+                
+                
 
                 // add this entry to a new page
                 newPage.addRecord(record);
