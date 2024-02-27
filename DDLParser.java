@@ -94,8 +94,12 @@ public class DDLParser {
             }
             typeValid = checkTypes(type);
             for (String p : constraints) {
-                if (p.equals("primarykey")) {
+                if (p.equals("primarykey") && !primaryKeyExists) {
                     primaryKeyExists = true;
+                }
+                else if(p.equals("primarykey") && primaryKeyExists){
+                    System.err.println("Can not have two primary keys in a table.");
+                    return;
                 }
             }
             constraintsValid = checkConstraint(constraints);
