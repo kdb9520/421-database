@@ -2,6 +2,7 @@ import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 
 import javax.management.Query;
 
@@ -326,9 +327,66 @@ public class DMLParser {
             } else {
                 System.err.println("Table: " + tableName + " does not exist");
             }
-
+        } else {
+            
+            // Split the input query into parts
+            String[] parts = query.split("\\s+");
+            
+            // Initialize lists for attributes, tables, and the where clause
+            List<String> attributes = new ArrayList<>();
+            List<String> tables = new ArrayList<>();
+            String whereClause = null;
+            
+            // Flags to track whether "from" and "where" keywords are found
+            boolean fromFound = false;
+            boolean whereFound = false;
+            
+            // Loop through the parts of the query
+            for (int i = 0; i < parts.length; i++) {
+                String part = parts[i].toLowerCase();
+                
+                // Check for "from" keyword
+                if (part.equals("from")) {
+                    fromFound = true;
+                    continue;
+                }
+                
+                // Check for "where" keyword
+                if (part.equals("where")) {
+                    whereFound = true;
+                    // The remaining part of the query after "where" is the where clause
+                    whereClause = String.join(" ", List.of(parts).subList(i + 1, parts.length));
+                    break; // Exit loop since we found "where"
+                }
+                
+                // Add attributes and tables based on whether "from" has been found
+                if (!fromFound) {
+                    if (!part.equals("select") && !part.equals(",")) {
+                        attributes.add(part);
+                    }
+                } else if (!whereFound) {
+                    if (!part.equals(",") && !part.equals("and")) {
+                        tables.add(part);
+                    }
+                }
+            }
+        
+            // Check for errors
+            if (!fromFound) {
+                System.out.println("Error: 'from' keyword not found.");
+                return;
+            }
+            
+            if (whereClause == null) {
+                // TODO print all attributes from tables
+                return;
+            }
+            else {
+                // TODO - Handle clause
+                // Print accordingly
+            }
+            
         }
-
     }
 
     private static void displaySchema(String databaseLocation) {
