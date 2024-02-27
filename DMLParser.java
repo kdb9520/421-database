@@ -377,16 +377,50 @@ public class DMLParser {
                 return;
             }
             
-            if (whereClause == null) {
-                // TODO print all attributes from tables
+            if (tables.size() == 0) {
+                // TODO - Add message: ERROR OUT
                 return;
             }
-            else {
-                // TODO - Handle clause
-                // Print accordingly
+
+            for (String tableName : tables) {
+                
+                // TODO BUILD SPECIFIC attributesFromTable from attributes using tableName
+                // CURRENTLY NONFUNCTIONAL
+                ArrayList<String> attributesFromTable = new ArrayList<>(attributes);
+                
+                selectAttributesFromTable(attributesFromTable, tableName, whereClause);
             }
             
         }
+    }
+
+    private static boolean selectAttributesFromTable (ArrayList<String> attributes, String tableName, String whereClause) {
+        
+        TableSchema tableSchema = Catalog.getTableSchema(tableName);
+        if (tableSchema == null) {
+            System.err.println("Table: " + tableName + " does not exist");
+            return false;
+        }
+
+        if (whereClause == null) {
+             ArrayList<Integer> indecies = new ArrayList<>();
+
+            //TODO Calculate which indecies of attributeSchema are the ones specified.
+
+
+            System.out.println(tableSchema.prettyPrint(indecies));
+            int num_pages = tableSchema.getIndexList().size();
+            for (int i = 0; i < num_pages; i++) {
+                Page page = BufferManager.getPage(tableName, i);
+                System.out.println(page.prettyPrint(indecies));
+            }
+            return true;
+        }
+
+        // Else - do the where clause
+        
+        
+        return true;
     }
 
     private static void displaySchema(String databaseLocation) {

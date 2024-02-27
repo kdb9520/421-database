@@ -250,6 +250,12 @@ public class Page {
         return result.toString();
     }
 
+    public String prettyPrint(ArrayList<Integer> indecies) {
+        StringBuilder result = new StringBuilder();
+        records.forEach(r -> result.append(r.prettyPrint(this.tableName, indecies)).append("\n"));
+        return result.toString();
+    }
+
     @Override
     public String toString() {
         String pageString = "";
