@@ -53,14 +53,18 @@ public class BufferManager {
         // Implementation of page eviction policy (e.g., LRU)
         // For simplicity, this example just removes the first page in the buffer pool
         Page removedPage = bufferPool.get(0);
-        StorageManager.writePageToDisk(removedPage);
+        if(removedPage.wasEdited){
+            StorageManager.writePageToDisk(removedPage);
+        }
         bufferPool.remove(0);
     }
 
     public static void purgeBuffer() {
         // Iterate through all entries in the buffer pool
         for (Page p : bufferPool) {
-            StorageManager.writePageToDisk(p);
+            if(p.wasEdited){
+                StorageManager.writePageToDisk(p);
+            }
         }
         // Clear the buffer pool
         bufferPool.clear();

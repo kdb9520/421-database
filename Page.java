@@ -11,6 +11,7 @@ public class Page {
     int pageNumber;
     String tableName;
     ArrayList<Record> records;
+    boolean wasEdited;
 
 
     public Page() { 
@@ -40,6 +41,7 @@ public class Page {
         for (Record record : this.records) {
             record.setAttribute(value);
         }
+        this.wasEdited = true;
     }
 
     public static boolean isLessThan(Record r1, Record r2, String tableName){
@@ -111,6 +113,7 @@ public class Page {
     public Page addRecord(Record r) {
         // Get the size of this record
         int size_of_this_record = r.getRecordSize(tableName);
+        this.wasEdited = true;
         // Check if adding this record will put us above the size
         int curPageSize = 0;
         // Calculate current size of page
@@ -176,7 +179,7 @@ public class Page {
         newPage.records.addAll(page2);
         newPage.setTableName(tableName);
         newPage.setPageNumber(this.pageNumber + 1);
-        
+        newPage.wasEdited = true;
         return newPage;
         // Ask buffer manager to create empty page then throw values into it
 
