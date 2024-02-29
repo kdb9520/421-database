@@ -108,6 +108,9 @@ public class StorageManager {
 
     }
 
+
+
+
     public static void writeTableToDisk (String tableName) {
 
         // Create actual table file (they are stored as files)

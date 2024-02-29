@@ -14,6 +14,10 @@ public class DMLParser {
             insert(query.substring(12));
         }
 
+        if(query.startsWith("delete ")){
+            delete(query.substring(12));
+        }
+
         else if (query.strip().equals("display schema;")) {
             displaySchema(databaseLocation);
         }
@@ -23,6 +27,42 @@ public class DMLParser {
         } else if (query.startsWith("select")) {
             select(query.substring(6));
         }
+    }
+
+    private static void delete(String substring) {
+        String [] split = substring.split(" ");
+        String tableName = split[0];
+        if(Catalog.getTableSchema(tableName) == null){
+            System.err.println("Table does not exist");
+        }
+
+        TableSchema tableSchema = Catalog.getTableSchema(tableName);
+        String whereClause = String.join(" ", Arrays.copyOfRange(split, 1, split.length));
+        deleteRecord(tableSchema, whereClause);
+
+
+
+    }
+
+    /**
+     * Deletes records from a table given a condition
+     * @param tableSchema - the name of the table
+     * @param whereClause - the condition
+     */
+    public static void deleteRecord(TableSchema tableSchema, String whereClause){
+        // Print all values in table
+        // Loop through the table and print each page
+        // For each page in table tableName
+        int num_pages = tableSchema.getIndexList().size();
+        for (int i = 0; i < num_pages; i++) {
+            Page page = BufferManager.getPage(tableSchema.tableName, i);
+            ArrayList<Record> records = page.getRecords();
+            for(Record r : records){
+
+            }
+
+        }
+
     }
 
     public static void insert(String query) {
