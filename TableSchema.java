@@ -210,6 +210,19 @@ public class TableSchema {
         return str.toString();
     }
 
+    // Input: Indecies of attributes within the schema to print
+    // Outpur: String with correct attributes displayed
+    public String prettyPrint(ArrayList<Integer> indecies) {
+        StringBuilder str = new StringBuilder();
+
+        for (int i = 0; i< attributes.size(); i++) {
+            if (indecies.contains((Integer) i))
+                str.append("|").append(attributes.get(i).prettyPrint()).append("|");
+        }
+        str.append(String.format("\n%" + str.length() + "s", " ").replace(" ", "-"));
+        return str.toString();
+    }
+
     @Override
     public String toString() {
         return "TableSchema{" +

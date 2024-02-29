@@ -2,6 +2,7 @@ import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 
 import javax.management.Query;
 
@@ -326,9 +327,100 @@ public class DMLParser {
             } else {
                 System.err.println("Table: " + tableName + " does not exist");
             }
+        } else {
+            
+            // Split the input query into parts
+            String[] parts = query.split("\\s+");
+            
+            // Initialize lists for attributes, tables, and the where clause
+            List<String> attributes = new ArrayList<>();
+            List<String> tables = new ArrayList<>();
+            String whereClause = null;
+            
+            // Flags to track whether "from" and "where" keywords are found
+            boolean fromFound = false;
+            boolean whereFound = false;
+            
+            // Loop through the parts of the query
+            for (int i = 0; i < parts.length; i++) {
+                String part = parts[i].toLowerCase();
+                
+                // Check for "from" keyword
+                if (part.equals("from")) {
+                    fromFound = true;
+                    continue;
+                }
+                
+                // Check for "where" keyword
+                if (part.equals("where")) {
+                    whereFound = true;
+                    // The remaining part of the query after "where" is the where clause
+                    whereClause = String.join(" ", List.of(parts).subList(i + 1, parts.length));
+                    break; // Exit loop since we found "where"
+                }
+                
+                // Add attributes and tables based on whether "from" has been found
+                if (!fromFound) {
+                    if (!part.equals("select") && !part.equals(",")) {
+                        attributes.add(part);
+                    }
+                } else if (!whereFound) {
+                    if (!part.equals(",") && !part.equals("and")) {
+                        tables.add(part);
+                    }
+                }
+            }
+        
+            // Check for errors
+            if (!fromFound) {
+                System.out.println("Error: 'from' keyword not found.");
+                return;
+            }
+            
+            if (tables.size() == 0) {
+                // TODO - Add message: ERROR OUT
+                return;
+            }
 
+            for (String tableName : tables) {
+                
+                // TODO BUILD SPECIFIC attributesFromTable from attributes using tableName
+                // CURRENTLY NONFUNCTIONAL
+                ArrayList<String> attributesFromTable = new ArrayList<>(attributes);
+                
+                selectAttributesFromTable(attributesFromTable, tableName, whereClause);
+            }
+            
+        }
+    }
+
+    private static boolean selectAttributesFromTable (ArrayList<String> attributes, String tableName, String whereClause) {
+        
+        TableSchema tableSchema = Catalog.getTableSchema(tableName);
+        if (tableSchema == null) {
+            System.err.println("Table: " + tableName + " does not exist");
+            return false;
         }
 
+        if (whereClause == null) {
+             ArrayList<Integer> indecies = new ArrayList<>();
+
+            //TODO Calculate which indecies of attributeSchema are the ones specified.
+
+
+            System.out.println(tableSchema.prettyPrint(indecies));
+            int num_pages = tableSchema.getIndexList().size();
+            for (int i = 0; i < num_pages; i++) {
+                Page page = BufferManager.getPage(tableName, i);
+                System.out.println(page.prettyPrint(indecies));
+            }
+            return true;
+        }
+
+        // Else - do the where clause
+        
+        
+        return true;
     }
 
     private static void displaySchema(String databaseLocation) {
