@@ -304,6 +304,7 @@ public class DMLParser {
 
     public static void select(String query) {
         String[] splitQuery = query.strip().split(" ");
+        String[] tableNames = getTableNames(query);
         if (splitQuery[0].equals("*")) {
             String tableName = splitQuery[2];
             // gets rid of semicolon after table name
@@ -392,6 +393,20 @@ public class DMLParser {
             }
             
         }
+    }
+
+    private static String[] getTableNames(String query) {
+        String[] names = query.split("from")[1].split("where")[0].split(",");
+        for (int i = 0; i < names.length; i++) {
+            names[i] = names[i].strip();
+            if (i == names.length - 1) {
+                names[i] = names[i].split(";")[0].strip();
+            }
+        }
+        for (String n : names) {
+            System.out.println(n);
+        }
+        return names;
     }
 
     private static boolean selectAttributesFromTable (ArrayList<String> attributes, String tableName, String whereClause) {
