@@ -59,6 +59,16 @@ public class TableSchema {
         
     }
 
+
+    // Returns a list of all attribute names (Currently used for select columnname from table)
+    public ArrayList<String> getAttributeNames(){
+        ArrayList<String> attributeNames = new ArrayList<>();
+        for(AttributeSchema a : attributes){
+            attributeNames.add(a.getAttributeName());
+        }
+        return attributeNames;
+    }
+
     /**
      * TableSchema.findAttribute(String attrName) takes in a string representing the attribute we want to find.
      * This method looks through the attributes in the TableSchema and will try to match the string to the name of an
