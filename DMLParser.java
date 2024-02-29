@@ -336,6 +336,8 @@ public class DMLParser {
             List<String> attributes = new ArrayList<>();
             List<String> tables = new ArrayList<>();
             String whereClause = null;
+
+            WhereNode whereTree = createTree(whereClause);
             
             // Flags to track whether "from" and "where" keywords are found
             boolean fromFound = false;
@@ -392,6 +394,16 @@ public class DMLParser {
             }
             
         }
+    }
+
+    // Helper function
+    // Given a where clause, create a WhereNode tree
+    // Example where clause:
+    // select * from students where gpa > 2 and name = 'Bob';
+    // whereClause: 'gpa > 2 and name = 'Bob';
+    private static WhereNode createTree(String whereClause) {
+        // Parse out each piece and create notes in order
+        return null;
     }
 
     private static boolean selectAttributesFromTable (ArrayList<String> attributes, String tableName, String whereClause) {
