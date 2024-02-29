@@ -14,6 +14,10 @@ public class DMLParser {
             insert(query.substring(12));
         }
 
+        if(query.startsWith("delete ")){
+            delete(query.substring(12));
+        }
+
         else if (query.strip().equals("display schema;")) {
             displaySchema(databaseLocation);
         }
@@ -23,6 +27,17 @@ public class DMLParser {
         } else if (query.startsWith("select")) {
             select(query.substring(6));
         }
+    }
+
+    private static void delete(String substring) {
+        String [] split = substring.split(" ");
+        String tableName = substring[0];
+        if(Catalog.getTableSchema(tableName) == null){
+            System.err.println("Table does not exist");
+        }
+
+
+
     }
 
     public static void insert(String query) {
