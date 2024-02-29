@@ -106,6 +106,10 @@ public class AttributeSchema {
         }
     }
 
+    public String getAttributeName(){
+        return this.attrName;
+    }
+
       // Deserialize a byte array into a record object
       public static AttributeSchema deserialize(ByteBuffer buffer) {
         // Read attribute details from the buffer
