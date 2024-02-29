@@ -1,7 +1,7 @@
 public class OperatorNode implements WhereNode{
     String operator;
-    WhereNode left;
-    WhereNode right;
+    private WhereNode left;
+    private WhereNode right;
     String type;
 
     public OperatorNode(WhereNode left, WhereNode right, String type){
@@ -126,6 +126,16 @@ public class OperatorNode implements WhereNode{
     @Override
     public Object get() {
         return null;
+    }
+
+    @Override
+    public WhereNode getLeft() {
+        return this.left;
+    }
+
+    @Override
+    public WhereNode getRight() {
+        return this.right;
     }
     
 }

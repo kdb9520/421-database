@@ -12,4 +12,19 @@ public class AndNode implements WhereNode {
         // If any condition evaluates to true, return true
         return lCondition.evaluate() && rCondition.evaluate();
     }
+
+    @Override
+    public Object get() {
+        return null;
+    }
+
+    @Override
+    public WhereNode getLeft() {
+        return this.lCondition;
+    }
+
+    @Override
+    public WhereNode getRight() {
+        return this.rCondition;
+    }
 }
