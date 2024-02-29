@@ -4,8 +4,7 @@ public class ConstNode implements WhereNode {
 
     @Override
     public boolean evaluate() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'evaluate'");
+        return true;
     }
 
     @Override
