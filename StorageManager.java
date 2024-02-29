@@ -109,14 +109,7 @@ public class StorageManager {
     }
 
 
-    /**
-     * Deletes records from a table given a condition
-     * @param tableName - the name of the table
-     * @param whereClause - the condition
-     */
-    public static void deleteRecord(String tableName, String whereClause){
 
-    }
 
     public static void writeTableToDisk (String tableName) {
 
