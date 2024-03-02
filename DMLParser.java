@@ -328,13 +328,12 @@ public class DMLParser {
                 System.err.println("Table: " + tableName + " does not exist");
             }
         } else {
-            
             // Split the input query into parts
             String[] parts = query.split("\\s+");
             
             // Initialize lists for attributes, tables, and the where clause
-            List<String> attributes = new ArrayList<>();
-            List<String> tables = new ArrayList<>();
+            ArrayList<String> attributes = new ArrayList<>();
+            ArrayList<String> tables = new ArrayList<>();
             String whereClause = null;
             
             // Flags to track whether "from" and "where" keywords are found
@@ -343,7 +342,15 @@ public class DMLParser {
             
             // Loop through the parts of the query
             for (int i = 0; i < parts.length; i++) {
+                
                 String part = parts[i].toLowerCase();
+
+                if (part.length() == 0) {
+                    continue;
+                }
+
+                // take semicolon or comma off of the end of the part
+                part = (part.endsWith(";") || part.endsWith(",")) ? part.substring(0, part.length() - 1) : part;
                 
                 // Check for "from" keyword
                 if (part.equals("from")) {
@@ -382,42 +389,72 @@ public class DMLParser {
                 return;
             }
 
-            for (String tableName : tables) {
+            //for (String tableName : tables) {
                 
                 // TODO BUILD SPECIFIC attributesFromTable from attributes using tableName
                 // CURRENTLY NONFUNCTIONAL
-                ArrayList<String> attributesFromTable = new ArrayList<>(attributes);
+            //    ArrayList<String> attributesFromTable = new ArrayList<>(attributes);
                 
-                selectAttributesFromTable(attributesFromTable, tableName, whereClause);
-            }
-            
+            //    selectAttributesFromTable(attributesFromTable, tableName, whereClause);
+            //}
+            buildAttributeTable(attributes, tables, whereClause);
         }
     }
 
-    private static boolean selectAttributesFromTable (ArrayList<String> attributes, String tableName, String whereClause) {
-        
-        TableSchema tableSchema = Catalog.getTableSchema(tableName);
-        if (tableSchema == null) {
-            System.err.println("Table: " + tableName + " does not exist");
-            return false;
+    private static boolean buildAttributeTable (ArrayList<String> attributes, ArrayList<String> tables, String whereClause) {
+
+        Boolean multiTable = false;
+        if ( tables.size() > 1) {
+            multiTable = true;
         }
 
+        boolean dotAttributes = false;
+        if (attributes.get(0).contains(".")) {
+            dotAttributes = true;
+        }
+
+        ArrayList<Record> allRecords;
+
+        // Only display the specified attributes from table
         if (whereClause == null) {
-             ArrayList<Integer> indecies = new ArrayList<>();
-
-            //TODO Calculate which indecies of attributeSchema are the ones specified.
-
-
-            System.out.println(tableSchema.prettyPrint(indecies));
-            int num_pages = tableSchema.getIndexList().size();
-            for (int i = 0; i < num_pages; i++) {
-                Page page = BufferManager.getPage(tableName, i);
-                System.out.println(page.prettyPrint(indecies));
+            
+            ArrayList<ArrayList<Object>> fullAttrList = new ArrayList<>();
+            if (multiTable == false && dotAttributes == false) {
+                ArrayList<Integer> indecies = new ArrayList<>(); 
+                TableSchema tableSchema = Catalog.getTableSchema(tables.get(0));
+                ArrayList<String> attributesFromTable = tableSchema.getAttributeNames();
+                for (int i = 0; i < attributesFromTable.size(); i++) {
+                    String attr = attributesFromTable.get(i);
+                    if (attributes.contains(attr)) {
+                        indecies.add(i);
+                    }
+                }
+                for (Integer index : indecies) {
+                    // get arraylist of values from that attribute
+                    ArrayList<Object> attrList = new ArrayList<>();
+                    int num_pages = tableSchema.getIndexList().size();
+                    for (int i = 0; i < num_pages; i++) {
+                        Page page = BufferManager.getPage(tables.get(0), i);
+                        for (Record rec : page.records) {
+                            attrList.add(rec.getAttribute(index));
+                        }
+                    }
+                    fullAttrList.add(attrList);
+                }
             }
+
+            // Get an arraylist of all records
+            
+
             return true;
         }
+        else {
+            // Handle where clause
 
-        // Else - do the where clause
+            // Get arraylist of all records
+        }
+
+        // Print out the arraylist of all records
         
         
         return true;
