@@ -485,6 +485,11 @@ public class DMLParser {
 
     // TODO not fully impelemeneded correctly - no attribute headers and fails on objs
     private static void printSelectTable (ArrayList<ArrayList<Object>> fullAttrList){
+        
+        if (fullAttrList == null) {
+            return;
+        }
+
         System.out.println("Select Result: \n");
         for (ArrayList<Object> attrList : fullAttrList) {
             for (Object attr : attrList) {
