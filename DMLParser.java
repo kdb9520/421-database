@@ -397,67 +397,101 @@ public class DMLParser {
                 
             //    selectAttributesFromTable(attributesFromTable, tableName, whereClause);
             //}
-            buildAttributeTable(attributes, tables, whereClause);
+
+            ArrayList<ArrayList<Object>> fullAttributeList = buildAttributeTable(attributes, tables, whereClause);
+            printSelectTable(fullAttributeList);
         }
     }
 
-    private static boolean buildAttributeTable (ArrayList<String> attributes, ArrayList<String> tables, String whereClause) {
-
-        Boolean multiTable = false;
-        if ( tables.size() > 1) {
-            multiTable = true;
-        }
+    private static ArrayList<ArrayList<Object>> buildAttributeTable (ArrayList<String> attributes, ArrayList<String> tables, String whereClause) {
 
         boolean dotAttributes = false;
         if (attributes.get(0).contains(".")) {
             dotAttributes = true;
         }
 
-        ArrayList<Record> allRecords;
-
         // Only display the specified attributes from table
         if (whereClause == null) {
-            
             ArrayList<ArrayList<Object>> fullAttrList = new ArrayList<>();
-            if (multiTable == false && dotAttributes == false) {
-                ArrayList<Integer> indecies = new ArrayList<>(); 
-                TableSchema tableSchema = Catalog.getTableSchema(tables.get(0));
-                ArrayList<String> attributesFromTable = tableSchema.getAttributeNames();
-                for (int i = 0; i < attributesFromTable.size(); i++) {
-                    String attr = attributesFromTable.get(i);
-                    if (attributes.contains(attr)) {
-                        indecies.add(i);
-                    }
-                }
-                for (Integer index : indecies) {
-                    // get arraylist of values from that attribute
-                    ArrayList<Object> attrList = new ArrayList<>();
-                    int num_pages = tableSchema.getIndexList().size();
-                    for (int i = 0; i < num_pages; i++) {
-                        Page page = BufferManager.getPage(tables.get(0), i);
-                        for (Record rec : page.records) {
-                            attrList.add(rec.getAttribute(index));
+                // assuming no conflicting attribute names across tables (when no dots being used)
+                boolean failure = false;
+                for (int n = 0; n < tables.size(); n++) {
+                    String tableName = tables.get(n);
+                    TableSchema tableSchema = Catalog.getTableSchema(tableName); // might fail if table 0 is an empty string
+                    ArrayList<String> attributesFromTable = tableSchema.getAttributeNames();
+                    for (int i = 0; i < attributes.size(); i++) {
+                        String attribute = attributes.get(i);
+                        boolean inTable = false;
+                        if (dotAttributes == true) {
+                            String[] parts = attribute.split("\\.");
+                            String attrTableName = parts[0];
+                            attribute = parts[1];
+                            if (attrTableName.equals(tableName)) {
+                                fullAttrList.add(getAttributeListFromAttribute(attributesFromTable.indexOf(attribute), tableName));
+                                inTable = true;
+                                continue;
+                            }
+                        }
+                        else{
+                            if (attributesFromTable.contains(attribute)) {
+                                fullAttrList.add(getAttributeListFromAttribute(attributesFromTable.indexOf(attribute), tableName));
+                                inTable = true;
+                                continue;
+                            }
+                        }
+                        if (!inTable) {
+                            System.err.println("Error: Attribute '" + attribute + "' is not present in any table!");
+                            failure = true;
+                            break;
                         }
                     }
-                    fullAttrList.add(attrList);
                 }
+
+            // some attribute was never found in any of the tables
+            if (failure == true) {
+                return null;
             }
-
-            // Get an arraylist of all records
-            
-
-            return true;
+            return fullAttrList;
         }
         else {
             // Handle where clause
 
-            // Get arraylist of all records
+            // return arraylist of all records
         }
 
         // Print out the arraylist of all records
         
         
-        return true;
+        return null;
+    }
+
+    private static ArrayList<Object> getAttributeListFromAttribute(int index, String tableName) {
+        ArrayList<Object> attrList = new ArrayList<>();
+
+        TableSchema tableSchema = Catalog.getTableSchema(tableName);
+        // Add Table Name, Index of Attribute, and Attrbute Name at the front of the row of attribute values
+        attrList.add(tableName);
+        attrList.add(index);
+        attrList.add(tableSchema.getAttributeNames().get(index));
+        int num_pages = tableSchema.getIndexList().size();
+        for (int i = 0; i < num_pages; i++) {
+            Page page = BufferManager.getPage(tableName, i);
+            for (Record rec : page.records) {
+                attrList.add(rec.getAttribute(index));
+            }
+        }
+        return attrList;
+    }
+
+    // TODO not fully impelemeneded correctly - no attribute headers and fails on objs
+    private static void printSelectTable (ArrayList<ArrayList<Object>> fullAttrList){
+        System.out.println("Select Result: \n");
+        for (ArrayList<Object> attrList : fullAttrList) {
+            for (Object attr : attrList) {
+                System.out.print(attr.toString() + " ");
+            }
+            System.out.println("\n");
+        }
     }
 
     private static void displaySchema(String databaseLocation) {
