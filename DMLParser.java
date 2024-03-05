@@ -389,17 +389,10 @@ public class DMLParser {
                 return;
             }
 
-            //for (String tableName : tables) {
-                
-                // TODO BUILD SPECIFIC attributesFromTable from attributes using tableName
-                // CURRENTLY NONFUNCTIONAL
-            //    ArrayList<String> attributesFromTable = new ArrayList<>(attributes);
-                
-            //    selectAttributesFromTable(attributesFromTable, tableName, whereClause);
-            //}
-
             ArrayList<ArrayList<Object>> fullAttributeList = buildAttributeTable(attributes, tables, whereClause);
-            printSelectTable(fullAttributeList);
+            if (fullAttributeList != null) {
+                printSelectTable(fullAttributeList);
+            }
         }
     }
 
@@ -410,46 +403,46 @@ public class DMLParser {
             dotAttributes = true;
         }
 
+        ArrayList<ArrayList<Object>> fullAttrList = new ArrayList<>();
         // Only display the specified attributes from table
         if (whereClause == null) {
-            ArrayList<ArrayList<Object>> fullAttrList = new ArrayList<>();
-                // assuming no conflicting attribute names across tables (when no dots being used)
-                boolean failure = false;
-                for (int n = 0; n < tables.size(); n++) {
+            
+            for (int i = 0; i < attributes.size(); i++) {
+                
+                String attribute = attributes.get(i);
+                boolean inTable = false;
+
+                // TODO cartesian tables
+                // Do the search on only one single table
+
+                for (int n = 0; i < tables.size(); n++) {
+
                     String tableName = tables.get(n);
                     TableSchema tableSchema = Catalog.getTableSchema(tableName); // might fail if table 0 is an empty string
                     ArrayList<String> attributesFromTable = tableSchema.getAttributeNames();
-                    for (int i = 0; i < attributes.size(); i++) {
-                        String attribute = attributes.get(i);
-                        boolean inTable = false;
-                        if (dotAttributes == true) {
-                            String[] parts = attribute.split("\\.");
-                            String attrTableName = parts[0];
-                            attribute = parts[1];
-                            if (attrTableName.equals(tableName)) {
-                                fullAttrList.add(getAttributeListFromAttribute(attributesFromTable.indexOf(attribute), tableName));
-                                inTable = true;
-                                continue;
-                            }
+
+                    if (dotAttributes == true) {
+                        String[] parts = attribute.split("\\.");
+                        String attrTableName = parts[0];
+                        attribute = parts[1];
+                        if (attrTableName.equals(tableName)) {
+                            fullAttrList.add(getAttributeListFromAttribute(attributesFromTable.indexOf(attribute), tableName));
+                            inTable = true;
+                            break;
                         }
-                        else{
-                            if (attributesFromTable.contains(attribute)) {
-                                fullAttrList.add(getAttributeListFromAttribute(attributesFromTable.indexOf(attribute), tableName));
-                                inTable = true;
-                                continue;
-                            }
-                        }
-                        if (!inTable) {
-                            System.err.println("Error: Attribute '" + attribute + "' is not present in any table!");
-                            failure = true;
+                    }
+                    else{
+                        if (attributesFromTable.contains(attribute)) {
+                            fullAttrList.add(getAttributeListFromAttribute(attributesFromTable.indexOf(attribute), tableName));
+                            inTable = true;
                             break;
                         }
                     }
                 }
-
-            // some attribute was never found in any of the tables
-            if (failure == true) {
-                return null;
+                if (!inTable) {
+                    System.err.println("Error: Attribute '" + attribute + "' is not present in any table!");
+                    return null;
+                }
             }
             return fullAttrList;
         }
@@ -457,12 +450,8 @@ public class DMLParser {
             // Handle where clause
 
             // return arraylist of all records
+            return fullAttrList;
         }
-
-        // Print out the arraylist of all records
-        
-        
-        return null;
     }
 
     private static ArrayList<Object> getAttributeListFromAttribute(int index, String tableName) {
