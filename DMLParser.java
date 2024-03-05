@@ -385,7 +385,7 @@ public class DMLParser {
             }
             
             if (tables.size() == 0) {
-                // TODO - Add message: ERROR OUT
+                System.out.println("Error: No tables found.");
                 return;
             }
 
@@ -412,8 +412,7 @@ public class DMLParser {
                 String attribute = attributes.get(i);
                 boolean inTable = false;
 
-                // TODO cartesian tables
-                // Do the search on only one single table
+                // TODO cartesian tables -> Do the search on only one single table
 
                 for (int n = 0; i < tables.size(); n++) {
 
