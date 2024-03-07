@@ -414,7 +414,7 @@ public class DMLParser {
 
                 // TODO cartesian tables -> Do the search on only one single table
 
-                for (int n = 0; i < tables.size(); n++) {
+                for (int n = 0; n < tables.size(); n++) {
 
                     String tableName = tables.get(n);
                     TableSchema tableSchema = Catalog.getTableSchema(tableName); // might fail if table 0 is an empty string
@@ -461,6 +461,7 @@ public class DMLParser {
         attrList.add(tableName);
         attrList.add(index);
         attrList.add(tableSchema.getAttributeNames().get(index));
+        attrList.add(tableSchema.getAttributeSchema().get(index).getType());
         int num_pages = tableSchema.getIndexList().size();
         for (int i = 0; i < num_pages; i++) {
             Page page = BufferManager.getPage(tableName, i);
@@ -480,8 +481,28 @@ public class DMLParser {
 
         System.out.println("Select Result: \n");
         for (ArrayList<Object> attrList : fullAttrList) {
-            for (Object attr : attrList) {
-                System.out.print(attr.toString() + " ");
+            System.out.print(attrList.get(2) + ": ");
+            String type = (String) attrList.get(3);
+            for (int i = 4; i < attrList.size(); i++) {
+                Object value = attrList.get(i);
+                String str = "";
+                if (value == null) {
+                    str = "null";
+                } else if (type.equals("integer")) {
+                    Integer n = (Integer) value;
+                    str = n.toString();
+                } else if (type.startsWith("varchar")) {
+                    str = "\"" + value.toString().strip() + "\"";
+                } else if (type.startsWith("char")) {
+                    str = "\"" + value.toString().strip() + "\"";
+                } else if (type.equals("double")) {
+                    Double d = (Double) value;
+                    str = d.toString();
+                } else if (type.equals("boolean")) {
+                    Boolean b = (Boolean) value;
+                    str = b.toString();
+                }
+                System.out.print(str + " | ");
             }
             System.out.println("\n");
         }
