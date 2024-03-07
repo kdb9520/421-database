@@ -447,9 +447,9 @@ public class DMLParser {
                 return;
             }
 
-            ArrayList<ArrayList<Object>> fullAttributeList = buildAttributeTable(attributes, tables, whereClause);
-            if (fullAttributeList != null) {
-                printSelectTable(fullAttributeList);
+            SelectOutput selectOutput = buildAttributeTable(attributes, tableSchema, whereClause);
+            if (selectOutput != null) {
+                printSelectTable(selectOutput);
             }
         }
     }
@@ -541,96 +541,75 @@ public class DMLParser {
         return names;
     }
 
-    private static ArrayList<ArrayList<Object>> buildAttributeTable (ArrayList<String> attributes, ArrayList<String> tables, String whereClause) {
+    private static SelectOutput buildAttributeTable (ArrayList<String> attributes, TableSchema tableSchema, String whereClause) {
 
-        boolean dotAttributes = false;
-        if (attributes.get(0).contains(".")) {
-            dotAttributes = true;
-        }
+        ArrayList<Record> recordOutput = new ArrayList<>();
 
-        ArrayList<ArrayList<Object>> fullAttrList = new ArrayList<>();
         // Only display the specified attributes from table
         if (whereClause == null) {
-            
-            for (int i = 0; i < attributes.size(); i++) {
-                
-                String attribute = attributes.get(i);
-                boolean inTable = false;
 
-                // TODO cartesian tables -> Do the search on only one single table
+            // for each record in the table
+            // for each attribute index in attributes
+            // add to tuple builder
 
-                for (int n = 0; n < tables.size(); n++) {
-
-                    String tableName = tables.get(n);
-                    TableSchema tableSchema = Catalog.getTableSchema(tableName); // might fail if table 0 is an empty string
-                    ArrayList<String> attributesFromTable = tableSchema.getAttributeNames();
-
-                    if (dotAttributes == true) {
-                        String[] parts = attribute.split("\\.");
-                        String attrTableName = parts[0];
-                        attribute = parts[1];
-                        if (attrTableName.equals(tableName)) {
-                            fullAttrList.add(getAttributeListFromAttribute(attributesFromTable.indexOf(attribute), tableName));
-                            inTable = true;
-                            break;
-                        }
-                    }
-                    else{
-                        if (attributesFromTable.contains(attribute)) {
-                            fullAttrList.add(getAttributeListFromAttribute(attributesFromTable.indexOf(attribute), tableName));
-                            inTable = true;
-                            break;
-                        }
-                    }
+            ArrayList<AttributeSchema> attributeSchemas = new ArrayList<>();
+            ArrayList<Integer> indecies = new ArrayList<>();
+            for (String attr : attributes) {
+                if (tableSchema.getAttributeNames().contains(attr)) {
+                    int attrIndex = tableSchema.findAttribute(attr);
+                    indecies.add(attrIndex);
+                    attributeSchemas.add(tableSchema.findAttributeSchema(attrIndex));
                 }
-                if (!inTable) {
-                    System.err.println("Error: Attribute '" + attribute + "' is not present in any table!");
+                else {
+                    System.err.println("Error: Attribute '" + attr + "' is not present in any table!");
                     return null;
                 }
             }
-            return fullAttrList;
+
+            TableSchema selectTableSchema = new TableSchema("selectSchema", attributeSchemas);
+            for (int i = 0; i < tableSchema.getIndexList().size(); i++) {
+                Page page = BufferManager.getPage(tableSchema.getTableName(), i);
+                for (Record record : page.records) {
+                    ArrayList<Object> recordBuilder = new ArrayList<>();
+                    for (int j = 0; j < record.getValues().size(); j++) {
+                        if (indecies.contains(j)) {
+                            recordBuilder.add(record.getAttribute(j));
+                        }
+                    }
+                    recordOutput.add(new Record(recordBuilder));
+                }
+            }
+
+            return new SelectOutput(recordOutput, attributeSchemas);
         }
         else {
             // Handle where clause
 
             // return arraylist of all records
-            return fullAttrList;
+            return null;
         }
     }
 
-
-    private static ArrayList<Object> getAttributeListFromAttribute(int index, String tableName) {
-        ArrayList<Object> attrList = new ArrayList<>();
-
-        TableSchema tableSchema = Catalog.getTableSchema(tableName);
-        // Add Table Name, Index of Attribute, and Attrbute Name at the front of the row of attribute values
-        attrList.add(tableName);
-        attrList.add(index);
-        attrList.add(tableSchema.getAttributeNames().get(index));
-        attrList.add(tableSchema.getAttributeSchema().get(index).getType());
-        int num_pages = tableSchema.getIndexList().size();
-        for (int i = 0; i < num_pages; i++) {
-            Page page = BufferManager.getPage(tableName, i);
-            for (Record rec : page.records) {
-                attrList.add(rec.getAttribute(index));
-            }
-        }
-        return attrList;
-    }
-
-    // TODO not fully impelemeneded correctly - no attribute headers and fails on objs
-    private static void printSelectTable (ArrayList<ArrayList<Object>> fullAttrList){
+    // CURRENTLY NON-FUNCTIONAL
+    private static void printSelectTable (SelectOutput selectOutput){
         
-        if (fullAttrList == null) {
+        String tableName = null;// selectOutput.getTableName();
+        ArrayList<Record> records = selectOutput.getRecords();
+        ArrayList<AttributeSchema> attributeSchemas = selectOutput.getAttributeSchemas();
+
+        if (records == null) {
             return;
         }
 
         System.out.println("Select Result: \n");
-        for (ArrayList<Object> attrList : fullAttrList) {
-            System.out.print(attrList.get(2) + ": ");
-            String type = (String) attrList.get(3);
-            for (int i = 4; i < attrList.size(); i++) {
-                Object value = attrList.get(i);
+        for (Record record : records) {
+
+            record.prettyPrint(null);
+
+            System.out.print(attributeSchemas.get(2) + ": ");
+            String type = null; //(String) attributeSchemas.get(3);
+            for (int i = 4; i < attributeSchemas.size(); i++) {
+                Object value = null;//attrList.get(i);
                 String str = "";
                 if (value == null) {
                     str = "null";
