@@ -349,7 +349,7 @@ public class DMLParser {
 
     public static void select(String query) {
         String[] splitQuery = query.strip().split(" ");
-        String[] tableNames = getTableNames(query);
+        String[] tableNames = QueryHandler.getTableNamesFromSelect(query);
         ArrayList<TableSchema> tableSchemas = new ArrayList<>();
         for (String t : tableNames) {
             TableSchema tbs = Catalog.getTableSchema(t);
@@ -454,13 +454,22 @@ public class DMLParser {
         }
     }
 
+    /**
+     * tableCartesian calculates and returns a cartesian product of all the values in given tables.
+     * Writes a temporary table 'tempCartesian' to the hardware for later use in SELECT and WHERE.
+     * @param tableSchemas a list of tableSchemas to take the cartesian of.
+     * @return temporary TableSchema with cartesian records
+     */
     private static TableSchema tableCartesian(ArrayList<TableSchema> tableSchemas) {
         ArrayList<AttributeSchema> as = new ArrayList<>();
         ArrayList<Record> oldCartesian = new ArrayList<>();
         ArrayList<Record> newCartesian;
         TableSchema temp;
 
+        // loop through our TableSchemas
         for (int i = 0; i < tableSchemas.size(); i++) {
+
+            // add attributes as tablename.attrname
             for (AttributeSchema a : tableSchemas.get(i).attributes) {
                 String newName = tableSchemas.get(i).tableName + "." + a.attrName;
                 as.add(new AttributeSchema(newName, a.attrType, a.isNotNull, a.isPrimaryKey, a.isUnique));
@@ -469,6 +478,7 @@ public class DMLParser {
             ArrayList<Record> toAdd = new ArrayList<>();
             TableSchema current = tableSchemas.get(i);
 
+            // get the records in the tables so we can cartesian
             int numPages = current.getIndexList().size();
             if (numPages != 0) {
 
@@ -484,6 +494,7 @@ public class DMLParser {
 
             newCartesian = new ArrayList<>();
 
+            // calculate the cartesian for the previous table and current table
             ArrayList<Object> tempRec = new ArrayList<>();
             if (!oldCartesian.isEmpty()) {
                 for (Record o : oldCartesian) {
@@ -501,11 +512,13 @@ public class DMLParser {
             oldCartesian = newCartesian;
         }
 
+        // get rid of primary keys and uniques
         for (AttributeSchema a : as) {
             a.isPrimaryKey = false;
             a.isUnique = false;
         }
 
+        // make our own primary key to id rows and sort
         as.add(new AttributeSchema("row_id", "integer", false, true, false));
         int rowId = 0;
 
@@ -516,6 +529,7 @@ public class DMLParser {
             newCartesian.add(new Record(vals));
         }
 
+        // make the temp table and insert values into it
         if (!newCartesian.isEmpty()) {
             temp = new TableSchema("tempCartesian", as);
             Catalog.updateCatalog(temp);
@@ -528,17 +542,6 @@ public class DMLParser {
         }
 
         return null;
-    }
-
-    private static String[] getTableNames(String query) {
-        String[] names = query.split("from")[1].split("where")[0].split(",");
-        for (int i = 0; i < names.length; i++) {
-            names[i] = names[i].strip();
-            if (i == names.length - 1) {
-                names[i] = names[i].split(";")[0].strip();
-            }
-        }
-        return names;
     }
 
     private static SelectOutput buildAttributeTable (ArrayList<String> attributes, TableSchema tableSchema, String whereClause) {

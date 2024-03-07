@@ -42,4 +42,20 @@ public class QueryHandler {
 
     }
 
+    /**
+     * getTableNames takes in a query in the form "SELECT ... FROM t1, <t2>, <tn> WHERE ... ;" and gets the table names.
+     * @param query SELECT query
+     * @return array of table names strings
+     */
+    public static String[] getTableNamesFromSelect(String query) {
+        String[] names = query.split("from")[1].split("where")[0].split(",");
+        for (int i = 0; i < names.length; i++) {
+            names[i] = names[i].strip();
+            if (i == names.length - 1) {
+                names[i] = names[i].split(";")[0].strip();
+            }
+        }
+        return names;
+    }
+
 }
