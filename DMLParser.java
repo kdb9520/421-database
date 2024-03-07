@@ -50,6 +50,8 @@ public class DMLParser {
      * @param whereClause - the condition
      */
     public static void deleteRecord(TableSchema tableSchema, String whereClause){
+
+
         // Print all values in table
         // Loop through the table and print each page
         // For each page in table tableName
@@ -58,7 +60,9 @@ public class DMLParser {
             Page page = BufferManager.getPage(tableSchema.tableName, i);
             ArrayList<Record> records = page.getRecords();
             for(Record r : records){
-
+                if(true){   //todo - wait for where clause implementation
+                    page.removeRecord(r);
+                }
             }
 
         }
@@ -255,6 +259,7 @@ public class DMLParser {
                     // Get the next page (must use BufferManager to get it)
                     next = BufferManager.getPage(tableName, i + 1);
 
+
                     Record firstRecordOfNextPage = next.getFirstRecord();
 
                     // If its less than the first value of next page (i+1) then it belongs to page i
@@ -344,30 +349,43 @@ public class DMLParser {
 
     public static void select(String query) {
         String[] splitQuery = query.strip().split(" ");
-        if (splitQuery[0].equals("*")) {
-            String tableName = splitQuery[2];
-            // gets rid of semicolon after table name
-            tableName = tableName.substring(0, tableName.length() - 1);
-            TableSchema tableSchema = Catalog.getTableSchema(tableName);
-            if (tableSchema != null) {
-                // need to test formating of toStrings
-                // todo: update the padding to be the highest varchar length or something like
-                // that
-                System.out.println(tableSchema.prettyPrint());
-
-                // Print all values in table
-                // Loop through the table and print each page
-                // For each page in table tableName
-                int num_pages = tableSchema.getIndexList().size();
-                for (int i = 0; i < num_pages; i++) {
-                    Page page = BufferManager.getPage(tableName, i);
-                    System.out.println(page.prettyPrint());
-                }
-
-            } else {
-                System.err.println("Table: " + tableName + " does not exist");
+        String[] tableNames = getTableNames(query);
+        ArrayList<TableSchema> tableSchemas = new ArrayList<>();
+        for (String t : tableNames) {
+            TableSchema tbs = Catalog.getTableSchema(t);
+            if (tbs == null) {
+                System.err.println("Table: " + t + " does not exist!");
+                return;
             }
+            tableSchemas.add(tbs);
+        }
+
+        TableSchema tableSchema = ((tableSchemas.size() > 1) ? tableCartesian(tableSchemas) : tableSchemas.get(0));
+
+        if (tableSchema == null) {
+            System.err.println("Error when calculating Cartesian of tables.");
+            return;
+        }
+
+        if (splitQuery[0].equals("*")) {
+
+            // need to test formating of toStrings
+            // todo: update the padding to be the highest varchar length or something like
+            // that
+            System.out.println(tableSchema.prettyPrint());
+
+            // Print all values in table
+            // Loop through the table and print each page
+            // For each page in table tableName
+            int num_pages = tableSchema.getIndexList().size();
+            for (int i = 0; i < num_pages; i++) {
+                Page page = BufferManager.getPage(tableSchema.getTableName(), i);
+                System.out.println(page.prettyPrint());
+            }
+
+            
         } else {
+            
             // Split the input query into parts
             String[] parts = query.split("\\s+");
             
@@ -436,6 +454,93 @@ public class DMLParser {
         }
     }
 
+    private static TableSchema tableCartesian(ArrayList<TableSchema> tableSchemas) {
+        ArrayList<AttributeSchema> as = new ArrayList<>();
+        ArrayList<Record> oldCartesian = new ArrayList<>();
+        ArrayList<Record> newCartesian;
+        TableSchema temp;
+
+        for (int i = 0; i < tableSchemas.size(); i++) {
+            for (AttributeSchema a : tableSchemas.get(i).attributes) {
+                String newName = tableSchemas.get(i).tableName + "." + a.attrName;
+                as.add(new AttributeSchema(newName, a.attrType, a.isNotNull, a.isPrimaryKey, a.isUnique));
+            }
+
+            ArrayList<Record> toAdd = new ArrayList<>();
+            TableSchema current = tableSchemas.get(i);
+
+            int numPages = current.getIndexList().size();
+            if (numPages != 0) {
+
+                int j = 0;
+                // add all old records to new array
+                do {
+                    Page page = BufferManager.getPage(current.tableName, j);
+                    ArrayList<Record> t = page.getRecords();
+                    toAdd.addAll(t);
+                    j += 1;
+                } while (j < numPages);
+            }
+
+            newCartesian = new ArrayList<>();
+
+            ArrayList<Object> tempRec = new ArrayList<>();
+            if (!oldCartesian.isEmpty()) {
+                for (Record o : oldCartesian) {
+                    for (Record t : toAdd) {
+                        tempRec.addAll(o.getValues());
+                        tempRec.addAll(t.getValues());
+                        newCartesian.add(new Record(tempRec));
+                        tempRec = new ArrayList<>();
+                    }
+                }
+            } else {
+                newCartesian.addAll(toAdd);
+            }
+
+            oldCartesian = newCartesian;
+        }
+
+        for (AttributeSchema a : as) {
+            a.isPrimaryKey = false;
+            a.isUnique = false;
+        }
+
+        as.add(new AttributeSchema("row_id", "integer", false, true, false));
+        int rowId = 0;
+
+        newCartesian = new ArrayList<>();
+        for (Record r : oldCartesian) {
+            ArrayList<Object> vals = r.getValues();
+            vals.add(rowId++);
+            newCartesian.add(new Record(vals));
+        }
+
+        if (!newCartesian.isEmpty()) {
+            temp = new TableSchema("tempCartesian", as);
+            Catalog.updateCatalog(temp);
+            StorageManager.writeTableToDisk(temp.tableName);
+            // TODO: DELETE THE TEMP TABLE AFTER USE
+            String insertQuery = QueryHandler.buildInsertQuery(newCartesian, temp);
+            insert(insertQuery);
+
+            return temp;
+        }
+
+        return null;
+    }
+
+    private static String[] getTableNames(String query) {
+        String[] names = query.split("from")[1].split("where")[0].split(",");
+        for (int i = 0; i < names.length; i++) {
+            names[i] = names[i].strip();
+            if (i == names.length - 1) {
+                names[i] = names[i].split(";")[0].strip();
+            }
+        }
+        return names;
+    }
+
     private static ArrayList<ArrayList<Object>> buildAttributeTable (ArrayList<String> attributes, ArrayList<String> tables, String whereClause) {
 
         boolean dotAttributes = false;
@@ -492,6 +597,7 @@ public class DMLParser {
             return fullAttrList;
         }
     }
+
 
     private static ArrayList<Object> getAttributeListFromAttribute(int index, String tableName) {
         ArrayList<Object> attrList = new ArrayList<>();
