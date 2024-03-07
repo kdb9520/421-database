@@ -113,7 +113,9 @@ public class Main {
         else if (query.startsWith("alter ")) {
             DDLParser.alterTable(query);
         }
-        else if (query.startsWith("insert into ") ||
+
+
+        else if (query.startsWith("delete ") || query.startsWith("insert into ") ||
             query.strip().equals("display schema;") ||
             query.startsWith("display info ") ||
             query.startsWith("select ")) {

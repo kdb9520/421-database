@@ -50,6 +50,8 @@ public class DMLParser {
      * @param whereClause - the condition
      */
     public static void deleteRecord(TableSchema tableSchema, String whereClause){
+
+
         // Print all values in table
         // Loop through the table and print each page
         // For each page in table tableName
@@ -58,7 +60,9 @@ public class DMLParser {
             Page page = BufferManager.getPage(tableSchema.tableName, i);
             ArrayList<Record> records = page.getRecords();
             for(Record r : records){
-
+                if(true){   //todo - wait for where clause implementation
+                    page.removeRecord(r);
+                }
             }
 
         }
