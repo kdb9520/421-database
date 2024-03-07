@@ -7,7 +7,7 @@ public class VarNode implements WhereNode {
     }
 
     @Override
-    public boolean evaluate() {
+    public boolean evaluate(Object o,TableSchema tSchema) {
         return true;
     }
 

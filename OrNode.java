@@ -8,9 +8,9 @@ public class OrNode implements WhereNode {
     }
 
     @Override
-    public boolean evaluate() {
+    public boolean evaluate(Object o,TableSchema tSchema) {
         // If any condition evaluates to true, return true
-        return lCondition.evaluate() || rCondition.evaluate();
+        return lCondition.evaluate(o,tSchema) || rCondition.evaluate(o,tSchema);
     }
 
     @Override
