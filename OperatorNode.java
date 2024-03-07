@@ -12,11 +12,11 @@ public class OperatorNode implements WhereNode{
 
     // Takes an operation = > >= < <= 
     @Override
-    public boolean evaluate(Object o,TableSchema tSchema) {
+    public boolean evaluate(Pair<Object,Object> pair,TableSchema tSchema) {
         // First get the left and right value
         // In a proper tree these must be a var or constant
-        Object leftVal = left.get();
-        Object rightVal = left.get();
+        Object leftVal = left.get(pair);
+        Object rightVal = left.get(pair);
         
 
 
@@ -124,7 +124,7 @@ public class OperatorNode implements WhereNode{
     }
 
     @Override
-    public Object get() {
+    public Object get(Pair<Object,Object> pair) {
         return null;
     }
 

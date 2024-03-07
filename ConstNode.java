@@ -7,12 +7,12 @@ public class ConstNode implements WhereNode {
     }
 
     @Override
-    public boolean evaluate(Object o,TableSchema tSchema) {
+    public boolean evaluate(Pair<Object,Object> pair,TableSchema tSchema) {
         return true;
     }
 
     @Override
-    public Object get() {
+    public Object get(Pair<Object,Object> pair) {
         return this.value;
     }
 

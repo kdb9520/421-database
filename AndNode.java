@@ -8,13 +8,13 @@ public class AndNode implements WhereNode {
     }
 
     @Override
-    public boolean evaluate(Object o,TableSchema tSchema) {
+    public boolean evaluate(Pair<Object,Object> pair,TableSchema tSchema) {
         // If any condition evaluates to true, return true
-        return lCondition.evaluate(o,tSchema) && rCondition.evaluate(o,tSchema);
+        return lCondition.evaluate(pair,tSchema) && rCondition.evaluate(pair,tSchema);
     }
 
     @Override
-    public Object get() {
+    public Object get(Pair<Object,Object> pair) {
         return null;
     }
 
