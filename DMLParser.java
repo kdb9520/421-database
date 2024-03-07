@@ -259,6 +259,7 @@ public class DMLParser {
                     // Get the next page (must use BufferManager to get it)
                     next = BufferManager.getPage(tableName, i + 1);
 
+
                     Record firstRecordOfNextPage = next.getFirstRecord();
 
                     // If its less than the first value of next page (i+1) then it belongs to page i
