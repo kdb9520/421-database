@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class AndNode implements WhereNode {
     private WhereNode lCondition;
     private WhereNode rCondition;
@@ -8,13 +10,13 @@ public class AndNode implements WhereNode {
     }
 
     @Override
-    public boolean evaluate(Pair<Object,Object> pair,TableSchema tSchema) {
+    public boolean evaluate(Pair<Object,Object> pair,TableSchema tSchema,ArrayList<Integer> indexes) {
         // If any condition evaluates to true, return true
-        return lCondition.evaluate(pair,tSchema) && rCondition.evaluate(pair,tSchema);
+        return lCondition.evaluate(pair,tSchema,indexes) && rCondition.evaluate(pair,tSchema,indexes);
     }
 
     @Override
-    public Object get(Pair<Object,Object> pair) {
+    public Object get(Pair<Object,Object> pair, TableSchema tSchema, ArrayList<Integer> indexes) {
         return null;
     }
 

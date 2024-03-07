@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class OperatorNode implements WhereNode{
     String operator;
     private WhereNode left;
@@ -12,11 +14,11 @@ public class OperatorNode implements WhereNode{
 
     // Takes an operation = > >= < <= 
     @Override
-    public boolean evaluate(Pair<Object,Object> pair,TableSchema tSchema) {
+    public boolean evaluate(Pair<Object,Object> pair,TableSchema tSchema, ArrayList<Integer> indexes) {
         // First get the left and right value
         // In a proper tree these must be a var or constant
-        Object leftVal = left.get(pair);
-        Object rightVal = left.get(pair);
+        Object leftVal = left.get(pair,tSchema,indexes);
+        Object rightVal = left.get(pair,tSchema,indexes);
         
 
 
@@ -124,7 +126,7 @@ public class OperatorNode implements WhereNode{
     }
 
     @Override
-    public Object get(Pair<Object,Object> pair) {
+    public Object get(Pair<Object,Object> pair, TableSchema tSchema, ArrayList<Integer> indexes) {
         return null;
     }
 
