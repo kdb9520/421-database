@@ -1,3 +1,5 @@
+package src;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -388,11 +390,11 @@ public class DDLParser {
 
                 // insert the new record
                 DMLParser.insert(String.valueOf(tempQuery));
-                // StorageManager.insert(temp, record, tableSchema);
+                // src.StorageManager.insert(temp, record, tableSchema);
 
             }
 
-            // remove old table from catalog and StorageManager
+            // remove old table from catalog and src.StorageManager
             Catalog.removeSchema(name);
             BufferManager.deleteTable(name);
 
@@ -413,7 +415,7 @@ public class DDLParser {
                 } while (i < numPages);
             }
 
-            // rename schema in Catalog
+            // rename schema in src.Catalog
             Catalog.renameSchema(name);
 
         }

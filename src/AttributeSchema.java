@@ -1,3 +1,5 @@
+package src;
+
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -138,7 +140,7 @@ public class AttributeSchema {
 
     @Override
     public String toString() {
-        return "\n\t\tAttributeSchema{" +
+        return "\n\t\tsrc.AttributeSchema{" +
                 "\n\t\t\tAttribute Name='" + attrName + '\'' +
                 "\n\t\t\tAttribute Type='" + attrType + '\'' +
                 "\n\t\t\tNot Null=" + isNotNull +

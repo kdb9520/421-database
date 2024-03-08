@@ -1,7 +1,7 @@
-/**
- * @file:   TableSchema.java
+package src; /**
+ * @file:   src.TableSchema.java
  * @authors:    Kyle, Derek, Kellen, Jaron, Beckett
- * The TableSchema holds the information about the structure of the table.  It has a unique tableName and tableNumber,
+ * The src.TableSchema holds the information about the structure of the table.  It has a unique tableName and tableNumber,
  * along with a list of the AttributeSchemas for the attributes in the table and a list of the pageIndexes for the pages
  * holding the information in the table.
  */
@@ -20,10 +20,10 @@ public class TableSchema {
     ArrayList<Integer> pageIndexes;
 
     /**
-     * Constructor for TableSchema.  Will take the name (unique) and a list of AttributeSchemas corresponding to the
+     * Constructor for src.TableSchema.  Will take the name (unique) and a list of AttributeSchemas corresponding to the
      * attributes that will be in the table.  This will initialize an empty list of pageIndexes.
      * @param tableName String - name of the table (should be unique).
-     * @param attributes ArrayList<AttributeSchema> - list of attributes in the table.
+     * @param attributes ArrayList<src.AttributeSchema> - list of attributes in the table.
      */
     public TableSchema(String tableName, ArrayList<AttributeSchema> attributes) {
         this.tableName = tableName;
@@ -70,8 +70,8 @@ public class TableSchema {
     }
 
     /**
-     * TableSchema.findAttribute(String attrName) takes in a string representing the attribute we want to find.
-     * This method looks through the attributes in the TableSchema and will try to match the string to the name of an
+     * src.TableSchema.findAttribute(String attrName) takes in a string representing the attribute we want to find.
+     * This method looks through the attributes in the src.TableSchema and will try to match the string to the name of an
      * attribute.  If no match is found this method returns -1.
      * @param attrName  Name of the attribute to find.
      * @return  int - index of the attribute; -1 if not found.
@@ -87,8 +87,8 @@ public class TableSchema {
     }
 
     /**
-     * TableSchema.findPrimaryKeyColNum() will search through the attributes associated with the instance of the
-     * TableSchema, returning the index of the primary key when it is found.
+     * src.TableSchema.findPrimaryKeyColNum() will search through the attributes associated with the instance of the
+     * src.TableSchema, returning the index of the primary key when it is found.
      * @return  int - index of the primary key; -1 if not found.
      */
     public int findPrimaryKeyColNum(){
@@ -101,8 +101,8 @@ public class TableSchema {
     }
 
     /**
-     * TableSchema.getPrimaryKeyType() will find the primary key in the attributes if they exist.  It will then get the
-     * type from the primary key AttributeSchema and return it.
+     * src.TableSchema.getPrimaryKeyType() will find the primary key in the attributes if they exist.  It will then get the
+     * type from the primary key src.AttributeSchema and return it.
      * @return String - type of the primary key; null if not found.
      */
     public String getPrimaryKeyType(){
@@ -155,7 +155,7 @@ public class TableSchema {
         return byteArrayOutputStream.toByteArray();
     }
 
-      // Deserialize a byte array into a TableSchema object
+      // Deserialize a byte array into a src.TableSchema object
     public static TableSchema deserialize(byte[] data, String tableName) {
         ByteBuffer buffer = ByteBuffer.wrap(data);
 
@@ -225,7 +225,7 @@ public class TableSchema {
 
     @Override
     public String toString() {
-        return "TableSchema{" +
+        return "src.TableSchema{" +
                 "\n\tName=" + this.tableName +
                 "\n\tTable Number=" + this.tableNumber +
                 "\n\tAttributes=" + this.attributes +

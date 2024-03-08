@@ -1,8 +1,10 @@
+package src;
+
 import java.util.Scanner;
 
 //Imports
 
-// Main class for the project
+// src.Main class for the project
 // Authors: Group 15
 
 public class Main {
@@ -12,8 +14,8 @@ public class Main {
     public static String databaseLocation;
 
     // Grab command args in form [DB_Location] [Page_Size] [Buffer_Size]
-    // [Page_Size] = integer saying max size of a Page in bytes
-    // [Buffer_Size] = integer setting how many Pages a Page Buffer may hold at once
+    // [Page_Size] = integer saying max size of a src.Page in bytes
+    // [Buffer_Size] = integer setting how many Pages a src.Page Buffer may hold at once
     public static void main (String[] args) {
 
         if (args.length != 3) {
@@ -25,7 +27,7 @@ public class Main {
             bufferSize = Integer.valueOf(args[2]);
 
             // restart / create the database
-            // Jaron Handling start up of dbint started = DatabaseStart.initiateDatabase(dbLoc, pageSize, bufferSize);
+            // Jaron Handling start up of dbint started = src.DatabaseStart.initiateDatabase(dbLoc, pageSize, bufferSize);
             // This will override pageSize command arg if DB exists already
             boolean started = DatabaseStart.initiateDatabase(databaseLocation, pageSize, bufferSize);
 
@@ -34,8 +36,9 @@ public class Main {
             if (started) {
                 Scanner scanner = new Scanner(System.in);
                 StringBuilder commandBuilder = new StringBuilder();
-            
-                    while (true) {
+
+                boolean on = true;
+                    while (on) {
                         try{
                             System.out.print("> ");
                             String line = readCommand(scanner);
@@ -46,7 +49,7 @@ public class Main {
         
                             if (line.contains(";")) {
                                 String command = commandBuilder.toString().trim().replaceAll("\\s+", " ");
-                                handleQuery(command, databaseLocation);
+                                on = handleQuery(command, databaseLocation);
                                 if (line.endsWith(";")) {
                                     // Clear the command builder if the semicolon is at the end of the line
                                     commandBuilder.setLength(0);
@@ -78,7 +81,7 @@ public class Main {
         return scanner.nextLine().trim();
     }
 
-    private static void handleQuery (String query, String dbloc) {
+    private static boolean handleQuery (String query, String dbloc) {
         
         query = query.replaceAll("\\s+", " ");
         if (query.substring(query.length() - 2).equals(" ;")) {
@@ -100,6 +103,7 @@ public class Main {
 
         if(query.startsWith("quit")) {
             shutdown();
+            return false;
         }
         else if (query.startsWith("help")) {
             helpCommand();
@@ -126,10 +130,11 @@ public class Main {
         else {
             System.out.println("Command not valid!\n\nEnter 'help;' to list all commands.");
         }
+        return true;
     }
 
     public static void displayUsage() {
-        System.out.println("USAGE: java Main <db loc> <page size> <buffer size> \n\nEnter 'help;' to list all commands.");
+        System.out.println("USAGE: java src.Main <db loc> <page size> <buffer size> \n\nEnter 'help;' to list all commands.");
     }
 
     public static void helpCommand() {
@@ -152,6 +157,6 @@ public class Main {
         Catalog.writeCatalog(databaseLocation);
         BufferManager.purgeBuffer();
         System.out.println("Shutdown complete.");
-        System.exit(0);
+//        System.exit(0);
     }
 }

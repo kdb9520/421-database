@@ -1,3 +1,5 @@
+package src;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -5,24 +7,23 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Vector;
 
 /**
- * Catalog
+ * src.Catalog
  * @author - Jaron Cummings
  * represents the catalog of the database
  */
 public class Catalog {
 
     private static ArrayList<TableSchema> tableSchemas;    // arrayList representing the table schemas
-    public static Catalog catalog;                  // private instance of Catalog, accessible by static methods
+    public static Catalog catalog;                  // private instance of src.Catalog, accessible by static methods
 
     static{
         tableSchemas = new ArrayList<>();
     }
 
     /**
-     * Check db_loc/Schema folder and read in each file, converting it to TableSchema objects
+     * Check db_loc/Schema folder and read in each file, converting it to src.TableSchema objects
      * @return
      */
     public static void readCatalog(String db_loc) {
@@ -36,7 +37,7 @@ public class Catalog {
 
                 if (schemaFiles != null) {
                     for (File schemaFile : schemaFiles) {
-                        // Read each schema file and create TableSchema objects
+                        // Read each schema file and create src.TableSchema objects
                         TableSchema tableSchema = TableSchema.deserialize(Files.readAllBytes(schemaFile.toPath()),schemaFile.getName());
                         if (tableSchema != null) {
                             tableSchemas.add(tableSchema);
@@ -63,18 +64,18 @@ public class Catalog {
         createDirectoryIfNotExists(schemaDirectoryPath);
 
         for (TableSchema tableSchema : tableSchemas) {
-            // Generate a unique filename for each TableSchema (you may need to adjust this)
+            // Generate a unique filename for each src.TableSchema (you may need to adjust this)
             String filename = schemaDirectoryPath + "/" + tableSchema.getTableName();
 
-            // Write the TableSchema to the file
-           // Write the TableSchema to the file
+            // Write the src.TableSchema to the file
+           // Write the src.TableSchema to the file
         try (FileOutputStream fileOutputStream = new FileOutputStream(filename)) {
-            // Serialize the TableSchema to obtain a byte array
+            // Serialize the src.TableSchema to obtain a byte array
             byte[] serializedData = tableSchema.serialize();
 
             // Write the byte array to the file
             fileOutputStream.write(serializedData);
-            System.out.println("TableSchema written to: " + filename);
+            System.out.println("src.TableSchema written to: " + filename);
         } catch (IOException e) {
             e.printStackTrace();
             // Handle the exception according to your requirements
@@ -124,7 +125,7 @@ public class Catalog {
             TableSchema t = tableSchemas.get(i);
             if (t.tableName.equals(name)){ // We found the tableschema to remove!
                 tableSchemas.remove(t);
-                System.out.println("Schema removed from Catalog");
+                System.out.println("Schema removed from src.Catalog");
                 return;
 
             }

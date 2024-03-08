@@ -1,10 +1,8 @@
-import java.nio.Buffer;
+package src;
+
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
-
-import javax.management.Query;
 
 public class DMLParser {
 
@@ -256,7 +254,7 @@ public class DMLParser {
                     if (i + 1 >= tableSchema.getIndexList().size()) {
                         break;
                     }
-                    // Get the next page (must use BufferManager to get it)
+                    // Get the next page (must use src.BufferManager to get it)
                     next = BufferManager.getPage(tableName, i + 1);
 
 
@@ -282,7 +280,7 @@ public class DMLParser {
                     }
                 }
 
-                // Cycled through all pages -> Record belongs on the last page of the table
+                // Cycled through all pages -> src.Record belongs on the last page of the table
 
                 if (!wasInserted) {
                     if (!checkUnique(tableName, record, attributeSchemas)) {
@@ -452,13 +450,18 @@ public class DMLParser {
                 printSelectTable(selectOutput);
             }
         }
+
+        if (Catalog.getTableSchema("tempcartesian") != null) {
+            Catalog.removeSchema("tempcartesian");
+            StorageManager.deleteTable("tempcartesian");
+        }
     }
 
     /**
      * tableCartesian calculates and returns a cartesian product of all the values in given tables.
-     * Writes a temporary table 'tempCartesian' to the hardware for later use in SELECT and WHERE.
+     * Writes a temporary table 'tempcartesian' to the hardware for later use in SELECT and WHERE.
      * @param tableSchemas a list of tableSchemas to take the cartesian of.
-     * @return temporary TableSchema with cartesian records
+     * @return temporary src.TableSchema with cartesian records
      */
     private static TableSchema tableCartesian(ArrayList<TableSchema> tableSchemas) {
         ArrayList<AttributeSchema> as = new ArrayList<>();
@@ -531,7 +534,7 @@ public class DMLParser {
 
         // make the temp table and insert values into it
         if (!newCartesian.isEmpty()) {
-            temp = new TableSchema("tempCartesian", as);
+            temp = new TableSchema("tempcartesian", as);
             Catalog.updateCatalog(temp);
             StorageManager.writeTableToDisk(temp.tableName);
             // TODO: DELETE THE TEMP TABLE AFTER USE
@@ -638,7 +641,7 @@ public class DMLParser {
 
     private static void displaySchema(String databaseLocation) {
 
-        System.out.println("Database Location: " + databaseLocation + "\nPage Size: " + Main.pageSize
+        System.out.println("Database Location: " + databaseLocation + "\nsrc.Page Size: " + Main.pageSize
                 + "\nBuffer Size: " + Main.bufferSize + "\nTable Schema: ");
 
         Catalog.getTableSchemas().forEach((System.out::println));
@@ -654,7 +657,7 @@ public class DMLParser {
 
             String schema = tableSchema.toString();
 
-            // int pageNumber = Catalog.getCatalog().getPageNumber(tableName);//
+            // int pageNumber = src.Catalog.getCatalog().getPageNumber(tableName);//
             // table.numPages;
             int numOfPages = tableSchema.getIndexList().size();
             int numOfRecords = 0;

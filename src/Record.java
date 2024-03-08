@@ -1,13 +1,12 @@
-import java.io.ByteArrayInputStream;
+package src;
+
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.function.Consumer;
 
 public class Record {
     private ArrayList<Object> values;
@@ -237,7 +236,7 @@ public class Record {
 
     // Gets the size of a given record
     // Requires tablename to get schema for the attributes
-    // Record format: [int bitMapSize] [bitMap] [value 1] [value 2] [value 3] [value
+    // src.Record format: [int bitMapSize] [bitMap] [value 1] [value 2] [value 3] [value
     // 5] example: value 4 is null
     public int getRecordSize(String tableName) {
         int size = 0;

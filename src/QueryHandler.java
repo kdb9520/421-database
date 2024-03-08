@@ -1,3 +1,5 @@
+package src;
+
 import java.util.ArrayList;
 
 public class QueryHandler {
@@ -35,8 +37,6 @@ public class QueryHandler {
         }
 
         tempQuery = tempQuery.replace(tempQuery.length() - 2, tempQuery.length(), ";");
-
-        System.out.println(tempQuery);
 
         return String.valueOf(tempQuery);
 

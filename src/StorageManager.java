@@ -1,3 +1,5 @@
+package src;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -12,7 +14,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 
 public class StorageManager {
-    public static Catalog catalog;                  // private instance of Catalog, accessible by static methods
+    public static Catalog catalog;                  // private instance of src.Catalog, accessible by static methods
 
     private StorageManager() {
        
@@ -35,7 +37,7 @@ public class StorageManager {
             // Convert the ByteBuffer to a byte array
             byte[] pageData = buffer.array();
 
-            // Create and return a new Page object
+            // Create and return a new src.Page object
             Page page = Page.deserialize(pageData, tableName, pageNumber);
             if (page != null) {
                 return page;

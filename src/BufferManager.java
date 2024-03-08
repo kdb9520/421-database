@@ -1,8 +1,10 @@
+package src;
+
 import java.io.File;
 import java.util.ArrayList;
 
 public class BufferManager {
-    //private Map<Integer, Page> bufferPool; // Map page number to page data
+    //private Map<Integer, src.Page> bufferPool; // Map page number to page data
     private static ArrayList<Page> bufferPool;
 
     static{
@@ -16,7 +18,7 @@ public class BufferManager {
                 return p;
             }
         }
-            // Page is not in buffer pool, so read it from disk
+            // src.Page is not in buffer pool, so read it from disk
             Page page = StorageManager.readPageFromDisk(tableName, pageNumber);
             if (bufferPool.size() + 1 >= Main.bufferSize) {
                 // Buffer pool is full, evict a page using some policy (e.g., LRU)
@@ -41,7 +43,7 @@ public class BufferManager {
                 return;
             }
         }
-            // Page is not in the buffer pool, add it
+            // src.Page is not in the buffer pool, add it
             if (bufferPool.size() + 1 >= Main.bufferSize) {
                 // Buffer pool is full, evict a page using some policy (e.g., LRU)
                 evictPage();

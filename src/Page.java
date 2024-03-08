@@ -1,6 +1,6 @@
-import java.io.ByteArrayInputStream;
+package src;
+
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -235,7 +235,7 @@ public class Page {
             records.add(Record.deserialize(buffer,tableName));
         }
 
-        // Create and return the Page object
+        // Create and return the src.Page object
         Page page = new Page(tableName, pageNumber, new ArrayList<Record>(records));
         return page;
     }
