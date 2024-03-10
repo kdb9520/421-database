@@ -4,8 +4,10 @@ import java.util.ArrayList;
 
 public interface WhereNode {
 
-    public boolean evaluate(Pair<Object,Object> pair,TableSchema tSchema, ArrayList<Integer> indexes);
-    public Object get(Pair<Object,Object> pair, TableSchema tSchema, ArrayList<Integer> indexes);
+    // Takes in a tuple of up to two Objects
+    // These are the varNodes
+    public boolean evaluate(ArrayList<Object> variables, ArrayList<String> variable_names, TableSchema tSchema);
+    public Object get(ArrayList<Object> variables, ArrayList<String> variable_names, TableSchema tSchema);
     public WhereNode getLeft();
     public WhereNode getRight();
 

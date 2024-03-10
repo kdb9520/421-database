@@ -11,32 +11,24 @@ public class VarNode implements WhereNode {
     }
 
     @Override
-    public boolean evaluate(Pair<Object,Object> pair,TableSchema tSchema, ArrayList<Integer> indexes) {
+    public boolean evaluate(ArrayList<Object> variables, ArrayList<String> variable_names, TableSchema tSchema) {
         return true;
     }
 
     @Override
-    public Object get(Pair<Object,Object> pair, TableSchema tSchema, ArrayList<Integer> indexes) {
-        // If one side of pair is null one isn't null just use that side
-        Object first = pair.getFirst();
-        Object second = pair.getSecond();
-        if(first != null && second == null){
-            return first;
-        }
-
-        if(second != null && first == null){
-            return first;
-        }
-
+    public Object get(ArrayList<Object> variables, ArrayList<String> variable_names, TableSchema tSchema) {
+        
         // If both are not null then we need to check indexes to see which one is right
         // Get the index and see if its first or second value in indexes
-        Integer index = tSchema.findAttribute(varName);
-        // If the index is the first one in indexes then pair.Left is this var
-        if(indexes.get(0) == index){
-            return first;
+        int this_var_index = -1;
+        for(int i=0; i < variable_names.size(); i++){
+            if(variable_names.get(i) == this.varName){
+                this_var_index = i;
+                break;
+            }
         }
-        // Otherwise this var is the Right val
-        return second;
+        return variables.get(this_var_index);
+        
     }
 
     @Override
