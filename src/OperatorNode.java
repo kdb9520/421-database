@@ -1,3 +1,5 @@
+package src;
+
 import java.util.ArrayList;
 
 public class OperatorNode implements WhereNode{
