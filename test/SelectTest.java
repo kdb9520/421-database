@@ -145,4 +145,77 @@ public class SelectTest {
         }
     }
 
+    @Test
+    void ThreeTableCartesian(){
+        try {
+            tearDown();
+            System.out.println("Testing SELECT * FROM three tables with different number of columns.");
+            setUp();
+
+            String[] args = {"C:\\Users\\kelle\\RIT\\421\\db", "10000", "10000"};
+
+            String input = """
+                    CREATE TABLE test1 (foo INTEGER PRIMARYKEY);
+                    CREATE TABLE test2 (foo INTEGER PRIMARYKEY, bar INTEGER);
+                    CREATE TABLE test3 (foo INTEGER PRIMARYKEY, bar INTEGER, baz INTEGER);
+                    INSERT INTO test1 VALUES (1), (2);
+                    INSERT INTO test2 VALUES (3 4), (5 6);
+                    INSERT INTO test3 VALUES (7 8 9), (10 11 12);
+                    SELECT * FROM test1, test2, test3;
+                    DROP TABLE test1;
+                    DROP TABLE test2;
+                    DROP TABLE test3;
+                    QUIT;
+                    """;
+            ByteArrayInputStream inputIn = new ByteArrayInputStream(input.getBytes());
+            System.setIn(inputIn);
+
+            Main.main(args);
+
+            String expected = """
+                    > Processed Query: create table test1 (foo integer primarykey);
+                    Table created successfully.
+                    > Processed Query: create table test2 (foo integer primarykey, bar integer);
+                    Table created successfully.
+                    > Processed Query: create table test3 (foo integer primarykey, bar integer, baz integer);
+                    Table created successfully.
+                    > Processed Query: insert into test1 values (1), (2);
+                    > Processed Query: insert into test2 values (3 4), (5 6);
+                    > Processed Query: insert into test3 values (7 8 9), (10 11 12);
+                    > Processed Query: select * from test1, test2, test3;
+                    Table created successfully.
+                    | test1.foo|| test2.foo|| test2.bar|| test3.foo|| test3.bar|| test3.baz||    row_id|
+                    ------------------------------------------------------------------------------------
+                    |         1||         3||         4||         7||         8||         9||         0|
+                    |         1||         3||         4||        10||        11||        12||         1|
+                    |         1||         5||         6||         7||         8||         9||         2|
+                    |         1||         5||         6||        10||        11||        12||         3|
+                    |         2||         3||         4||         7||         8||         9||         4|
+                    |         2||         3||         4||        10||        11||        12||         5|
+                    |         2||         5||         6||         7||         8||         9||         6|
+                    |         2||         5||         6||        10||        11||        12||         7|
+
+                    Schema removed from src.Catalog
+                    > Processed Query: drop table test1;
+                    Schema removed from src.Catalog
+                    > Processed Query: drop table test2;
+                    Schema removed from src.Catalog
+                    > Processed Query: drop table test3;
+                    Schema removed from src.Catalog
+                    > Processed Query: quit;
+                    Shutting down database...
+                    Shutdown complete.
+                    """;
+            expected = expected.replaceAll("\r", "");
+            String output = outputStreamCaptor.toString().replaceAll("\r", "");
+
+            assertEquals(expected, output);
+
+            tearDown();
+            System.out.println("Captured Output:");
+            System.out.println(output);
+        } catch (Exception e) {
+            fail("Exception Caught!");
+        }
+    }
 }
