@@ -12,13 +12,13 @@ public class OrNode implements WhereNode {
     }
 
     @Override
-    public boolean evaluate(Pair<Object,Object> pair,TableSchema tSchema,ArrayList<Integer> indexes) {
+    public boolean evaluate(ArrayList<Object> variables, ArrayList<String> variable_names, TableSchema tSchema) {
         // If any condition evaluates to true, return true
-        return lCondition.evaluate(pair,tSchema, indexes) || rCondition.evaluate(pair,tSchema, indexes);
+        return lCondition.evaluate(variables,variable_names,tSchema) || rCondition.evaluate(variables,variable_names,tSchema);
     }
 
     @Override
-    public Object get(Pair<Object,Object> pair, TableSchema tSchema, ArrayList<Integer> indexes) {
+    public Object get(ArrayList<Object> variables, ArrayList<String> variable_names, TableSchema tSchema) {
         return null;
     }
 

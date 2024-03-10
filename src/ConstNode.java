@@ -11,12 +11,12 @@ public class ConstNode implements WhereNode {
     }
 
     @Override
-    public boolean evaluate(Pair<Object,Object> pair,TableSchema tSchema,ArrayList<Integer> indexes) {
+    public boolean evaluate(ArrayList<Object> variables, ArrayList<String> variable_names, TableSchema tSchema) {
         return true;
     }
 
     @Override
-    public Object get(Pair<Object,Object> pair, TableSchema tSchema, ArrayList<Integer> indexes) {
+    public Object get(ArrayList<Object> variables, ArrayList<String> variable_names, TableSchema tSchema) {
         return this.value;
     }
 
