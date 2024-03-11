@@ -261,6 +261,19 @@ public class WhereNodeTest {
         assertFalse(true);
      }
 
+     // Tests WhereParser functionality
+     // Given a string it should return a correct tree
+     @Test
+     void tesWhereParser() {
+        WhereParser wp = new WhereParser();
+        String test1 = "where gpa > 3";
+        WhereNode result = wp.parse(test1);
+        // Do some assertion here to check if its correct
+        assertFalse(true);
+
+        
+     }
+
 
     private static WhereNode createTestTree() {
         

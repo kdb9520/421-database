@@ -1,13 +1,11 @@
 package src;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 
 public class WhereParser {
      private List<String> tokens;
-    private int currentTokenIndex;
     private ArrayList<String> variableNames;
 
     public WhereParser(){
@@ -16,10 +14,9 @@ public class WhereParser {
 
     public WhereNode parse(String expression) {
         tokens = tokenize(expression);
-        currentTokenIndex = 0;
         WhereNode result = buildTree();
         System.out.println(result);
-        return null;
+        return result;
     }
 
     private List<String> tokenize(String expression) {
