@@ -37,5 +37,15 @@ public class OrNode implements WhereNode {
         return ("OR(" + lCondition.toString() + ", " + rCondition.toString() + ")");
         
     }
+
+    @Override
+    public void setLeft(WhereNode left) {
+        this.lCondition = left;
+    }
+
+    @Override
+    public void setRight(WhereNode right) {
+        this.rCondition = right;
+    }
     
 }

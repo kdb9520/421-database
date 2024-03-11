@@ -33,6 +33,16 @@ public class AndNode implements WhereNode {
     }
 
     @Override
+    public void setLeft(WhereNode left) {
+        this.lCondition = left;
+    }
+
+    @Override
+    public void setRight(WhereNode right) {
+        this.rCondition = right;
+    }
+
+    @Override
     public String toString(){
         return ("AND(" + lCondition.toString() + ", " + rCondition.toString() + ")");
         

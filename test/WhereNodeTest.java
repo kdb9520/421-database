@@ -20,7 +20,7 @@ public class WhereNodeTest {
 
     @Test
     void test() {
-        String whereString = "where gpa>= 3 and name != \"ryan\";";
+        String whereString = "where gpa>= 3 or name = 'ryan' ";
         WhereParser wp = new WhereParser();
         wp.parse(whereString);
     }

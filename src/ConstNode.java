@@ -35,5 +35,15 @@ public class ConstNode implements WhereNode {
         return this.value.toString();
         
     }
+
+    @Override
+    public void setLeft(WhereNode left) {
+        return;
+    }
+
+    @Override
+    public void setRight(WhereNode right) {
+        return;
+    }
     
 }

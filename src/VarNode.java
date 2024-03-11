@@ -46,5 +46,17 @@ public class VarNode implements WhereNode {
         return (varName);
         
     }
+
+    @Override
+    public void setLeft(WhereNode left) {
+        return;
+    }
+
+    @Override
+    public void setRight(WhereNode right) {
+        return;
+    }
+
+
     
 }

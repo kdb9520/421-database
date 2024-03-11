@@ -16,6 +16,12 @@ public class OperatorNode implements WhereNode{
 
     }
 
+    // When creating a tree we dont have left and right immediately
+    public OperatorNode(String operator){
+        this.operator = operator;
+
+    }
+
     // Takes an operation = > >= < <= 
     @Override
     public boolean evaluate(ArrayList<Object> variables, ArrayList<String> variable_names, TableSchema tSchema) {
@@ -142,6 +148,16 @@ public class OperatorNode implements WhereNode{
     @Override
     public WhereNode getRight() {
         return this.right;
+    }
+
+    @Override
+    public void setLeft(WhereNode left) {
+        this.left = left;
+    }
+
+    @Override
+    public void setRight(WhereNode right) {
+        this.right = right;
     }
 
     @Override
