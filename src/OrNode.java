@@ -34,7 +34,7 @@ public class OrNode implements WhereNode {
 
     @Override
     public String toString(){
-        return ("OR(" + lCondition.toString() + rCondition.toString() + ")");
+        return ("OR(" + lCondition.toString() + ", " + rCondition.toString() + ")");
         
     }
     
