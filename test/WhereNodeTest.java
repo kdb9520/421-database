@@ -18,6 +18,13 @@ import src.WhereParser;
 
 public class WhereNodeTest {
 
+    @Test
+    void test() {
+        String whereString = "where gpa>= 3 and name != \"ryan\";";
+        WhereParser wp = new WhereParser();
+        wp.parse(whereString);
+    }
+
     // Tests where student.gpa >= 2 and student.name = 'ryan'
     @Test
     void testTrueTree1() {
