@@ -1,6 +1,7 @@
 package test;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -266,12 +267,42 @@ public class WhereNodeTest {
      @Test
      void tesWhereParser() {
         WhereParser wp = new WhereParser();
-        String test1 = "where gpa > 3";
-        WhereNode result = wp.parse(test1);
-        // Do some assertion here to check if its correct
-        assertFalse(true);
 
+        ArrayList<String> tests = new ArrayList<>();
+        ArrayList<String> expected = new ArrayList<>();
+
+        String test1 = "where gpa > 3";
+        tests.add(test1);
+
+        String test2 = "where gpa > 3 and name = 'bob'";
+        tests.add(test2);
+
+        String test3 = "where gpa > 3 or name = 'bob'";
+        tests.add(test3);
+
+        String test4 = "where gpa != null";
+        tests.add(test4);
+
+        String result1 = ">(gpa, 3)";
+        expected.add(result1);
+
+        String result2 = "AND(=(name, bob), >(gpa, 3))";
+        expected.add(result2);
+
+        String result3 = "OR(=(name, bob), >(gpa, 3))";
+        expected.add(result3);
+
+        String result4 = "!=(gpa, null)";
+        expected.add(result4);
+
+        // Do each test
+        for(int i = 0; i < tests.size(); i++){
+            String result = wp.parse(tests.get(i)).toString();
+            assertEquals(result,expected.get(i));
+        }
         
+
+
      }
 
 

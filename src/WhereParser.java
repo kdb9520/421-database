@@ -122,6 +122,9 @@ public class WhereParser {
         String string = parseString(token);
         return new ConstNode(string, "varchar");
     }
+    else if(token.equals(null)){
+        return new ConstNode(null,null);
+    }
     // Now need to check if its integer or double,if not its a varNode
 
     try {
