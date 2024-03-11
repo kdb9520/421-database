@@ -8,10 +8,12 @@ public class OperatorNode implements WhereNode{
     private WhereNode right;
     String type;
 
-    public OperatorNode(WhereNode left, WhereNode right, String type){
+    public OperatorNode(WhereNode left, WhereNode right, String type, String operator){
         this.left = left;
         this.right = right;
         this.type = type;
+        this.operator = operator;
+
     }
 
     // Takes an operation = > >= < <= 
@@ -140,6 +142,12 @@ public class OperatorNode implements WhereNode{
     @Override
     public WhereNode getRight() {
         return this.right;
+    }
+
+    @Override
+    public String toString(){
+        return (operator + "(" + left.toString() + ", " + right.toString() + ")");
+        
     }
     
 }

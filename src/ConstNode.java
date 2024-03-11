@@ -29,5 +29,11 @@ public class ConstNode implements WhereNode {
     public WhereNode getRight() {
         return null;
     }
+
+    @Override
+    public String toString(){
+        return this.value.toString();
+        
+    }
     
 }

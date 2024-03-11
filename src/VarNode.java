@@ -40,5 +40,11 @@ public class VarNode implements WhereNode {
     public WhereNode getRight() {
         return null;
     }
+
+    @Override
+    public String toString(){
+        return (varName);
+        
+    }
     
 }

@@ -15,7 +15,8 @@ public class WhereParser {
 
     private List<String> tokenize(String expression) {
         // This is a simple tokenizer; you might want to enhance it based on your needs
-        String[] parts = expression.split("\\s+|(?<=[<>!=])|(?=[<>!=])");
+        String[] parts = expression.split("\\s+|(?<=[<>!=]=)|(?=[<>!=]=)");
+
         List<String> tokens = new ArrayList<>();
         for (String part : parts) {
             if (!part.isEmpty()) {
