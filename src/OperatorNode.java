@@ -22,7 +22,7 @@ public class OperatorNode implements WhereNode{
         // First get the left and right value
         // In a proper tree these must be a var or constant
         Object leftVal = left.get(variables,variable_names,tSchema);
-        Object rightVal = left.get(variables,variable_names,tSchema);
+        Object rightVal = right.get(variables,variable_names,tSchema);
         
 
 
