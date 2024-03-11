@@ -122,7 +122,8 @@ public class Main {
         else if (query.startsWith("delete ") || query.startsWith("insert into ") ||
             query.strip().equals("display schema;") ||
             query.startsWith("display info ") ||
-            query.startsWith("select ")) {
+            query.startsWith("select ") ||
+            query.startsWith("update ")){
 
                 // give buffer manager too
                 DMLParser.handleQuery(query, dbloc);

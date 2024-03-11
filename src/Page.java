@@ -271,4 +271,11 @@ public class Page {
         return pageString;
     }
 
+
+
+    public void updateValue(int j, int colNum, String valueString, String colType) {
+        records.get(j).setCol(colNum, valueString, colType); // TODO: Add a call to maybe a page.Sort() function to resort the page and kick out values as needed
+        this.wasEdited = true;
+    }
+
 }

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.w3c.dom.Attr;
+
 public class DMLParser {
 
     public static void handleQuery(String query, String databaseLocation) {
@@ -12,7 +14,11 @@ public class DMLParser {
             insert(query.substring(12));
         }
 
-        if(query.startsWith("delete ")){
+        else if(query.startsWith("update ")){
+            update(query.substring(7));
+        }
+
+        else if(query.startsWith("delete ")){
             delete(query.substring(12));
         }
 
@@ -25,6 +31,98 @@ public class DMLParser {
         } else if (query.startsWith("select")) {
             select(query.substring(6));
         }
+    }
+
+    private static void update(String substring) {
+        //
+        String [] split = substring.split(" ");
+        String tableName = split[0];
+        String columnName = split[2]; // <name> set <columnName>
+        String valueString = split[4];
+        TableSchema tSchema = Catalog.getTableSchema(tableName);
+        // Get the where clause
+        // Construct the WHERE clause from split[6] to the end
+        String whereClause = String.join(" ", Arrays.copyOfRange(split, 5, split.length));
+        whereClause = whereClause.substring(0,whereClause.length()-1);
+        WhereParser wp = new WhereParser();
+        WhereNode whereTree = wp.parse(whereClause);
+        ArrayList<String> variableNames = wp.getVariableNames();
+
+        // Now we can do some error checking here with type of valueString matching the schema
+        int colNum = tSchema.findAttribute(columnName);
+        AttributeSchema aSchema = tSchema.findAttributeSchema(colNum);
+        String colType = aSchema.getType();
+
+        // Check if the types equal, to do this we need to brute force test for each type
+        String valType = getType(valueString);
+
+        if(valType.equals("null")){
+            // Do nothing
+        }
+        else if(!valType.equals(colType)){
+            // Constants are all marked as a varchar, just check and make sure our variable isn't a char. If it is a char its a valid comparison
+            if((!(colType.startsWith("varchar") && valType.startsWith("char")) || colType.startsWith("char") && valType.startsWith("varchar"))){
+                System.err.println("Types of column and constant do not match. Aborting update.");
+                return;
+            }
+        }
+
+        // We now know that the constants type matches the column type
+
+        // For each page go and see if we need to update record
+        int num_pages = tSchema.getIndexList().size();
+        for (int i = 0; i < num_pages; i++) {
+            Page page = BufferManager.getPage(tSchema.tableName, i);
+            for(int j = 0; j < page.getRecords().size(); j++){
+                Record r = page.getRecords().get(j);
+                ArrayList<Object> variables = new ArrayList<>();
+                // Get all variables
+                for (String varName : variableNames){
+                    // First figure out what index of the var is in the record
+                    int index = tSchema.findAttribute(varName);
+                    variables.add(r.getAttribute(index));
+                }
+                if(whereTree.evaluate(variables, wp.getVariableNames(), tSchema)){
+                    page.updateValue(j,colNum, valueString, colType);
+                    
+                    System.out.println(r.prettyPrint(tableName));
+                    // Then need to find out which pages to put the edited values in
+                    // Obviously only if PK col is edited
+                }
+            }
+
+        }
+
+
+        return;
+    }  
+
+    // Gets type of a string
+    private static String getType(String string){
+        if (string.equals("true") || string.equals("false")){
+           return("boolean");
+        }
+        else if(string.startsWith("'") || string.startsWith("\"")){
+            return("varchar");
+        }
+        else if(string.equals(null)){
+            return("null");
+        }
+        // Now need to check if its integer or double,if not its a varNode
+    
+        try {
+            Integer number = Integer.parseInt(string);
+            return("integer");
+          } catch (NumberFormatException e) {
+          }
+    
+          try {
+            double number = Double.parseDouble(string);
+            return("double");
+          } catch (NumberFormatException e) {
+          }
+    
+          return null;
     }
 
     private static void delete(String substring) {

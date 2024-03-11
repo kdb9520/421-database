@@ -347,4 +347,32 @@ public class Record {
         return str;
     }
 
+    public void setCol(int colNum, String valueString, String type) {
+        
+        if (type.equals("true") || type.equals("false")){
+            Boolean val = Boolean.valueOf(valueString);
+            values.set(colNum,val);
+         }
+         else if(type.startsWith("varchar")){
+            // @TODO: Make sure we pad char as needed, dont exceed varchar limit
+            
+            values.set(colNum,valueString);
+         }
+         else if(type.startsWith("char")){
+            // Get the size for padding inbetween ()
+
+            values.set(colNum,valueString);
+         }
+         else if(type.equals("integer")){
+
+            Integer val = Integer.valueOf(valueString);
+            values.set(colNum,val);
+            
+         }
+         else if (type.equals("double")){
+            Double val = Double.valueOf(valueString);
+            values.set(colNum,val);
+         }
+    }
+
 }
