@@ -9,8 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import src.Main;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SelectTest {
     private final PrintStream standardOut = System.out;
@@ -68,7 +67,14 @@ public class SelectTest {
             expected = expected.replaceAll("\r", "");
             String output = outputStreamCaptor.toString().replaceAll("\r", "");
 
-            assertEquals(expected, output);
+            boolean pass = expected.equals(output);
+
+            if (!pass) {
+                fail("Output does not match expected.");
+            } else {
+                assertEquals(expected, output);
+            }
+
 
             tearDown();
             System.out.println("Captured Output:");
@@ -135,7 +141,13 @@ public class SelectTest {
             expected = expected.replaceAll("\r", "");
             String output = outputStreamCaptor.toString().replaceAll("\r", "");
 
-            assertEquals(expected, output);
+            boolean pass = expected.equals(output);
+
+            if (!pass) {
+                fail("Output does not match expected.");
+            } else {
+                assertEquals(expected, output);
+            }
 
             tearDown();
             System.out.println("Captured Output:");
@@ -209,7 +221,13 @@ public class SelectTest {
             expected = expected.replaceAll("\r", "");
             String output = outputStreamCaptor.toString().replaceAll("\r", "");
 
-            assertEquals(expected, output);
+            boolean pass = expected.equals(output);
+
+            if (!pass) {
+                fail("Output does not match expected.");
+            } else {
+                assertEquals(expected, output);
+            }
 
             tearDown();
             System.out.println("Captured Output:");
