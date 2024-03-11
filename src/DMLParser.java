@@ -590,9 +590,57 @@ public class DMLParser {
         }
         else {
             // Handle where clause
+            // First lets build our WhereTree from the whereStatement
+            WhereParser wp = new WhereParser();
+            WhereNode whereTree = wp.parse(whereClause);
+             // for each record in the table
+            // for each attribute index in attributes
+            // add to tuple builder
 
-            // return arraylist of all records
-            return null;
+            ArrayList<AttributeSchema> attributeSchemas = new ArrayList<>();
+            ArrayList<Integer> indecies = new ArrayList<>();
+            for (String attr : attributes) {
+                if (tableSchema.getAttributeNames().contains(attr)) {
+                    int attrIndex = tableSchema.findAttribute(attr);
+                    indecies.add(attrIndex);
+                    attributeSchemas.add(tableSchema.findAttributeSchema(attrIndex));
+                }
+                else {
+                    System.err.println("Error: Attribute '" + attr + "' is not present in any table!");
+                    return null;
+                }
+            }
+
+            TableSchema selectTableSchema = new TableSchema("selectSchema", attributeSchemas);
+            for (int i = 0; i < tableSchema.getIndexList().size(); i++) {
+                Page page = BufferManager.getPage(tableSchema.getTableName(), i);
+                for (Record record : page.records) {
+                    ArrayList<Object> recordBuilder = new ArrayList<>();
+                    // If WhereTree evaluates true then add it
+                    // First get the name of the variables we need to solve WhereTree
+                    // Then get the values for those variables
+                    ArrayList<String> variableNames = wp.getVariableNames();
+                    ArrayList<Object> variables = new ArrayList<>();
+
+                    // Get all variables
+                    for (String varName : variableNames){
+                        // First figure out what index of the var is in the record
+                        int index = tableSchema.findAttribute(varName);
+                        variables.add(record.getAttribute(index));
+                    }
+
+                    if(whereTree.evaluate(variables, wp.getVariableNames(), selectTableSchema)){
+                        for (int j = 0; j < record.getValues().size(); j++) {
+                            if (indecies.contains(j)) {
+                                recordBuilder.add(record.getAttribute(j));
+                            }
+                        }
+                        recordOutput.add(new Record(recordBuilder));
+                    } 
+                }
+            }
+
+            return new SelectOutput(recordOutput, attributeSchemas);
         }
     }
 

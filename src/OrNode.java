@@ -47,5 +47,10 @@ public class OrNode implements WhereNode {
     public void setRight(WhereNode right) {
         this.rCondition = right;
     }
+
+    @Override
+    public String getType(TableSchema tSchema) {
+        return null;
+    }
     
 }

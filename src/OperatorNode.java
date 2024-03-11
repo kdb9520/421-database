@@ -6,12 +6,10 @@ public class OperatorNode implements WhereNode{
     String operator;
     private WhereNode left;
     private WhereNode right;
-    String type;
 
     public OperatorNode(WhereNode left, WhereNode right, String type, String operator){
         this.left = left;
         this.right = right;
-        this.type = type;
         this.operator = operator;
 
     }
@@ -30,29 +28,57 @@ public class OperatorNode implements WhereNode{
         Object leftVal = left.get(variables,variable_names,tSchema);
         Object rightVal = right.get(variables,variable_names,tSchema);
         
+        // Get type and make sure type of both sides match
+        String leftType = left.getType(tSchema);
+        String rightType = right.getType(tSchema);
+
+        if(leftType == null && rightType == null){
+            System.err.println("Can not compare null to null, Returning false for WhereNode.");
+                return false;
+        }
+
+        else if(leftType == null && rightType != null){
+            // This case is legal but lets make both types match the non null type for type casting purposes
+            leftType = rightType;
+        }
+
+        else if(leftType != null && rightType == null){
+            // This case is legal but lets make both types match the non null type for type casting purposes
+            rightType = leftType;
+        }
+
+        else if(!leftType.equals(rightType)){
+            // Constants are all marked as a varchar, just check and make sure our variable isn't a char. If it is a char its a valid comparison
+            if((!(leftType.startsWith("varchar") && rightType.startsWith("char")) || leftType.startsWith("char") && rightType.startsWith("varchar"))){
+                System.err.println("Types of var and constant or var and var do not match. Returning false for WhereNode");
+                return false;
+            }
+        }
+
+        
 
 
         
         switch(operator){
             case "=":
-                return nodeEquals(leftVal,rightVal);
+                return nodeEquals(leftVal,rightVal,leftType);
             case "!=":
-                return !nodeEquals(leftVal,rightVal);
+                return !nodeEquals(leftVal,rightVal,leftType);
             case ">":
-                return nodeGreater(leftVal,rightVal);
+                return nodeGreater(leftVal,rightVal,leftType);
             case ">=":
-                return (nodeGreater(leftVal,rightVal) || nodeEquals(leftVal,rightVal));
+                return (nodeGreater(leftVal,rightVal,leftType) || nodeEquals(leftVal,rightVal,leftType));
             case "<":
-                return !nodeGreater(leftVal,rightVal);
+                return !nodeGreater(leftVal,rightVal,leftType);
             case "<=":
-                return (!nodeGreater(leftVal,rightVal) || nodeEquals(leftVal,rightVal));
+                return (!nodeGreater(leftVal,rightVal,leftType) || nodeEquals(leftVal,rightVal,leftType));
             default:
                 return false;
             
         }
     }
 
-    private boolean nodeEquals(Object leftVal, Object rightVal) {
+    private boolean nodeEquals(Object leftVal, Object rightVal, String type) {
         if (type.equals("integer")) {
             if ((Integer) leftVal == (Integer) rightVal) {
                 return true;
@@ -93,7 +119,7 @@ public class OperatorNode implements WhereNode{
         
     }
 
-    private boolean nodeGreater(Object leftVal, Object rightVal) {
+    private boolean nodeGreater(Object leftVal, Object rightVal, String type) {
         // Type cast appropiately then compare records
         if (type.equals("integer")) {
             if ((Integer) leftVal > (Integer) rightVal) {
@@ -165,5 +191,11 @@ public class OperatorNode implements WhereNode{
         return (operator + "(" + left.toString() + ", " + right.toString() + ")");
         
     }
+
+    @Override
+    public String getType(TableSchema tSchema) {
+        return null;
+    }
+
     
 }

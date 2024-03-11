@@ -20,7 +20,7 @@ public class WhereNodeTest {
 
     @Test
     void test() {
-        String whereString = "where gpa>= 3 or name = 'ryan' ";
+        String whereString = "where student.id = 2 and class.studentid = 2 ";
         WhereParser wp = new WhereParser();
         wp.parse(whereString);
     }
@@ -49,7 +49,7 @@ public class WhereNodeTest {
         ArrayList<AttributeSchema> aSchema = new ArrayList<>();
         aSchema.add(attr1);
         aSchema.add(attr2);
-        TableSchema tSchema = new TableSchema("student", null);
+        TableSchema tSchema = new TableSchema("student", aSchema);
         assertTrue(riggedTree.evaluate(variables, variable_names, tSchema));
     }
 
@@ -77,7 +77,7 @@ public class WhereNodeTest {
         ArrayList<AttributeSchema> aSchema = new ArrayList<>();
         aSchema.add(attr1);
         aSchema.add(attr2);
-        TableSchema tSchema = new TableSchema("student", null);
+        TableSchema tSchema = new TableSchema("student", aSchema);
         assertFalse(riggedTree.evaluate(variables, variable_names, tSchema));
     }
 
@@ -105,7 +105,7 @@ public class WhereNodeTest {
         ArrayList<AttributeSchema> aSchema = new ArrayList<>();
         aSchema.add(attr1);
         aSchema.add(attr2);
-        TableSchema tSchema = new TableSchema("student", null);
+        TableSchema tSchema = new TableSchema("student", aSchema);
         assertTrue(riggedTree.evaluate(variables, variable_names, tSchema));
     }
 
@@ -133,7 +133,7 @@ public class WhereNodeTest {
         ArrayList<AttributeSchema> aSchema = new ArrayList<>();
         aSchema.add(attr1);
         aSchema.add(attr2);
-        TableSchema tSchema = new TableSchema("student", null);
+        TableSchema tSchema = new TableSchema("student", aSchema);
         assertFalse(riggedTree.evaluate(variables, variable_names, tSchema));
     }
 
@@ -145,16 +145,16 @@ public class WhereNodeTest {
         
         
         VarNode varNode1 = new VarNode("student.gpa");
-        ConstNode const1 = new ConstNode(2);
+        ConstNode const1 = new ConstNode(2,"integer");
         OperatorNode opNode = new OperatorNode(varNode1, const1, "integer",">=");
         // Right will be = then student.name 'ryan'
         
         VarNode varNode2 = new VarNode("student.name");
-        ConstNode const2 = new ConstNode("ryan");
+        ConstNode const2 = new ConstNode("ryan","varchar");
         OperatorNode opNode2 = new OperatorNode(varNode2, const2,"varchar", "=");
 
         VarNode varNode3 = new VarNode("student.year");
-        ConstNode const3 = new ConstNode(2);
+        ConstNode const3 = new ConstNode(2,"integer");
         OperatorNode opNode3 = new OperatorNode(varNode3, const3,"integer", "<=");
         OrNode secondOr = new OrNode(opNode, opNode2);
 
@@ -192,7 +192,7 @@ public class WhereNodeTest {
          aSchema.add(attr1);
          aSchema.add(attr2);
          aSchema.add(attr3);
-         TableSchema tSchema = new TableSchema("student", null);
+         TableSchema tSchema = new TableSchema("student", aSchema);
          assertTrue(riggedTree.evaluate(variables, variable_names, tSchema));
      }
 
@@ -204,16 +204,16 @@ public class WhereNodeTest {
         
         
         VarNode varNode1 = new VarNode("student.gpa");
-        ConstNode const1 = new ConstNode(2);
+        ConstNode const1 = new ConstNode(2,"integer");
         OperatorNode opNode = new OperatorNode(varNode1, const1, "integer",">=");
         // Right will be = then student.name 'ryan'
         
         VarNode varNode2 = new VarNode("student.name");
-        ConstNode const2 = new ConstNode("ryan");
+        ConstNode const2 = new ConstNode("ryan","varchar");
         OperatorNode opNode2 = new OperatorNode(varNode2, const2,"varchar", "=");
 
         VarNode varNode3 = new VarNode("student.year");
-        ConstNode const3 = new ConstNode(2);
+        ConstNode const3 = new ConstNode(2,"integer");
         OperatorNode opNode3 = new OperatorNode(varNode3, const3,"integer", "<=");
         OrNode secondOr = new OrNode(opNode, opNode2);
 
@@ -251,7 +251,7 @@ public class WhereNodeTest {
          aSchema.add(attr1);
          aSchema.add(attr2);
          aSchema.add(attr3);
-         TableSchema tSchema = new TableSchema("student", null);
+         TableSchema tSchema = new TableSchema("student", aSchema);
          assertFalse(riggedTree.evaluate(variables, variable_names, tSchema));
      }
 
@@ -267,16 +267,17 @@ public class WhereNodeTest {
         // Left will be >= then student.gpa 2
         
         VarNode varNode1 = new VarNode("student.gpa");
-        ConstNode const1 = new ConstNode(2);
+        ConstNode const1 = new ConstNode(2,"integer");
         OperatorNode opNode = new OperatorNode(varNode1, const1, "integer",">=");
         // Right will be = then student.name 'ryan'
         
         VarNode varNode2 = new VarNode("student.name");
-        ConstNode const2 = new ConstNode("ryan");
+        ConstNode const2 = new ConstNode("ryan","varchar");
         OperatorNode opNode2 = new OperatorNode(varNode2, const2,"varchar", "=");
 
         // First node AND
         AndNode firstNode = new AndNode(opNode, opNode2);
+        System.out.println(firstNode);
         return firstNode;
     }
 
@@ -285,12 +286,12 @@ public class WhereNodeTest {
         // Left will be >= then student.gpa 2
         
         VarNode varNode1 = new VarNode("student.gpa");
-        ConstNode const1 = new ConstNode(2);
+        ConstNode const1 = new ConstNode(2,"integer");
         OperatorNode opNode = new OperatorNode(varNode1, const1, "integer",">=");
         // Right will be = then student.name 'ryan'
         
         VarNode varNode2 = new VarNode("student.name");
-        ConstNode const2 = new ConstNode("ryan");
+        ConstNode const2 = new ConstNode("ryan","varchar");
         OperatorNode opNode2 = new OperatorNode(varNode2, const2,"varchar", "=");
 
         // First node AND

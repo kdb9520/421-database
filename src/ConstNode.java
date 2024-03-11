@@ -5,8 +5,9 @@ import java.util.ArrayList;
 public class ConstNode implements WhereNode {
 
     private Object value;
+    private String type;
 
-    public ConstNode(Object value){
+    public ConstNode(Object value, String type){
         this.value = value;
     }
 
@@ -44,6 +45,11 @@ public class ConstNode implements WhereNode {
     @Override
     public void setRight(WhereNode right) {
         return;
+    }
+
+    @Override
+    public String getType(TableSchema tSchema) {
+        return this.type;
     }
     
 }

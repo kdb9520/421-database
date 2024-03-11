@@ -47,4 +47,9 @@ public class AndNode implements WhereNode {
         return ("AND(" + lCondition.toString() + ", " + rCondition.toString() + ")");
         
     }
+
+    @Override
+    public String getType(TableSchema tSchema) {
+        return null;
+    }
 }

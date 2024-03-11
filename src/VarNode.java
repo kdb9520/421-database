@@ -57,6 +57,12 @@ public class VarNode implements WhereNode {
         return;
     }
 
+    @Override
+    public String getType(TableSchema tSchema) {
+        int index = tSchema.findAttribute(varName);
+        return tSchema.findAttributeSchema(index).getType();
+    }
+
 
     
 }

@@ -8,6 +8,11 @@ import java.util.Stack;
 public class WhereParser {
      private List<String> tokens;
     private int currentTokenIndex;
+    private ArrayList<String> variableNames;
+
+    public WhereParser(){
+        this.variableNames = new ArrayList<>();
+    }
 
     public WhereNode parse(String expression) {
         tokens = tokenize(expression);
@@ -113,28 +118,29 @@ public class WhereParser {
     }
     else if (token.equals("true") || token.equals("false")){
         boolean o = Boolean.valueOf(token);
-        return new ConstNode(o);
+        return new ConstNode(o, "boolean");
     }
     else if(token.startsWith("'") || token.startsWith("\"")){
         // Lets parse the '' or "" and ; out
         String string = parseString(token);
-        return new ConstNode(string);
+        return new ConstNode(string, "varchar");
     }
     // Now need to check if its integer or double,if not its a varNode
 
     try {
         Integer number = Integer.parseInt(token);
-        return new ConstNode(number);
+        return new ConstNode(number, "integer");
       } catch (NumberFormatException e) {
       }
 
       try {
         double number = Double.parseDouble(token);
-        return new ConstNode(number);
+        return new ConstNode(number, "double");
       } catch (NumberFormatException e) {
       }
 
       // Its a variable node!
+      variableNames.add(token);
       return new VarNode(token);
 
       
@@ -152,6 +158,10 @@ public class WhereParser {
             // Handle potential incomplete expression (optional)
             throw new RuntimeException("Incomplete expression encountered!"); // Or handle differently
         }
+    }
+
+    public ArrayList<String> getVariableNames(){
+        return this.variableNames;
     }
 
     public static String parseString(String str) {

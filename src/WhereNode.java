@@ -12,6 +12,7 @@ public interface WhereNode {
     public WhereNode getRight();
     public void setLeft(WhereNode left);
     public void setRight(WhereNode right);
+    public String getType(TableSchema tSchema);
 
 
 }
