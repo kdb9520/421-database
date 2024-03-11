@@ -248,6 +248,13 @@ public class WhereNodeTest {
          assertFalse(riggedTree.evaluate(variables, variable_names, tSchema));
      }
 
+     // Tests if where x is not null works [ not implemented yet ]
+     @Test
+     void testVarNotNull() {
+        assertFalse(true);
+     }
+
+
     private static WhereNode createTestTree() {
         
         // Left will be >= then student.gpa 2
