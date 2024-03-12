@@ -54,11 +54,18 @@ public class BufferManager {
     private static void evictPage() {
         // Implementation of page eviction policy (e.g., LRU)
         // For simplicity, this example just removes the first page in the buffer pool
-        Page removedPage = bufferPool.get(0);
-        if(removedPage.wasEdited){
-            StorageManager.writePageToDisk(removedPage);
+        // Evict the first nonlocked page
+        for(int i = 0; i<bufferPool.size();i++){
+            if(!bufferPool.get(i).isLocked()){
+                Page removedPage = bufferPool.get(i);
+                if(removedPage.wasEdited){
+                    StorageManager.writePageToDisk(removedPage);
+                }
+                bufferPool.remove(i);
+                return;
+            }
         }
-        bufferPool.remove(0);
+        
     }
 
     public static void purgeBuffer() {

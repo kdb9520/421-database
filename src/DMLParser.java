@@ -51,6 +51,10 @@ public class DMLParser {
         // Now we can do some error checking here with type of valueString matching the schema
         int colNum = tSchema.findAttribute(columnName);
         AttributeSchema aSchema = tSchema.findAttributeSchema(colNum);
+        boolean isPk = false;
+        if(aSchema.isPrimaryKey){
+            isPk = true;
+        }
         String colType = aSchema.getType();
 
         // Check if the types equal, to do this we need to brute force test for each type
@@ -73,6 +77,7 @@ public class DMLParser {
         int num_pages = tSchema.getIndexList().size();
         for (int i = 0; i < num_pages; i++) {
             Page page = BufferManager.getPage(tSchema.tableName, i);
+            page.toggleLock();
             for(int j = 0; j < page.getRecords().size(); j++){
                 Record r = page.getRecords().get(j);
                 ArrayList<Object> variables = new ArrayList<>();
@@ -83,14 +88,23 @@ public class DMLParser {
                     variables.add(r.getAttribute(index));
                 }
                 if(whereTree.evaluate(variables, wp.getVariableNames(), tSchema)){
-                    page.updateValue(j,colNum, valueString, colType);
-                    
-                    System.out.println(r.prettyPrint(tableName));
-                    // Then need to find out which pages to put the edited values in
-                    // Obviously only if PK col is edited
+                    // If not PK
+                    if(!isPk){
+                        page.updateValue(j,colNum, valueString, colType);
+                    }
+                    else{
+                        // First remove the value from the page
+                        page.removeRecord(r);
+                        // Delete page if needed
+
+                        // Insert it back into the table
+                        insert(r, tableName);
+
+                        
+                    }
                 }
             }
-
+            page.toggleLock();
         }
 
 
@@ -856,5 +870,111 @@ public class DMLParser {
             return true;
         }
         return true;
+    }
+
+    // Insert a record into a table (used for update)
+    public static void insert(Record record, String tableName) {
+        
+      
+        TableSchema tableSchema = Catalog.getTableSchema(tableName);
+        if (tableSchema == null) {
+            System.err.println("Table: " + tableName + " does not exist");
+            return;
+        }
+
+        ArrayList<AttributeSchema> attributeSchemas = tableSchema.getAttributeSchema();
+       
+
+        
+            // We now have the record made corectly, we need to insert it into right place
+
+            if (!checkUnique(tableName, record, attributeSchemas)) {
+                System.out.println("\nError: A record with that unique value already exists. Cancelling update");
+                return;
+            }
+
+            // If the table is empty, no pages exist. Create a new page
+            if (tableSchema.getIndexList().size() == 0) {
+                // Create new page (using bufferManager)
+                Page newPage = BufferManager.createPage(tableName, 0);
+                
+                
+
+                // add this entry to a new page
+                newPage.addRecord(record);
+                tableSchema.addToIndexList(0);
+                // Else the table is not empty! We need to find where to insert this record now
+            } else {
+                // Get the primary key and its type so we can compare
+                int numPages = tableSchema.getIndexList().size();
+
+                // Get primary key col number so we can figure out where to insert this record
+                int primaryKeyCol = tableSchema.findPrimaryKeyColNum();
+
+                for (int i = 0; i < numPages; i++) {
+                    Page page = BufferManager.getPage(tableName, i);
+                    for (Record r : page.getRecords()) {
+                        if (r.getAttribute(primaryKeyCol).equals(record.getAttribute(primaryKeyCol))) {
+                            System.out.println("Error: A record with that primary key already exists.");
+                            return;
+                        }
+                    }
+                }
+
+                boolean wasInserted = false;
+                // Loop through pages and find which one to insert record into. Look ahead
+                // algorithim
+                Page next = null;
+                for (int i = 0; i < tableSchema.getIndexList().size(); i++) {
+                    // See if we are going to be out of bounds
+                    if (i + 1 >= tableSchema.getIndexList().size()) {
+                        break;
+                    }
+                    // Get the next page (must use src.BufferManager to get it)
+                    next = BufferManager.getPage(tableName, i + 1);
+
+
+                    Record firstRecordOfNextPage = next.getFirstRecord();
+
+                    // If its less than the first value of next page (i+1) then it belongs to page i
+                    // Type cast appropiately then compare records
+                    if (Page.isLessThan(record, firstRecordOfNextPage, tableName)) {
+                        // Add record to current page
+                        Page page = BufferManager.getPage(tableName, i);
+                        
+                        Page splitPage = page.addRecord(record);
+                        wasInserted = true;
+                        if (splitPage != null) { // If we split update stuff as needed
+                            tableSchema.addToIndexList(i+1,numPages);
+                            // Update all pages in the buffer pool list to have the correct page number
+                            BufferManager.updatePageNumbersOnSplit(tableName, splitPage.getPageNumber());
+                            BufferManager.addPageToBuffer(splitPage);
+                            // Break out of for loop; go to next row to insert
+                            break;
+                        }
+                        break;
+                    }
+                }
+
+                // Cycled through all pages -> src.Record belongs on the last page of the table
+
+                if (!wasInserted) {
+                    if (!checkUnique(tableName, record, attributeSchemas)) {
+                        System.out.println("\nError: A record with that unique value already exists.");
+                        return;
+                    }
+                    
+                    // Insert the record into the last page of the table
+                    Page lastPage = BufferManager.getPage(tableName, numPages - 1).addRecord(record);
+
+                    if (lastPage != null) {
+                        tableSchema.addToIndexList(numPages);
+                        // Update all pages in the buffer pool list to have the correct page number
+                        BufferManager.updatePageNumbersOnSplit(tableName, lastPage.getPageNumber());
+                        BufferManager.addPageToBuffer(lastPage);
+                    }
+                }
+            
+        }
     }
 }

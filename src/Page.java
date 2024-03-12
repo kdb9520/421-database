@@ -12,6 +12,7 @@ public class Page {
     String tableName;
     ArrayList<Record> records;
     boolean wasEdited;
+    boolean lock;
 
 
     public Page() { 
@@ -24,6 +25,7 @@ public class Page {
         this.tableName = tablename;
         this.pageNumber = pageNumber;
         this.records = records;
+        this.lock = false;
 
         if(records == null){
             this.records = new ArrayList<>();
@@ -276,6 +278,20 @@ public class Page {
     public void updateValue(int j, int colNum, String valueString, String colType) {
         records.get(j).setCol(colNum, valueString, colType); // TODO: Add a call to maybe a page.Sort() function to resort the page and kick out values as needed
         this.wasEdited = true;
+    }
+
+    public boolean isLocked(){
+        return this.lock;
+    }
+
+    // Flip the log
+    public void toggleLock(){
+        if(!lock){
+            lock = true;
+        }
+        else{
+            lock = false;
+        }
     }
 
 }
