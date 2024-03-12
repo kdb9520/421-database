@@ -94,7 +94,7 @@ public class DMLParser {
                     }
                     else{
                         // First remove the value from the page
-                        page.removeRecord(r);
+                        page.removeRecord(j);
                         // Delete page if needed
 
                         // Insert it back into the table
@@ -160,9 +160,9 @@ public class DMLParser {
      * @param whereClause - the condition
      */
     public static void deleteRecord(TableSchema tableSchema, String whereClause){
-        whereClause = whereClause.substring(0,whereClause.length()-1);
+        String whereClauseEdited = whereClause.substring(0,whereClause.length()-1);
         WhereParser wp = new WhereParser();
-        WhereNode whereTree = wp.parse(whereClause);
+        WhereNode whereTree = wp.parse(whereClauseEdited);
         ArrayList<String> variableNames = wp.getVariableNames();
 
 
@@ -172,8 +172,10 @@ public class DMLParser {
         int num_pages = tableSchema.getIndexList().size();
         for (int i = 0; i < num_pages; i++) {
             Page page = BufferManager.getPage(tableSchema.tableName, i);
+            page.toggleLock();
             ArrayList<Record> records = page.getRecords();
-            for(Record r : records){
+            for(int j = 0; j < records.size(); j++){
+                Record r = records.get(j);
                 ArrayList<Object> variables = new ArrayList<>();
                 for (String varName : variableNames){
                     // First figure out what index of the var is in the record
@@ -181,9 +183,11 @@ public class DMLParser {
                     variables.add(r.getAttribute(index));
                 }
                 if(whereTree.evaluate(variables, variableNames, tableSchema)){   //todo - wait for where clause implementation
-                    page.removeRecord(r);
+                    page.removeRecord(j);
+                    j--; // Since we removed record we 
                 }
             }
+            page.toggleLock();
 
         }
 

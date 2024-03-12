@@ -2,6 +2,7 @@ package src;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -12,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class StorageManager {
     public static Catalog catalog;                  // private instance of src.Catalog, accessible by static methods
@@ -62,6 +64,11 @@ public class StorageManager {
                 //System.out.println("Error: Table: " + page.getTableName() + " does not exist");
             }
 
+            if(page.getRecords() == null || page.getRecords().size() == 0){
+                deletePage(page);
+                return;
+            }
+
             RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");
             //FileOutputStream fos = new FileOutputStream(file); Depreceated cant use this
         
@@ -84,7 +91,16 @@ public class StorageManager {
             // Move the file pointer to the correct position
             randomAccessFile.seek(offset);
             // Write the page data to the file
-            randomAccessFile.write(page.serialize());
+            byte[] serializedPageData = page.serialize();
+            int paddingSize = Main.pageSize - serializedPageData.length;
+            byte[] paddingBytes = new byte[paddingSize];
+            Arrays.fill(paddingBytes,   /* Pass the byte array directly */
+                    (byte) 0);
+
+            byte[] dataToWrite = new byte[serializedPageData.length + paddingSize];
+            System.arraycopy(serializedPageData, 0, dataToWrite, 0, serializedPageData.length);
+            System.arraycopy(paddingBytes, 0, dataToWrite, serializedPageData.length, paddingSize);
+            randomAccessFile.write(dataToWrite);
             randomAccessFile.close();
         } catch (IOException e) {
             // Handle the exception (e.g., log it or throw a runtime exception)
@@ -187,7 +203,60 @@ public class StorageManager {
             return;
         }
 
+        // Move to the page and delete it's bytes
+        long offset = (indexList.get(p.getPageNumber()) * Main.pageSize) + 4;
+        
+        File file = new File(Main.databaseLocation + File.separator + p.getTableName());
+            
+            // Create the file if it doesn't exist
+            if (!file.exists()) {
+                // If file does not exist this means the table was dropped when page was still in page buffer
+                // Just return and we good to go
+                return;
+                //System.out.println("Error: Table: " + page.getTableName() + " does not exist");
+            }
+
+            try {
+                RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");
+                byte[] entireFileContent = new byte[(int) randomAccessFile.length()];
+                randomAccessFile.readFully(entireFileContent);
+
+
+                randomAccessFile.close();
+
+                int startIndex = (int) offset;  // Assuming offset is a long value
+                int endIndex = startIndex + Main.pageSize;
+
+                int modifiedContentLength = entireFileContent.length - Main.pageSize;
+                byte[] modifiedContent = new byte[modifiedContentLength];
+
+                // Copy the part before the deletion point
+                System.arraycopy(entireFileContent, 0, modifiedContent, 0, startIndex);
+
+                // Copy the part after the deletion point
+                System.arraycopy(entireFileContent, endIndex, modifiedContent, startIndex, modifiedContentLength - startIndex);
+
+                File newFile = new File(file.getParent(), file.getName() + ".new");
+                FileOutputStream fileOutputStream = new FileOutputStream(newFile);
+                fileOutputStream.write(modifiedContent);
+                fileOutputStream.close();
+
+                if (file.delete() && newFile.renameTo(file)) {
+                    System.out.println("File modified successfully.");
+                } else {
+                    System.out.println("Error replacing original file.");
+                    // Handle the error (e.g., delete the new file)
+                }
+
+
+
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
         // For all pages beyond the removed page lets move them down a spot
+        // Maybe call function in buffermanager
         for(int i = pageNum+1; i < numPages; i++){
             // Load the page
             Page page = BufferManager.getPage(tableName,i);
