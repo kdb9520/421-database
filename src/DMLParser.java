@@ -160,6 +160,10 @@ public class DMLParser {
      * @param whereClause - the condition
      */
     public static void deleteRecord(TableSchema tableSchema, String whereClause){
+        whereClause = whereClause.substring(0,whereClause.length()-1);
+        WhereParser wp = new WhereParser();
+        WhereNode whereTree = wp.parse(whereClause);
+        ArrayList<String> variableNames = wp.getVariableNames();
 
 
         // Print all values in table
@@ -170,7 +174,13 @@ public class DMLParser {
             Page page = BufferManager.getPage(tableSchema.tableName, i);
             ArrayList<Record> records = page.getRecords();
             for(Record r : records){
-                if(true){   //todo - wait for where clause implementation
+                ArrayList<Object> variables = new ArrayList<>();
+                for (String varName : variableNames){
+                    // First figure out what index of the var is in the record
+                    int index = tableSchema.findAttribute(varName);
+                    variables.add(r.getAttribute(index));
+                }
+                if(whereTree.evaluate(variables, variableNames, tableSchema)){   //todo - wait for where clause implementation
                     page.removeRecord(r);
                 }
             }

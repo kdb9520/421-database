@@ -173,31 +173,32 @@ public class StorageManager {
         }
     }
 
-    public static void deleteRecord(String tableName, Object primaryKey) {
 
+    public static void deletePage(Page p) {
+        String tableName = p.getTableName();
+        int pageNum = p.getPageNumber();
+        
         TableSchema tableSchema = Catalog.getTableSchema(tableName);
+        ArrayList<Integer> indexList = tableSchema.getIndexList();
+        int numPages = indexList.size();
 
         if (tableSchema == null) {
             System.err.println("Table: " + tableName + "does not exist");
             return;
         }
 
-        ArrayList<AttributeSchema> attributeSchemas = tableSchema.getAttributeSchema();
+        // For all pages beyond the removed page lets move them down a spot
+        for(int i = pageNum+1; i < numPages; i++){
+            // Load the page
+            Page page = BufferManager.getPage(tableName,i);
+            page.wasEdited = true;
+            // Update the index list value so it rewrites to hardware correctly
+            indexList.set(i,indexList.get(i)-1);
 
-        // Get the primary key and its type so we can compare
-        int numPages = tableSchema.getIndexList().size();
-
-        // Get primary key col number so we can figure out where to insert this record
-        int primaryKeyCol = tableSchema.findPrimaryKeyColNum();
-
-        for (int i = 0; i < numPages; i++) {
-            Page page = BufferManager.getPage(tableName, i);
-            for (Record r : page.getRecords()) {
-                if (r.getAttribute(primaryKeyCol).equals(primaryKey)) {
-                    // delete the current record 
-                }
-            }
+            // Do we need any other action? Maybe not
         }
+        // Remove the reference from indexList
+        indexList.remove(pageNum);
     }
 
 }

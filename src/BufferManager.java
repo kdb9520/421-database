@@ -59,7 +59,13 @@ public class BufferManager {
             if(!bufferPool.get(i).isLocked()){
                 Page removedPage = bufferPool.get(i);
                 if(removedPage.wasEdited){
-                    StorageManager.writePageToDisk(removedPage);
+                    if(removedPage.getRecords() == null || removedPage.getRecords().size() == 0){
+                        StorageManager.deletePage(removedPage);
+                    }
+                    else{
+                        StorageManager.writePageToDisk(removedPage);
+                    }
+                    
                 }
                 bufferPool.remove(i);
                 return;

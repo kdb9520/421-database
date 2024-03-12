@@ -255,6 +255,7 @@ public class Page {
 
     public void removeRecord(Record r){
         this.records.remove(r);
+        this.wasEdited = true;
 
     }
 
