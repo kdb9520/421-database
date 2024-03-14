@@ -95,12 +95,21 @@ public class DMLParser {
                     else{
                         // First remove the value from the page
                         page.removeRecord(j);
-                        // Delete page if needed
+
+                        Record r_clone = new Record(r.cloneValues());
+                        // Update its value
+                        r_clone.setCol(colNum, valueString, valType);
+                        System.out.println(r_clone.prettyPrint(tableName));
 
                         // Insert it back into the table
-                        insert(r, tableName);
-
+                        Boolean success = insert(r_clone, tableName);
                         
+                        // If insert failed then revert the record and re-insert to old spot
+                        if(!success){
+                          // Update its value
+                            success = insert(r, tableName);
+                            System.out.println(r.prettyPrint(tableName));
+                        }
                     }
                 }
             }
@@ -887,13 +896,13 @@ public class DMLParser {
     }
 
     // Insert a record into a table (used for update)
-    public static void insert(Record record, String tableName) {
+    public static Boolean insert(Record record, String tableName) {
         
       
         TableSchema tableSchema = Catalog.getTableSchema(tableName);
         if (tableSchema == null) {
             System.err.println("Table: " + tableName + " does not exist");
-            return;
+            return false;
         }
 
         ArrayList<AttributeSchema> attributeSchemas = tableSchema.getAttributeSchema();
@@ -904,7 +913,7 @@ public class DMLParser {
 
             if (!checkUnique(tableName, record, attributeSchemas)) {
                 System.out.println("\nError: A record with that unique value already exists. Cancelling update");
-                return;
+                return false;
             }
 
             // If the table is empty, no pages exist. Create a new page
@@ -930,7 +939,7 @@ public class DMLParser {
                     for (Record r : page.getRecords()) {
                         if (r.getAttribute(primaryKeyCol).equals(record.getAttribute(primaryKeyCol))) {
                             System.out.println("Error: A record with that primary key already exists.");
-                            return;
+                            return false;
                         }
                     }
                 }
@@ -975,7 +984,7 @@ public class DMLParser {
                 if (!wasInserted) {
                     if (!checkUnique(tableName, record, attributeSchemas)) {
                         System.out.println("\nError: A record with that unique value already exists.");
-                        return;
+                        return false;
                     }
                     
                     // Insert the record into the last page of the table
@@ -990,5 +999,6 @@ public class DMLParser {
                 }
             
         }
+        return true;
     }
 }

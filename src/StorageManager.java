@@ -276,7 +276,6 @@ public class StorageManager {
         }
         // Remove the reference from indexList
         indexList.remove(pageNum);
-        System.out.println(indexList);
     }
 
 }

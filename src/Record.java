@@ -375,4 +375,23 @@ public class Record {
          }
     }
 
+    public ArrayList<Object> cloneValues() {
+        ArrayList<Object> clonedValues = new ArrayList<>();
+        for (Object obj : values) {
+            if (obj instanceof Cloneable) {
+                // If the object is cloneable, clone it
+                try {
+                    clonedValues.add(((Cloneable) obj).getClass().getMethod("clone").invoke(obj));
+                } catch (Exception e) {
+                    // Handle clone method not found or other exceptions
+                    e.printStackTrace();
+                }
+            } else {
+                // If the object is not cloneable, add it as it is
+                clonedValues.add(obj);
+            }
+        }
+        return clonedValues;
+    }
+
 }
