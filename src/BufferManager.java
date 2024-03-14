@@ -61,7 +61,7 @@ public class BufferManager {
                 if(removedPage.wasEdited){
                     if(removedPage.getRecords() == null || removedPage.getRecords().size() == 0){
                         StorageManager.deletePage(removedPage);
-                        updatePageNumbersOnSplit(removedPage.getTableName(), i+1);
+                        updatePageNumbersOnRemoval(removedPage.getTableName(), i+1);
                     }
                     else{
                         StorageManager.writePageToDisk(removedPage);
@@ -76,14 +76,9 @@ public class BufferManager {
     }
 
     public static void purgeBuffer() {
-        // Iterate through all entries in the buffer pool
-        for (Page p : bufferPool) {
-            if(p.wasEdited){
-                StorageManager.writePageToDisk(p);
-            }
+        while(bufferPool.size() > 0){
+            evictPage();
         }
-        // Clear the buffer pool
-        bufferPool.clear();
     }
 
     public static Page createPage(String tableName, int pageNumber){
@@ -134,6 +129,16 @@ public class BufferManager {
             int currentPageNumber = page.getPageNumber();
             if (page.getTableName().equals(tableName) && currentPageNumber >= newPageNumber) {
                 page.setPageNumber(currentPageNumber + 1);
+            }
+        }
+    }
+
+    public static void updatePageNumbersOnRemoval (String tableName, int newPageNumber) {
+        for (Page page : bufferPool) {
+            int currentPageNumber = page.getPageNumber();
+            if (page.getTableName().equals(tableName) && currentPageNumber >= newPageNumber) {
+                page.setPageNumber(currentPageNumber - 1);
+                System.out.println(page.getPageNumber());
             }
         }
     }

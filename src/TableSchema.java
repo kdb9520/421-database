@@ -155,6 +155,7 @@ public class TableSchema {
         
 
         dataOutputStream.close();
+        ArrayList<Integer> test = this.getIndexList();
         return byteArrayOutputStream.toByteArray();
     }
 

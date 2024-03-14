@@ -217,7 +217,18 @@ public class StorageManager {
             }
 
             try {
+                int written_num_pages = readNumberOfPages(file);
                 RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");
+                
+            
+                ByteBuffer buffer = ByteBuffer.allocate(4);
+                buffer.putInt(written_num_pages - 1);
+                byte[] bytes = buffer.array();
+                randomAccessFile.write(bytes);
+
+                // Reset the file pointer to the beginning of the file
+                randomAccessFile.seek(0);
+
                 byte[] entireFileContent = new byte[(int) randomAccessFile.length()];
                 randomAccessFile.readFully(entireFileContent);
 
@@ -265,6 +276,7 @@ public class StorageManager {
         }
         // Remove the reference from indexList
         indexList.remove(pageNum);
+        System.out.println(indexList);
     }
 
 }
