@@ -61,6 +61,7 @@ public class BufferManager {
                 if(removedPage.wasEdited){
                     if(removedPage.getRecords() == null || removedPage.getRecords().size() == 0){
                         StorageManager.deletePage(removedPage);
+                        updatePageNumbersOnSplit(removedPage.getTableName(), i+1);
                     }
                     else{
                         StorageManager.writePageToDisk(removedPage);

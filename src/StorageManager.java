@@ -258,9 +258,6 @@ public class StorageManager {
         // For all pages beyond the removed page lets move them down a spot
         // Maybe call function in buffermanager
         for(int i = pageNum+1; i < numPages; i++){
-            // Load the page
-            Page page = BufferManager.getPage(tableName,i);
-            page.wasEdited = true;
             // Update the index list value so it rewrites to hardware correctly
             indexList.set(i,indexList.get(i)-1);
 
