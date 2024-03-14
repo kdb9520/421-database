@@ -158,7 +158,12 @@ public class Page {
     }
 
     public Record getFirstRecord() {
-        return this.records.get(0);
+        if(this.records == null || this.records.size() == 0){
+            return null;
+        }
+        else{
+            return this.records.get(0);
+        }
     }
 
     public int getPageSize() {
