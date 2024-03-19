@@ -39,6 +39,7 @@ public class DMLParser {
         String tableName = split[0];
         String columnName = split[2]; // <name> set <columnName>
         String valueString = split[4];
+        
         TableSchema tSchema = Catalog.getTableSchema(tableName);
         // Get the where clause
         // Construct the WHERE clause from split[6] to the end
@@ -60,12 +61,21 @@ public class DMLParser {
         // Check if the types equal, to do this we need to brute force test for each type
         String valType = getType(valueString);
 
+        // Get the value.. if no wrapping ' or " return error
+        if (valueString.length() >= 2 && (valueString.startsWith("'") && valueString.endsWith("'")) || (valueString.startsWith("\"") && valueString.endsWith("\""))) {
+            // If the string starts and ends with a matching single or double quote
+            valueString = valueString.substring(1, valueString.length() - 1);
+        }
+        else{
+            System.err.println("Wrapping quotes expected, please check statement and try again");
+        }
+
         if(valType.equals("null")){
             // Do nothing
         }
         else if(!valType.equals(colType)){
             // Constants are all marked as a varchar, just check and make sure our variable isn't a char. If it is a char its a valid comparison
-            if((!(colType.startsWith("varchar") && valType.startsWith("char")) || colType.startsWith("char") && valType.startsWith("varchar"))){
+            if(!((colType.startsWith("varchar") && valType.startsWith("char")) || (colType.startsWith("char") && valType.startsWith("varchar")) || (colType.startsWith("varchar") && valType.startsWith("varchar")))){
                 System.err.println("Types of column and constant do not match. Aborting update.");
                 return;
             }
