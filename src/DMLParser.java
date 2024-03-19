@@ -789,12 +789,11 @@ public class DMLParser {
         }
     }
 
-    // CURRENTLY NON-FUNCTIONAL
     private static void printSelectTable (SelectOutput selectOutput){
         
         //String tableName = selectOutput.getTableName();
         ArrayList<Record> records = selectOutput.getRecords();
-        //ArrayList<AttributeSchema> attributeSchemas = selectOutput.getAttributeSchemas();
+        ArrayList<AttributeSchema> attributeSchemas = selectOutput.getAttributeSchemas();
 
         if (records == null) {
             return;
@@ -803,33 +802,9 @@ public class DMLParser {
         System.out.println("Select Result: \n");
         for (Record record : records) {
 
-            System.out.println(record.prettyPrint(selectOutput.getAttributeSchemas()));
-
-           /* System.out.print(attributeSchemas.get(2) + ": ");
-            String type = null; //(String) attributeSchemas.get(3);
-            for (int i = 4; i < attributeSchemas.size(); i++) {
-                Object value = null;//attrList.get(i);
-                String str = "";
-                if (value == null) {
-                    str = "null";
-                } else if (type.equals("integer")) {
-                    Integer n = (Integer) value;
-                    str = n.toString();
-                } else if (type.startsWith("varchar")) {
-                    str = "\"" + value.toString().strip() + "\"";
-                } else if (type.startsWith("char")) {
-                    str = "\"" + value.toString().strip() + "\"";
-                } else if (type.equals("double")) {
-                    Double d = (Double) value;
-                    str = d.toString();
-                } else if (type.equals("boolean")) {
-                    Boolean b = (Boolean) value;
-                    str = b.toString();
-                }
-                System.out.print(str + " | ");
-            }
-            System.out.println("\n");*/
+            System.out.println(record.prettyPrint(attributeSchemas));
         }
+
     }
 
     private static void displaySchema(String databaseLocation) {
