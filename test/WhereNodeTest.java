@@ -1,21 +1,10 @@
 package test;
-import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import src.*;
 
 import java.util.ArrayList;
-
-import src.AndNode;
-import src.AttributeSchema;
-import src.ConstNode;
-import src.OperatorNode;
-import src.OrNode;
-import src.TableSchema;
-import src.VarNode;
-import src.WhereNode;
-import src.WhereParser;
 
 public class WhereNodeTest {
 
