@@ -803,7 +803,7 @@ public class DMLParser {
         System.out.println("Select Result: \n");
         for (Record record : records) {
 
-            record.prettyPrint(selectOutput.getAttributeSchemas());
+            System.out.println(record.prettyPrint(selectOutput.getAttributeSchemas()));
 
            /* System.out.print(attributeSchemas.get(2) + ": ");
             String type = null; //(String) attributeSchemas.get(3);
