@@ -782,9 +782,9 @@ public class DMLParser {
     // CURRENTLY NON-FUNCTIONAL
     private static void printSelectTable (SelectOutput selectOutput){
         
-        String tableName = null;// selectOutput.getTableName();
+        //String tableName = selectOutput.getTableName();
         ArrayList<Record> records = selectOutput.getRecords();
-        ArrayList<AttributeSchema> attributeSchemas = selectOutput.getAttributeSchemas();
+        //ArrayList<AttributeSchema> attributeSchemas = selectOutput.getAttributeSchemas();
 
         if (records == null) {
             return;
@@ -793,9 +793,9 @@ public class DMLParser {
         System.out.println("Select Result: \n");
         for (Record record : records) {
 
-            record.prettyPrint(null);
+            record.prettyPrint(selectOutput.getAttributeSchemas());
 
-            System.out.print(attributeSchemas.get(2) + ": ");
+           /* System.out.print(attributeSchemas.get(2) + ": ");
             String type = null; //(String) attributeSchemas.get(3);
             for (int i = 4; i < attributeSchemas.size(); i++) {
                 Object value = null;//attrList.get(i);
@@ -818,7 +818,7 @@ public class DMLParser {
                 }
                 System.out.print(str + " | ");
             }
-            System.out.println("\n");
+            System.out.println("\n");*/
         }
     }
 
