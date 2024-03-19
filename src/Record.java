@@ -301,6 +301,23 @@ public class Record {
         return output.toString();
     }
 
+    public String prettyPrint(ArrayList<AttributeSchema> attributeSchemas) {
+
+        StringBuilder output = new StringBuilder("|");
+
+        for (int i = 0; i < attributeSchemas.size(); i++) {
+            String str = getString(attributeSchemas, i);
+
+            output.append(String.format("%10s", str));
+
+            if (i < attributeSchemas.size() - 1) {
+                output.append("||");
+            }
+        }
+        output.append("|");
+        return output.toString();
+    }
+
     public String prettyPrint(String tableName, ArrayList<Integer> indecies) {
         TableSchema tableSchema = Catalog.getTableSchema(tableName);
 
