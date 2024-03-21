@@ -22,6 +22,9 @@
 # Out files
 out/
 
+# Database files
+db/
+
 # .idea
 .idea/
 421-database.iml
