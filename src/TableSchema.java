@@ -1,10 +1,12 @@
-package src; /**
+/**
  * @file:   src.TableSchema.java
  * @authors:    Kyle, Derek, Kellen, Jaron, Beckett
  * The src.TableSchema holds the information about the structure of the table.  It has a unique tableName and tableNumber,
  * along with a list of the AttributeSchemas for the attributes in the table and a list of the pageIndexes for the pages
  * holding the information in the table.
  */
+
+package src;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -60,7 +62,7 @@ public class TableSchema {
     }
 
 
-    // Returns a list of all attribute names (Currently used for select columnname from table)
+    // Returns a list of all attribute names (Currently used for select column name from table)
     public ArrayList<String> getAttributeNames(){
         ArrayList<String> attributeNames = new ArrayList<>();
         for(AttributeSchema a : attributes){
@@ -155,7 +157,6 @@ public class TableSchema {
         
 
         dataOutputStream.close();
-        ArrayList<Integer> test = this.getIndexList();
         return byteArrayOutputStream.toByteArray();
     }
 
@@ -190,9 +191,7 @@ public class TableSchema {
 
 
 
-    public void updateIndexList(ArrayList<Integer> pageIndexes){
-        this.pageIndexes = pageIndexes;
-    }
+    public void updateIndexList(ArrayList<Integer> pageIndexes) { this.pageIndexes = pageIndexes; }
 
     public void addToIndexList(Integer pageIndex){
         this.pageIndexes.add(pageIndex);
@@ -214,13 +213,13 @@ public class TableSchema {
         return str.toString();
     }
 
-    // Input: Indecies of attributes within the schema to print
-    // Outpur: String with correct attributes displayed
-    public String prettyPrint(ArrayList<Integer> indecies) {
+    // Input: Indices of attributes within the schema to print
+    // Output: String with correct attributes displayed
+    public String prettyPrint(ArrayList<Integer> indices) {
         StringBuilder str = new StringBuilder();
 
         for (int i = 0; i< attributes.size(); i++) {
-            if (indecies.contains((Integer) i))
+            if (indices.contains(i))
                 str.append("|").append(attributes.get(i).prettyPrint()).append("|");
         }
         str.append(String.format("\n%" + str.length() + "s", " ").replace(" ", "-"));

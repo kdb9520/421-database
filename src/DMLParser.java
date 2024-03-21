@@ -48,18 +48,21 @@ public class DMLParser {
         ArrayList<String> variableNames = wp.getVariableNames();
 
         // Now we can do some error checking here with type of valueString matching the schema
-        int colNum = tSchema.findAttribute(columnName);
-        AttributeSchema aSchema = tSchema.findAttributeSchema(colNum);
-        boolean isPk = false;
-        if(aSchema.isPrimaryKey){
-            isPk = true;
+        int colNum = tSchema != null ? tSchema.findAttribute(columnName) : -1;
+
+        if (colNum == -1) {
+            System.err.println("Attribute " + columnName + " not found!");
+            return;
         }
+
+        AttributeSchema aSchema = tSchema.findAttributeSchema(colNum);
+        boolean isPk = aSchema.isPrimaryKey;
         String colType = aSchema.getType();
 
         // Check if the types equal, to do this we need to brute force test for each type
         String valType = getType(valueString);
 
-        // Get the value.. if no wrapping ' or " return error
+        // Get the value. if no wrapping ' or " return error
         if (valueString.length() >= 2 && (valueString.startsWith("'") && valueString.endsWith("'")) || (valueString.startsWith("\"") && valueString.endsWith("\""))) {
             // If the string starts and ends with a matching single or double quote
             valueString = valueString.substring(1, valueString.length() - 1);
@@ -68,11 +71,8 @@ public class DMLParser {
             System.err.println("Wrapping quotes expected, please check statement and try again");
         }
 
-        if(valType.equals("null")){
-            // Do nothing
-        }
-        else if(!valType.equals(colType)){
-            // Constants are all marked as a varchar, just check and make sure our variable isn't a char. If it is a char its a valid comparison
+        if(!valType.equals(colType) && !valType.equals("null")){
+            // Constants are all marked as a varchar, just check and make sure our variable isn't a char. If it is a char it's a valid comparison
             if(!((colType.startsWith("varchar") && valType.startsWith("char")) || (colType.startsWith("char") && valType.startsWith("varchar")) || (colType.startsWith("varchar") && valType.startsWith("varchar")))){
                 System.err.println("Types of column and constant do not match. Aborting update.");
                 return;
@@ -123,12 +123,9 @@ public class DMLParser {
             }
             page.toggleLock();
         }
-
-
-        return;
     }  
 
-    // Gets type of a string
+    // Gets type of string
     private static String getType(String string){
         if (string.equals("true") || string.equals("false")){
            return("boolean");
@@ -139,10 +136,10 @@ public class DMLParser {
         else if(string.equals(null)){
             return("null");
         }
-        // Now need to check if its integer or double,if not its a varNode
+        // Now need to check if its integer or double, if not it's a varNode
     
         try {
-            Integer number = Integer.parseInt(string);
+            int number = Integer.parseInt(string);
             return("integer");
           } catch (NumberFormatException e) {
           }
@@ -165,10 +162,9 @@ public class DMLParser {
 
         TableSchema tableSchema = Catalog.getTableSchema(tableName);
         String whereClause = String.join(" ", Arrays.copyOfRange(split, 1, split.length));
-        deleteRecord(tableSchema, whereClause);
-
-
-
+        if (tableSchema != null) {
+            deleteRecord(tableSchema, whereClause);
+        }
     }
 
     /**
@@ -249,7 +245,7 @@ public class DMLParser {
                         .println("Expected " + attributeSchemas.size() + " values but got " + attrs.size() + " values");
 
                 System.out.println(
-                        "If there were records inputted previous to this record, they have been successfuly inserted.");
+                        "If there were records inputted previous to this record, they have been successfully inserted.");
                 System.out.println("All records after the failed record were not inserted.");
                 previousRecordFail = true;
                 break;
@@ -300,7 +296,7 @@ public class DMLParser {
                             int numberOfChars = Integer
                                     .parseInt(type.substring(type.indexOf("(") + 1, type.indexOf(")")));
 
-                            // If not wrapped in a '' then we know its not a char
+                            // If not wrapped in a '' then we know it's not a char
                             if ((!value.startsWith("'") || !value.endsWith("'")) &&
                                     (!value.startsWith("\"") || !value.endsWith("\""))) {
                                 throw new IllegalArgumentException("Invalid value for char type: " + value);
@@ -338,13 +334,13 @@ public class DMLParser {
                 e.printStackTrace();
                 System.out.println(e.getMessage());
                 System.out.println(
-                        "If there were records inputted previous to this record, they have been successfuly inserted.");
+                        "If there were records inputted previous to this record, they have been successfully inserted.");
                 System.out.println("All records after the failed record were not inserted.");
                 previousRecordFail = true;
                 break;
             }
 
-            // We now have the record made corectly, we need to insert it into right place
+            // We now have the record made correctly, we need to insert it into right place
             Record record = new Record(values);
 
             if (!checkUnique(tableName, record, attributeSchemas)) {
@@ -374,7 +370,7 @@ public class DMLParser {
                 // Get the primary key and its type so we can compare
                 int numPages = tableSchema.getIndexList().size();
 
-                // Get primary key col number so we can figure out where to insert this record
+                // Get primary key col number so that we can figure out where to insert this record
                 int primaryKeyCol = tableSchema.findPrimaryKeyColNum();
 
                 for (int i = 0; i < numPages; i++) {
@@ -390,7 +386,7 @@ public class DMLParser {
 
                 boolean wasInserted = false;
                 // Loop through pages and find which one to insert record into. Look ahead
-                // algorithim
+                // algorithm
                 Page next = null;
                 for (int i = 0; i < tableSchema.getIndexList().size(); i++) {
                     // See if we are going to be out of bounds
@@ -403,8 +399,8 @@ public class DMLParser {
 
                     Record firstRecordOfNextPage = next.getFirstRecord();
 
-                    // If its less than the first value of next page (i+1) then it belongs to page i
-                    // Type cast appropiately then compare records
+                    // If it's less than the first value of next page (i+1) then it belongs to page 'i'
+                    // Type cast appropriately then compare records
                     if (Page.isLessThan(record, firstRecordOfNextPage, tableName)) {
                         // Add record to current page
                         Page page = BufferManager.getPage(tableName, i);
@@ -510,7 +506,7 @@ public class DMLParser {
 
         if (splitQuery[0].equals("*")) {
 
-            // need to test formating of toStrings
+            // need to test formatting of toStrings
             // todo: update the padding to be the highest varchar length or something like
             // that
             ArrayList<String> attrs = new ArrayList<>();
@@ -631,7 +627,7 @@ public class DMLParser {
         // loop through our TableSchemas
         for (int i = 0; i < tableSchemas.size(); i++) {
 
-            // add attributes as tablename.attrname
+            // add attributes as tableName.attrName
             for (AttributeSchema a : tableSchemas.get(i).attributes) {
                 String newName = tableSchemas.get(i).tableName + "." + a.attrName;
                 as.add(new AttributeSchema(newName, a.attrType, a.isNotNull, a.isPrimaryKey, a.isUnique));
@@ -686,9 +682,9 @@ public class DMLParser {
 
         newCartesian = new ArrayList<>();
         for (Record r : oldCartesian) {
-            ArrayList<Object> vals = r.getValues();
-            vals.add(rowId++);
-            newCartesian.add(new Record(vals));
+            ArrayList<Object> values = r.getValues();
+            values.add(rowId++);
+            newCartesian.add(new Record(values));
         }
 
         // make the temp table and insert values into it
@@ -696,7 +692,7 @@ public class DMLParser {
             temp = new TableSchema("tempcartesian", as);
             Catalog.updateCatalog(temp);
             StorageManager.writeTableToDisk(temp.tableName);
-            // TODO: DELETE THE TEMP TABLE AFTER USE
+
             String insertQuery = QueryHandler.buildInsertQuery(newCartesian, temp);
             insert(insertQuery);
 
@@ -758,11 +754,11 @@ public class DMLParser {
             // add to tuple builder
 
             ArrayList<AttributeSchema> attributeSchemas = new ArrayList<>();
-            ArrayList<Integer> indecies = new ArrayList<>();
+            ArrayList<Integer> indices = new ArrayList<>();
             for (String attr : attributes) {
                 if (tableSchema.getAttributeNames().contains(attr)) {
                     int attrIndex = tableSchema.findAttribute(attr);
-                    indecies.add(attrIndex);
+                    indices.add(attrIndex);
                     attributeSchemas.add(tableSchema.findAttributeSchema(attrIndex));
                 }
                 else {
@@ -791,7 +787,7 @@ public class DMLParser {
 
                     if(whereTree.evaluate(variables, wp.getVariableNames(), selectTableSchema)){
                         for (int j = 0; j < record.getValues().size(); j++) {
-                            if (indecies.contains(j)) {
+                            if (indices.contains(j)) {
                                 recordBuilder.add(record.getAttribute(j));
                             }
                         }
@@ -866,14 +862,14 @@ public class DMLParser {
     // Returns false if there is a unique value about to be overwritten
     private static boolean checkUnique(String tableName, Record record, ArrayList<AttributeSchema> attrSchemas) {
 
-        ArrayList<Integer> indeciesOfUnique = new ArrayList<>();
+        ArrayList<Integer> indicesOfUnique = new ArrayList<>();
         for (int i = 0; i < attrSchemas.size(); i++) {
             if (attrSchemas.get(i).getIsUnique()) {
-                indeciesOfUnique.add(i);
+                indicesOfUnique.add(i);
             }
         }
 
-        if (indeciesOfUnique.size() >= 0) {
+        if (!indicesOfUnique.isEmpty()) {
 
             TableSchema tableSchema = Catalog.getTableSchema(tableName);
 
@@ -882,9 +878,9 @@ public class DMLParser {
             for (int i = 0; i < numPages; i++) {
                 Page page = BufferManager.getPage(tableName, i);
                 for (Record r : page.getRecords()) {
-                    for (int j = 0; j < indeciesOfUnique.size(); j++) {
-                        if (r.getAttribute(indeciesOfUnique.get(j)) != null && r.getAttribute(indeciesOfUnique.get(j))
-                                .equals(record.getAttribute(indeciesOfUnique.get(j)))) {
+                    for (int j = 0; j < indicesOfUnique.size(); j++) {
+                        if (r.getAttribute(indicesOfUnique.get(j)) != null && r.getAttribute(indicesOfUnique.get(j))
+                                .equals(record.getAttribute(indicesOfUnique.get(j)))) {
                             return false;
                         }
                     }
@@ -910,7 +906,7 @@ public class DMLParser {
        
 
         
-            // We now have the record made corectly, we need to insert it into right place
+            // We now have the record made correctly, we need to insert it into right place
 
             if (!checkUnique(tableName, record, attributeSchemas)) {
                 System.out.println("\nError: A record with that unique value already exists. Cancelling update");
@@ -918,7 +914,7 @@ public class DMLParser {
             }
 
             // If the table is empty, no pages exist. Create a new page
-            if (tableSchema.getIndexList().size() == 0) {
+            if (tableSchema.getIndexList().isEmpty()) {
                 // Create new page (using bufferManager)
                 Page newPage = BufferManager.createPage(tableName, 0);
                 
@@ -932,7 +928,7 @@ public class DMLParser {
                 // Get the primary key and its type so we can compare
                 int numPages = tableSchema.getIndexList().size();
 
-                // Get primary key col number so we can figure out where to insert this record
+                // Get primary key col number, so we can figure out where to insert this record
                 int primaryKeyCol = tableSchema.findPrimaryKeyColNum();
 
                 for (int i = 0; i < numPages; i++) {
@@ -947,7 +943,7 @@ public class DMLParser {
 
                 boolean wasInserted = false;
                 // Loop through pages and find which one to insert record into. Look ahead
-                // algorithim
+                // algorithm
                 Page next = null;
                 for (int i = 0; i < tableSchema.getIndexList().size(); i++) {
                     // See if we are going to be out of bounds
@@ -960,8 +956,8 @@ public class DMLParser {
 
                     Record firstRecordOfNextPage = next.getFirstRecord();
 
-                    // If its less than the first value of next page (i+1) then it belongs to page i
-                    // Type cast appropiately then compare records
+                    // If it's less than the first value of next page (i+1) then it belongs to page 'i'
+                    // Type cast appropriately then compare records
                     if (Page.isLessThan(record, firstRecordOfNextPage, tableName)) {
                         // Add record to current page
                         Page page = BufferManager.getPage(tableName, i);
