@@ -523,7 +523,15 @@ public class DMLParser {
                 }
             }
 
-            SelectOutput selectOutput = buildAttributeTable(attrs, tableSchema, null);
+            String whereClause = null;
+            if (query.contains("where")) {
+                whereClause = query.split("where")[1];
+                if (query.contains("orderby")) {
+                    whereClause = whereClause.split("orderby")[0];
+                }
+            }
+
+            SelectOutput selectOutput = buildAttributeTable(attrs, tableSchema, whereClause);
             if (selectOutput != null) {
                 printSelectTable(selectOutput);
             }
