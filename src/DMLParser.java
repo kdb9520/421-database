@@ -515,17 +515,18 @@ public class DMLParser {
             // need to test formating of toStrings
             // todo: update the padding to be the highest varchar length or something like
             // that
-            System.out.println(tableSchema.prettyPrint());
+            ArrayList<String> attrs = new ArrayList<>();
 
-            // Print all values in table
-            // Loop through the table and print each page
-            // For each page in table tableName
-            int num_pages = tableSchema.getIndexList().size();
-            for (int i = 0; i < num_pages; i++) {
-                Page page = BufferManager.getPage(tableSchema.getTableName(), i);
-                System.out.println(page.prettyPrint());
+            for (AttributeSchema a : tableSchema.getAttributeSchema()) {
+                if (!a.attrName.equals("row_id")) {
+                    attrs.add(a.attrName);
+                }
             }
 
+            SelectOutput selectOutput = buildAttributeTable(attrs, tableSchema, null);
+            if (selectOutput != null) {
+                printSelectTable(selectOutput);
+            }
             
         } else {
             
@@ -692,7 +693,8 @@ public class DMLParser {
         return null;
     }
 
-    private static SelectOutput buildAttributeTable (ArrayList<String> attributes, TableSchema tableSchema, String whereClause) {
+    private static SelectOutput buildAttributeTable (ArrayList<String> attributes, TableSchema tableSchema,
+                                                     String whereClause) {
 
         ArrayList<Record> recordOutput = new ArrayList<>();
 
