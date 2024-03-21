@@ -61,6 +61,10 @@ public class DMLParser {
 
         // Check if the types equal, to do this we need to brute force test for each type
         String valType = getType(valueString);
+        if (valType == null) {
+            System.err.println("Type of column is null!");
+            return;
+        }
 
         // Get the value. if no wrapping ' or " return error
         if (valueString.length() >= 2 && (valueString.startsWith("'") && valueString.endsWith("'")) || (valueString.startsWith("\"") && valueString.endsWith("\""))) {
@@ -209,7 +213,7 @@ public class DMLParser {
     public static void insert(String query) {
         String[] splitQuery = query.split(" ", 2);
         String tableName = splitQuery[0];
-        String remaining = "";
+        String remaining;
         if (query.contains("(")) {
             remaining = query.substring(query.indexOf('('));
         } else {
@@ -224,12 +228,7 @@ public class DMLParser {
 
         String[] tuples = remaining.split(",");
 
-        boolean previousRecordFail = false;
         for (String tuple : tuples) {
-
-            if (previousRecordFail) {
-                break;
-            }
 
             String valString = tuple.strip().split("[()]")[1];
             ArrayList<String> attrs = parseStringValues(valString);
@@ -247,7 +246,6 @@ public class DMLParser {
                 System.out.println(
                         "If there were records inputted previous to this record, they have been successfully inserted.");
                 System.out.println("All records after the failed record were not inserted.");
-                previousRecordFail = true;
                 break;
             }
 
@@ -331,12 +329,11 @@ public class DMLParser {
             } catch (Exception e) {
                 // print error and go to command loop
                 System.out.println("Error with inserting record: " + tuple);
-                e.printStackTrace();
+                // e.printStackTrace();
                 System.out.println(e.getMessage());
                 System.out.println(
                         "If there were records inputted previous to this record, they have been successfully inserted.");
                 System.out.println("All records after the failed record were not inserted.");
-                previousRecordFail = true;
                 break;
             }
 
@@ -350,7 +347,7 @@ public class DMLParser {
             }
 
             // If the table is empty, no pages exist. Create a new page
-            if (tableSchema.getIndexList().size() == 0) {
+            if (tableSchema.getIndexList().isEmpty()) {
 
                 if (!checkUnique(tableName, record, attributeSchemas)) {
                     System.out.println("\nError: A record with that unique value already exists.");
@@ -359,8 +356,6 @@ public class DMLParser {
                 }
                 // Create new page (using bufferManager)
                 Page newPage = BufferManager.createPage(tableName, 0);
-                
-                
 
                 // add this entry to a new page
                 newPage.addRecord(record);
@@ -466,7 +461,7 @@ public class DMLParser {
             } else if (c == ' ' && !inQuotes) {
                 // If we encounter a space outside of quotes, add the current value to the list
                 // (if not empty)
-                if (currentValue.length() > 0) {
+                if (!currentValue.isEmpty()) {
                     values.add(currentValue.toString());
                     currentValue.setLength(0); // Reset the StringBuilder for the next value
                 }
@@ -477,7 +472,7 @@ public class DMLParser {
         }
 
         // Don't forget to add the last value if it exists
-        if (currentValue.length() > 0) {
+        if (!currentValue.isEmpty()) {
             values.add(currentValue.toString());
         }
 
@@ -556,7 +551,7 @@ public class DMLParser {
                 
                 String part = parts[i].toLowerCase();
 
-                if (part.length() == 0) {
+                if (part.isEmpty()) {
                     continue;
                 }
 
@@ -595,7 +590,7 @@ public class DMLParser {
                 return;
             }
             
-            if (tables.size() == 0) {
+            if (tables.isEmpty()) {
                 System.err.println("Error: No tables found.");
                 return;
             }
@@ -625,25 +620,24 @@ public class DMLParser {
         TableSchema temp;
 
         // loop through our TableSchemas
-        for (int i = 0; i < tableSchemas.size(); i++) {
+        for (TableSchema tableSchema : tableSchemas) {
 
             // add attributes as tableName.attrName
-            for (AttributeSchema a : tableSchemas.get(i).attributes) {
-                String newName = tableSchemas.get(i).tableName + "." + a.attrName;
+            for (AttributeSchema a : tableSchema.attributes) {
+                String newName = tableSchema.tableName + "." + a.attrName;
                 as.add(new AttributeSchema(newName, a.attrType, a.isNotNull, a.isPrimaryKey, a.isUnique));
             }
 
             ArrayList<Record> toAdd = new ArrayList<>();
-            TableSchema current = tableSchemas.get(i);
 
             // get the records in the tables so we can cartesian
-            int numPages = current.getIndexList().size();
+            int numPages = tableSchema.getIndexList().size();
             if (numPages != 0) {
 
                 int j = 0;
                 // add all old records to new array
                 do {
-                    Page page = BufferManager.getPage(current.tableName, j);
+                    Page page = BufferManager.getPage(tableSchema.tableName, j);
                     ArrayList<Record> t = page.getRecords();
                     toAdd.addAll(t);
                     j += 1;
@@ -827,7 +821,7 @@ public class DMLParser {
         Catalog.getTableSchemas().forEach((System.out::println));
     }
 
-    private static boolean displayInfo(String tableName) {
+    private static void displayInfo(String tableName) {
 
         tableName = tableName.strip().split(";")[0];
 
@@ -849,12 +843,9 @@ public class DMLParser {
 
             System.out.println("Table: " + tableName + "\nSchema: " + schema + "\nNumber of Pages: " + numOfPages
                     + "\nNumber of Records: " + numOfRecords);
-            return true;
         } else {
             System.out.println("Error: Table '" + tableName + "' not found");
         }
-
-        return false;
     }
 
     // Returns true if either no attrs are isUnique or if the isUnique rule is held
@@ -872,6 +863,10 @@ public class DMLParser {
         if (!indicesOfUnique.isEmpty()) {
 
             TableSchema tableSchema = Catalog.getTableSchema(tableName);
+            if (tableSchema == null) {
+                System.err.println("TableSchema " + tableName + " is null!");
+                return false;
+            }
 
             int numPages = tableSchema.getIndexList().size();
 
