@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.w3c.dom.Attr;
-
 public class DMLParser {
 
     public static void handleQuery(String query, String databaseLocation) {
@@ -540,6 +538,13 @@ public class DMLParser {
             
             // Split the input query into parts
             String[] parts = query.split("\\s+");
+
+            for (String p : parts) {
+                if (p.contains("*")) {
+                    System.err.println("Illegal attribute arguments in Select statement.");
+                    return;
+                }
+            }
             
             // Initialize lists for attributes, tables, and the where clause
             ArrayList<String> attributes = new ArrayList<>();
@@ -590,12 +595,12 @@ public class DMLParser {
         
             // Check for errors
             if (!fromFound) {
-                System.out.println("Error: 'from' keyword not found.");
+                System.err.println("Error: 'from' keyword not found.");
                 return;
             }
             
             if (tables.size() == 0) {
-                System.out.println("Error: No tables found.");
+                System.err.println("Error: No tables found.");
                 return;
             }
 
@@ -714,11 +719,11 @@ public class DMLParser {
             // add to tuple builder
 
             ArrayList<AttributeSchema> attributeSchemas = new ArrayList<>();
-            ArrayList<Integer> indecies = new ArrayList<>();
+            ArrayList<Integer> indices = new ArrayList<>();
             for (String attr : attributes) {
                 if (tableSchema.getAttributeNames().contains(attr)) {
                     int attrIndex = tableSchema.findAttribute(attr);
-                    indecies.add(attrIndex);
+                    indices.add(attrIndex);
                     attributeSchemas.add(tableSchema.findAttributeSchema(attrIndex));
                 }
                 else {
@@ -733,7 +738,7 @@ public class DMLParser {
                 for (Record record : page.records) {
                     ArrayList<Object> recordBuilder = new ArrayList<>();
                     for (int j = 0; j < record.getValues().size(); j++) {
-                        if (indecies.contains(j)) {
+                        if (indices.contains(j)) {
                             recordBuilder.add(record.getAttribute(j));
                         }
                     }
