@@ -799,11 +799,12 @@ public class DMLParser {
             return;
         }
 
-        System.out.println("Select Result: \n");
+        TableSchema temp = new TableSchema("temp", attributeSchemas);
+        System.out.println(temp.prettyPrint());
         for (Record record : records) {
-
             System.out.println(record.prettyPrint(attributeSchemas));
         }
+        System.out.println();
 
     }
 
