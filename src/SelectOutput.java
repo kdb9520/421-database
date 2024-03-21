@@ -20,4 +20,13 @@ public class SelectOutput {
         return records;
     }
 
+
+    public void orderBy(String attr, String order){
+        int pos = this.attributes.indexOf(attr);
+
+    }
+
+
+
+
 }

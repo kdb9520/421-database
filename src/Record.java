@@ -8,9 +8,18 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
 
-public class Record {
+public class Record implements Comparable<Record>{
     private ArrayList<Object> values;
     private BitSet nullBitmap;
+
+    private static int colToCompare = 0;
+
+    public static void setType(String type) {
+        Record.type = type;
+    }
+
+    private static String type = "";
+    private static String order = "";
 
     public Record() {
         this.values = new ArrayList<>();
@@ -34,6 +43,14 @@ public class Record {
                 this.nullBitmap.set(i);
             }
         }
+    }
+
+    public static void setColToCompare(int c) {
+        colToCompare = c;
+    }
+
+    public static void setOrderToComopare(String s){
+        order = s;
     }
 
     public void modifyAttribute(Object newValue, int index) {
@@ -411,4 +428,31 @@ public class Record {
         return clonedValues;
     }
 
+    @Override
+    public int compareTo(Record o) {
+
+        // line 51 in Page
+        Object myObject = this.values.get(colToCompare);
+        Object otherObject = (Record) o.values.get(colToCompare);
+        if(type.equals("integer")){
+
+        }
+
+        else if(type.equals("varchar")){
+
+        }
+
+        else if(type.equals("char")){
+
+        }
+
+        else if (type.equals("double")){
+
+        }
+
+        else if(type.equals("boolean")){
+
+        }
+        return 0;
+    }
 }
