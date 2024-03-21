@@ -33,7 +33,7 @@ public class SelectTest {
             System.out.println("Testing SELECT * FROM single table.");
             setUp();
 
-            String[] args = {"C:\\Users\\kelle\\RIT\\421\\db", "10000", "10000"};
+            String[] args = {"db", "10000", "10000"};
 
             String input = """
                     CREATE TABLE test1 (foo INTEGER PRIMARYKEY);
@@ -91,7 +91,7 @@ public class SelectTest {
             System.out.println("Testing SELECT * FROM two tables.");
             setUp();
 
-            String[] args = {"C:\\Users\\kelle\\RIT\\421\\db", "10000", "10000"};
+            String[] args = {"db", "10000", "10000"};
 
             String input = """
                     CREATE TABLE test1 (foo INTEGER PRIMARYKEY);
@@ -164,7 +164,7 @@ public class SelectTest {
             System.out.println("Testing SELECT * FROM three tables with different number of columns.");
             setUp();
 
-            String[] args = {"C:\\Users\\kelle\\RIT\\421\\db", "10000", "10000"};
+            String[] args = {"db", "10000", "10000"};
 
             String input = """
                     CREATE TABLE test1 (foo INTEGER PRIMARYKEY);
@@ -244,7 +244,7 @@ public class SelectTest {
             System.out.println("Testing SELECT columns FROM two tables.");
             setUp();
 
-            String[] args = {"C:\\Users\\kelle\\RIT\\421\\db", "10000", "10000"};
+            String[] args = {"db", "10000", "10000"};
 
             String input = """
                     CREATE TABLE test1 (foo INTEGER PRIMARYKEY, bar INTEGER);
@@ -317,7 +317,7 @@ public class SelectTest {
             System.out.println("Testing SELECT * FROM two tables.");
             setUp();
 
-            String[] args = {"C:\\Users\\kelle\\RIT\\421\\db", "10000", "10000"};
+            String[] args = {"db", "10000", "10000"};
 
             String input = """
                     CREATE TABLE test1 (foo VARCHAR(10) PRIMARYKEY, baz DOUBLE);
@@ -359,6 +359,75 @@ public class SelectTest {
                     > Processed Query: drop table test1;
                     Schema removed from src.Catalog
                     > Processed Query: drop table test2;
+                    Schema removed from src.Catalog
+                    > Processed Query: quit;
+                    Shutting down database...
+                    Shutdown complete.
+                    """;
+            expected = expected.replaceAll("\r", "");
+            String output = outputStreamCaptor.toString().replaceAll("\r", "");
+
+            boolean pass = expected.equals(output);
+
+            if (!pass) {
+                fail("Output does not match expected.");
+            } else {
+                assertEquals(expected, output);
+            }
+
+            tearDown();
+            System.out.println("Captured Output:");
+            System.out.println(output);
+        } catch (Exception e) {
+            fail("Exception Caught!");
+        }
+    }
+
+    @Test
+    void testRecordPrintError() {
+        try {
+            tearDown();
+            System.out.println("Testing SELECT Error in Record.");
+            setUp();
+
+            String[] args = {"db", "10000", "10000"};
+
+            String input = """
+                    CREATE TABLE foo( baz INTEGER PRIMARYKEY, bar DOUBLE NOTNULL, bazzle CHAR(10) UNIQUE NOTNULL );
+                    INSERT INTO foo VALUES (1 1 'test');
+                    INSERT INTO foo VALUES (2 1 'testi');
+                    INSERT INTO foo VALUES (3 1 'testin');
+                    SELECT bazzle, baz FROM foo;
+                    DROP TABLE foo;
+                    QUIT;
+                    """;
+            ByteArrayInputStream inputIn = new ByteArrayInputStream(input.getBytes());
+            System.setIn(inputIn);
+
+            Main.main(args);
+
+            String expected = """
+                    > Processed Query: create table foo (baz integer primarykey, bar double notnull, bazzle char(10) unique notnull);
+                    Table created successfully.
+                    > Processed Query: insert into test1 values (1 1 'test');
+                    > Processed Query: insert into test1 values (2 1 'testi');
+                    > Processed Query: insert into test1 values (3 1 'testin');
+                    > Processed Query: select bazzle, baz from foo;
+                    Table created successfully.
+                    |    bazzle||       baz|
+                    ------------------------
+                    |    "test"||         1|
+                    |    "test"||         2|
+                    |    "test"||         3|
+                    |   "testi"||         1|
+                    |   "testi"||         2|
+                    |   "testi"||         3|
+                    |  "testin"||         1|
+                    |  "testin"||         2|
+                    |  "testin"||         3|
+
+                    Schema removed from src.Catalog
+                    > Processed Query: drop table foo;
                     Schema removed from src.Catalog
                     > Processed Query: quit;
                     Shutting down database...
