@@ -6,11 +6,13 @@ public class OperatorNode implements WhereNode{
     String operator;
     private WhereNode left;
     private WhereNode right;
+    String type;
 
     public OperatorNode(WhereNode left, WhereNode right, String type, String operator){
         this.left = left;
         this.right = right;
         this.operator = operator;
+        this.type = type;
 
     }
 

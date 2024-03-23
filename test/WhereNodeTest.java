@@ -272,22 +272,27 @@ public class WhereNodeTest {
         String test4 = "where gpa != null";
         tests.add(test4);
 
+        String test5 = "where gpa = 1 and gpa = 2 and gpa = 3 and gpa = 4 and gpa = 5 and gpa = 6";
+        tests.add(test5);
         String result1 = ">(gpa, 3)";
         expected.add(result1);
 
-        String result2 = "AND(=(name, bob), >(gpa, 3))";
+        String result2 = "AND(>(gpa, 3), =(name, bob))";
         expected.add(result2);
 
-        String result3 = "OR(=(name, bob), >(gpa, 3))";
+        String result3 = "OR(>(gpa, 3), =(name, bob))";
         expected.add(result3);
 
         String result4 = "!=(gpa, null)";
         expected.add(result4);
 
+        String result5 = "AND(AND(AND(AND(AND(=(gpa, 1), =(gpa, 2)), =(gpa, 3)), =(gpa, 4)), =(gpa, 5)), =(gpa, 6))";
+        expected.add(result5);
+
         // Do each test
         for(int i = 0; i < tests.size(); i++){
             String result = wp.parse(tests.get(i)).toString();
-            assertEquals(result,expected.get(i));
+            assertEquals(expected.get(i),result);
         }
         
 

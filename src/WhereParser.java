@@ -2,11 +2,23 @@ package src;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
 public class WhereParser {
      private List<String> tokens;
     private ArrayList<String> variableNames;
+    private static final Map<String, Integer> precedence = Map.of(
+        "and", 2,
+        "or", 1,
+        ">", 3,
+        ">=", 3,
+        "<", 3,
+        "<=", 3,
+        "=", 3,
+        "!=", 3
+    );
+
 
     public WhereParser(){
         this.variableNames = new ArrayList<>();
@@ -34,73 +46,62 @@ public class WhereParser {
 
    private WhereNode buildTree() {
         // Initialize a stack for nodes
-        Stack<WhereNode> stack = new Stack<>();
-        for (int i = 0; i < tokens.size(); i++) {
-            String token = tokens.get(i);
-            if(token.equals("and")){
-                // Make and node and push it
-                AndNode andNode = new AndNode(null, null);
-                int test = stack.size();
-                System.out.println(test);
-                stack.push(andNode);
-                int test2 = stack.size();
-                System.out.println(test2);
+        Stack<WhereNode> outputStack = new Stack<>();
+        Stack<String> operatorStack = new Stack<>();
 
-                
-            }
-            else if(token.equals("or")){
-                // Make and node and push it
-                OrNode orNode = new OrNode(null, null);
-                stack.push(orNode);
-
-            }
-            else if (isOperator(token)) {
-                // Stops stuff like where and and
-                if (i >= (tokens.size()-1) || isOperator(tokens.get(i+1))) {
-                   // This is invalid where statement
-                   System.err.println("Invalid where statement");
-                   return null;
+        for (String token : tokens) {
+            if (isOperator(token)) {
+                while (!operatorStack.isEmpty() && isOperator(operatorStack.peek())) {
+                    String op = operatorStack.pop();
+                    WhereNode right = outputStack.pop();
+                    WhereNode left = outputStack.pop();
+                    outputStack.push(new OperatorNode(left, right,null, op));
                 }
-
-                
-                // Determine if its AND/OR or an Operator and make right node
-                // Create an operator node (now with potential right operand)
-                OperatorNode operatorNode = new OperatorNode(token);
-
-                // Get the right operand 
-                WhereNode right = createNode(tokens.get(i+1));
-                i++; // Increment i since we peaked ahead
-                operatorNode.setRight(right);
-    
-                // Pop left operand from the stack (if available)
-                if (stack.size() >= 1) {
-                    operatorNode.setLeft(stack.pop());
-                } else {
-                    // Handle potential incomplete expression (optional)
-                    throw new RuntimeException("Incomplete expression encountered!"); // Or handle differently
+                operatorStack.push(token);
+            } else if (token.equals("and") || token.equals("or")) {
+                while (!operatorStack.isEmpty() && precedence.get(token) <= precedence.get(operatorStack.peek())) {
+                    String op = operatorStack.pop();
+                    WhereNode right = outputStack.pop();
+                    WhereNode left = outputStack.pop();
+                    if (op.equals("and")) {
+                        outputStack.push(new AndNode(left, right));
+                    } else if (op.equals("or")) {
+                        outputStack.push(new OrNode(left, right));
+                    } else if(isOperator(op)){
+                        WhereNode node = createNode(op);
+                        node.setLeft(left);
+                        node.setRight(right);
+                        outputStack.push(node);
+                    }
+                    else {
+                        throw new IllegalArgumentException("Invalid operator: " + op);
+                    }
                 }
-    
-                // Push the operator node (now with potentially both operands) back onto the stack
-                stack.push(operatorNode);
+                operatorStack.push(token); // This line
             } else {
-                // Create a value node and push it onto the stack
-                stack.push(createNode(token));
+                outputStack.push(createNode(token));
             }
         }
-        // If > 1 left in stack it means we left with ex: opNode andNode opNode
-        if(stack.size() > 1){
-            WhereNode left = stack.pop();
-            WhereNode middle = stack.pop();
-            WhereNode right = stack.pop();
-            middle.setLeft(left);
-            middle.setRight(right);
-            return middle;
-        }
-        
-        // The root of the tree is the only remaining node on the stack, ex goa > 3
-        return stack.pop();
-    }
 
+        while (!operatorStack.isEmpty()) {
+            String op = operatorStack.pop();
+            WhereNode right = outputStack.pop();
+            WhereNode left = outputStack.pop();
+            if (op.equals("and")) {
+                outputStack.push(new AndNode(left, right));
+            } else if (op.equals("or")) {
+                outputStack.push(new OrNode(left, right));
+            } else {
+                outputStack.push(new OperatorNode(left, right, null, op));
+            }
+        }
+
+        if (outputStack.size() != 1) {
+            throw new IllegalArgumentException("Invalid expression");
+        }
+
+        return outputStack.pop();
+    }
     // Takes a token, figures out its type and creates a node of that type
     private WhereNode createNode(String token) {
     // If token is And or an OR easy to make
