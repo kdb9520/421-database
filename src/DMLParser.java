@@ -42,7 +42,6 @@ public class DMLParser {
         // Get the where clause
         // Construct the WHERE clause from split[6] to the end
         String whereClause = String.join(" ", Arrays.copyOfRange(split, 5, split.length));
-        whereClause = whereClause.substring(0,whereClause.length()-1);
         WhereParser wp = new WhereParser();
         WhereNode whereTree = wp.parse(whereClause);
         ArrayList<String> variableNames = wp.getVariableNames();
@@ -177,9 +176,8 @@ public class DMLParser {
      * @param whereClause - the condition
      */
     public static void deleteRecord(TableSchema tableSchema, String whereClause){
-        String whereClauseEdited = whereClause.substring(0,whereClause.length()-1);
         WhereParser wp = new WhereParser();
-        WhereNode whereTree = wp.parse(whereClauseEdited);
+        WhereNode whereTree = wp.parse(whereClause);
         ArrayList<String> variableNames = wp.getVariableNames();
 
 

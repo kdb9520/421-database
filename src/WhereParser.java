@@ -25,6 +25,9 @@ public class WhereParser {
     }
 
     public WhereNode parse(String expression) {
+        if(expression.charAt(expression.length()-1) == ';'){
+            expression.substring(0,expression.length()-1);
+        }
         tokens = tokenize(expression);
         WhereNode result = buildTree();
         System.out.println(result);

@@ -266,7 +266,7 @@ public class WhereNodeTest {
         String test2 = "where gpa > 3 and name = 'bob'";
         tests.add(test2);
 
-        String test3 = "where gpa > 3 or name = 'bob'";
+        String test3 = "where gpa > 3 or name = 'bob';";
         tests.add(test3);
 
         String test4 = "where gpa != null";
