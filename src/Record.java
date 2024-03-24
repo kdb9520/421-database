@@ -433,25 +433,24 @@ public class Record implements Comparable<Record>{
 
         // line 51 in Page
         Object myObject = this.values.get(colToCompare);
-        Object otherObject = (Record) o.values.get(colToCompare);
+        Object otherObject = o.values.get(colToCompare);
         if(type.equals("integer")){
-
+            return (Integer) myObject - (Integer) otherObject;
         }
 
-        else if(type.equals("varchar")){
-
+        else if(type.equals("varchar") || type.equals("char")){
+            String myString = (String) myObject;
+            String otherString = (String) otherObject;
+            return myString.compareTo(otherString);
         }
 
-        else if(type.equals("char")){
-
-        }
 
         else if (type.equals("double")){
-
+            return Double.compare((Double) myObject, (Double) otherObject);
         }
 
         else if(type.equals("boolean")){
-
+            return Boolean.compare((Boolean) myObject, (Boolean) otherObject);
         }
         return 0;
     }
