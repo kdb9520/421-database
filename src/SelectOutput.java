@@ -1,6 +1,8 @@
 package src;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
 public class SelectOutput {
 
@@ -23,6 +25,12 @@ public class SelectOutput {
 
     public void orderBy(String attr, String order){
         int pos = this.attributes.indexOf(attr);
+        String type = this.attributes.get(pos).getType();
+        Record.setType(type);
+        Record.setOrderToCompare(order);
+        Record.setColToCompare(pos);
+        Collections.sort(records);
+
 
     }
 

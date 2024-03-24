@@ -49,7 +49,7 @@ public class Record implements Comparable<Record>{
         colToCompare = c;
     }
 
-    public static void setOrderToComopare(String s){
+    public static void setOrderToCompare(String s){
         order = s;
     }
 
@@ -435,22 +435,34 @@ public class Record implements Comparable<Record>{
         Object myObject = this.values.get(colToCompare);
         Object otherObject = o.values.get(colToCompare);
         if(type.equals("integer")){
-            return (Integer) myObject - (Integer) otherObject;
+            if(order.equals("asc"))
+                return (Integer) myObject - (Integer) otherObject;
+            return (Integer) otherObject - (Integer) myObject;
         }
 
         else if(type.equals("varchar") || type.equals("char")){
             String myString = (String) myObject;
             String otherString = (String) otherObject;
-            return myString.compareTo(otherString);
+            if(order.equals("asc")){
+                return myString.compareTo(otherString);
+            }
+            return otherString.compareTo(myString);
+
         }
 
 
         else if (type.equals("double")){
-            return Double.compare((Double) myObject, (Double) otherObject);
+            if(order.equals("asc"))
+                return Double.compare((Double) myObject, (Double) otherObject);
+            return Double.compare((Double) otherObject, (Double) myObject);
+
         }
 
         else if(type.equals("boolean")){
-            return Boolean.compare((Boolean) myObject, (Boolean) otherObject);
+            if(order.equals("asc"))
+                return Boolean.compare((Boolean) myObject, (Boolean) otherObject);
+            return Boolean.compare((Boolean) otherObject, (Boolean) myObject);
+
         }
         return 0;
     }
