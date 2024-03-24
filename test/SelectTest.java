@@ -13,16 +13,19 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class SelectTest {
     private final PrintStream standardOut = System.out;
+    private final PrintStream standardErr = System.err;
     private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
 
     @BeforeEach
     public void setUp() {
         System.setOut(new PrintStream(outputStreamCaptor)); // Redirect System.out to capture output
+        System.setErr(new PrintStream(outputStreamCaptor)); // Redirect System.err
     }
 
     @AfterEach
     public void tearDown() {
         System.setOut(standardOut); // Restore System.out
+        System.setErr(standardErr); // Restore System.err
         System.setIn(System.in); // Restore System.in
     }
 
@@ -33,7 +36,7 @@ public class SelectTest {
             System.out.println("Testing SELECT * FROM single table.");
             setUp();
 
-            String[] args = {"C:\\Users\\kelle\\RIT\\421\\db", "10000", "10000"};
+            String[] args = {"db", "10000", "10000"};
 
             String input = """
                     CREATE TABLE test1 (foo INTEGER PRIMARYKEY);
@@ -67,18 +70,9 @@ public class SelectTest {
             expected = expected.replaceAll("\r", "");
             String output = outputStreamCaptor.toString().replaceAll("\r", "");
 
-            boolean pass = expected.equals(output);
-
-            if (!pass) {
-                fail("Output does not match expected.");
-            } else {
-                assertEquals(expected, output);
-            }
-
+            assertEquals(expected, output);
 
             tearDown();
-            System.out.println("Captured Output:");
-            System.out.println(output);
         } catch (Exception e) {
             fail("Exception Caught!");
         }
@@ -91,7 +85,7 @@ public class SelectTest {
             System.out.println("Testing SELECT * FROM two tables.");
             setUp();
 
-            String[] args = {"C:\\Users\\kelle\\RIT\\421\\db", "10000", "10000"};
+            String[] args = {"db", "10000", "10000"};
 
             String input = """
                     CREATE TABLE test1 (foo INTEGER PRIMARYKEY);
@@ -141,17 +135,9 @@ public class SelectTest {
             expected = expected.replaceAll("\r", "");
             String output = outputStreamCaptor.toString().replaceAll("\r", "");
 
-            boolean pass = expected.equals(output);
-
-            if (!pass) {
-                fail("Output does not match expected.");
-            } else {
-                assertEquals(expected, output);
-            }
+            assertEquals(expected, output);
 
             tearDown();
-            System.out.println("Captured Output:");
-            System.out.println(output);
         } catch (Exception e) {
             fail("Exception Caught!");
         }
@@ -164,7 +150,7 @@ public class SelectTest {
             System.out.println("Testing SELECT * FROM three tables with different number of columns.");
             setUp();
 
-            String[] args = {"C:\\Users\\kelle\\RIT\\421\\db", "10000", "10000"};
+            String[] args = {"db", "10000", "10000"};
 
             String input = """
                     CREATE TABLE test1 (foo INTEGER PRIMARYKEY);
@@ -221,17 +207,9 @@ public class SelectTest {
             expected = expected.replaceAll("\r", "");
             String output = outputStreamCaptor.toString().replaceAll("\r", "");
 
-            boolean pass = expected.equals(output);
-
-            if (!pass) {
-                fail("Output does not match expected.");
-            } else {
-                assertEquals(expected, output);
-            }
+            assertEquals(expected, output);
 
             tearDown();
-            System.out.println("Captured Output:");
-            System.out.println(output);
         } catch (Exception e) {
             fail("Exception Caught!");
         }
@@ -244,7 +222,7 @@ public class SelectTest {
             System.out.println("Testing SELECT columns FROM two tables.");
             setUp();
 
-            String[] args = {"C:\\Users\\kelle\\RIT\\421\\db", "10000", "10000"};
+            String[] args = {"db", "10000", "10000"};
 
             String input = """
                     CREATE TABLE test1 (foo INTEGER PRIMARYKEY, bar INTEGER);
@@ -294,17 +272,9 @@ public class SelectTest {
             expected = expected.replaceAll("\r", "");
             String output = outputStreamCaptor.toString().replaceAll("\r", "");
 
-            boolean pass = expected.equals(output);
-
-            if (!pass) {
-                fail("Output does not match expected.");
-            } else {
-                assertEquals(expected, output);
-            }
+            assertEquals(expected, output);
 
             tearDown();
-            System.out.println("Captured Output:");
-            System.out.println(output);
         } catch (Exception e) {
             fail("Exception Caught!");
         }
@@ -314,10 +284,10 @@ public class SelectTest {
     void testCartesianDifferentTypes() {
         try {
             tearDown();
-            System.out.println("Testing SELECT * FROM two tables.");
+            System.out.println("Testing SELECT attrs FROM two tables with different attr types.");
             setUp();
 
-            String[] args = {"C:\\Users\\kelle\\RIT\\421\\db", "10000", "10000"};
+            String[] args = {"db", "10000", "10000"};
 
             String input = """
                     CREATE TABLE test1 (foo VARCHAR(10) PRIMARYKEY, baz DOUBLE);
@@ -367,17 +337,117 @@ public class SelectTest {
             expected = expected.replaceAll("\r", "");
             String output = outputStreamCaptor.toString().replaceAll("\r", "");
 
-            boolean pass = expected.equals(output);
-
-            if (!pass) {
-                fail("Output does not match expected.");
-            } else {
-                assertEquals(expected, output);
-            }
+            assertEquals(expected, output);
 
             tearDown();
-            System.out.println("Captured Output:");
-            System.out.println(output);
+        } catch (Exception e) {
+            fail("Exception Caught!");
+        }
+    }
+
+    @Test
+    void testAttrsOutOfOrder() {
+
+        assertFalse(true);
+
+        try {
+            tearDown();
+            System.out.println("Testing SELECT out of order attrs.");
+            setUp();
+
+            String[] args = {"db", "10000", "10000"};
+
+            String input = """
+                    CREATE TABLE foo( baz INTEGER PRIMARYKEY, bar DOUBLE NOTNULL, bazzle CHAR(10) UNIQUE NOTNULL );
+                    INSERT INTO foo VALUES (1 1 'test');
+                    INSERT INTO foo VALUES (2 1 'testi');
+                    INSERT INTO foo VALUES (3 1 'testin');
+                    SELECT bazzle, baz FROM foo;
+                    DROP TABLE foo;
+                    QUIT;
+                    """;
+            ByteArrayInputStream inputIn = new ByteArrayInputStream(input.getBytes());
+            System.setIn(inputIn);
+
+            Main.main(args);
+
+            String expected = """
+                    > Processed Query: create table foo (baz integer primarykey, bar double notnull, bazzle char(10) unique notnull);
+                    Table created successfully.
+                    > Processed Query: insert into test1 values (1 1 'test');
+                    > Processed Query: insert into test1 values (2 1 'testi');
+                    > Processed Query: insert into test1 values (3 1 'testin');
+                    > Processed Query: select bazzle, baz from foo;
+                    Table created successfully.
+                    |    bazzle||       baz|
+                    ------------------------
+                    |    "test"||         1|
+                    |    "test"||         2|
+                    |    "test"||         3|
+                    |   "testi"||         1|
+                    |   "testi"||         2|
+                    |   "testi"||         3|
+                    |  "testin"||         1|
+                    |  "testin"||         2|
+                    |  "testin"||         3|
+
+                    Schema removed from src.Catalog
+                    > Processed Query: drop table foo;
+                    Schema removed from src.Catalog
+                    > Processed Query: quit;
+                    Shutting down database...
+                    Shutdown complete.
+                    """;
+            expected = expected.replaceAll("\r", "");
+            String output = outputStreamCaptor.toString().replaceAll("\r", "");
+            
+            assertEquals(expected, output);
+
+            tearDown();
+        } catch (Exception e) {
+            fail("Exception Caught!");
+        }
+    }
+
+    @Test
+    void testSelectAttrsAndStar() {
+        try {
+            tearDown();
+            System.out.println("Testing SELECT *, a1, ..., an FROM table.");
+            setUp();
+
+            String[] args = {"db", "10000", "10000"};
+
+            String input = """
+                    CREATE TABLE test1 (foo VARCHAR(10) PRIMARYKEY, baz DOUBLE);
+                    INSERT INTO test1 VALUES ('Hello' 1.0), ('Bye' 2.1), ('Kellen' 3.0);
+                    SELECT *, baz FROM test1;
+                    DROP TABLE test1;
+                    QUIT;
+                    """;
+            ByteArrayInputStream inputIn = new ByteArrayInputStream(input.getBytes());
+            System.setIn(inputIn);
+
+            Main.main(args);
+
+            String expected = """
+                    > Processed Query: create table test1 (foo varchar(10) primarykey, baz double);
+                    Table created successfully.
+                    > Processed Query: insert into test1 values ('Hello' 1.0), ('Bye' 2.1), ('Kellen' 3.0);
+                    > Processed Query: select *, baz from test1;
+                    Illegal attribute arguments in Select statement.
+                    > Processed Query: drop table test1;
+                    Schema removed from src.Catalog
+                    > Processed Query: quit;
+                    Shutting down database...
+                    Shutdown complete.
+                    """;
+            expected = expected.replaceAll("\r", "");
+            String output = outputStreamCaptor.toString().replaceAll("\r", "");
+
+            assertEquals(expected, output);
+
+            tearDown();
         } catch (Exception e) {
             fail("Exception Caught!");
         }
