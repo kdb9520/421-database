@@ -459,7 +459,7 @@ public class DMLParser {
             } else if (c == ' ' && !inQuotes) {
                 // If we encounter a space outside of quotes, add the current value to the list
                 // (if not empty)
-                if (!currentValue.isEmpty()) {
+                if (!(currentValue.length() > 0)) {
                     values.add(currentValue.toString());
                     currentValue.setLength(0); // Reset the StringBuilder for the next value
                 }
@@ -470,7 +470,7 @@ public class DMLParser {
         }
 
         // Don't forget to add the last value if it exists
-        if (!currentValue.isEmpty()) {
+        if (! (currentValue.length() > 0)) {
             values.add(currentValue.toString());
         }
 
