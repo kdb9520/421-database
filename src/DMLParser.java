@@ -33,7 +33,7 @@ public class DMLParser {
 
     private static void update(String substring) {
         //
-        String[] split = substring.split(" ");
+        String[] split = substring.split("[\\s;]+|(?<=[<>!=]=)|(?=[<>!=]=)");
         String tableName = split[0];
         String columnName = split[2]; // <name> set <columnName>
         String valueString = split[4];
@@ -73,7 +73,7 @@ public class DMLParser {
             // If the string starts and ends with a matching single or double quote
             valueString = valueString.substring(1, valueString.length() - 1);
         } else {
-            System.err.println("Wrapping quotes expected, please check statement and try again");
+//            System.err.println("Wrapping quotes expected, please check statement and try again");
         }
 
         if (!valType.equals(colType) && !valType.equals("null")) {
@@ -159,7 +159,7 @@ public class DMLParser {
     }
 
     private static void delete(String substring) {
-        String[] split = substring.split(" ");
+        String[] split = substring.split("[\\s;]+|(?<=[<>!=]=)|(?=[<>!=]=)");
         String tableName = split[0];
         if (Catalog.getTableSchema(tableName) == null) {
             System.err.println("Table does not exist");
