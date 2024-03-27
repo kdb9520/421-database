@@ -36,37 +36,15 @@ public class SelectTest {
             System.out.println("Testing SELECT * FROM single table.");
             setUp();
 
-            String[] args = {"db", "10000", "10000"};
+            String[] args = { "db", "10000", "10000" };
 
-            String input = """
-                    CREATE TABLE test1 (foo INTEGER PRIMARYKEY);
-                    INSERT INTO test1 VALUES (1), (2), (3);
-                    SELECT * FROM test1;
-                    DROP TABLE test1;
-                    QUIT;
-                    """;
+            String input = "CREATE TABLE test1 (foo INTEGER PRIMARYKEY);\nINSERT INTO test1 VALUES (1), (2), (3);\nSELECT * FROM test1;\nDROP TABLE test1;\nQUIT;\n";
             ByteArrayInputStream inputIn = new ByteArrayInputStream(input.getBytes());
             System.setIn(inputIn);
 
             Main.main(args);
 
-            String expected = """
-                    > Processed Query: create table test1 (foo integer primarykey);
-                    Table created successfully.
-                    > Processed Query: insert into test1 values (1), (2), (3);
-                    > Processed Query: select * from test1;
-                    |       foo|
-                    ------------
-                    |         1|
-                    |         2|
-                    |         3|
-
-                    > Processed Query: drop table test1;
-                    Schema removed from src.Catalog
-                    > Processed Query: quit;
-                    Shutting down database...
-                    Shutdown complete.
-                    """;
+            String expected = "> Processed Query: create table test1 (foo integer primarykey);\nTable created successfully.\n> Processed Query: insert into test1 values (1), (2), (3);\n> Processed Query: select * from test1;\n|       foo|\n------------\n|         1|\n|         2|\n|         3|\n\n> Processed Query: drop table test1;\nSchema removed from src.Catalog\n> Processed Query: quit;\nShutting down database...\nShutdown complete.\n";
             expected = expected.replaceAll("\r", "");
             String output = outputStreamCaptor.toString().replaceAll("\r", "");
 
@@ -85,53 +63,15 @@ public class SelectTest {
             System.out.println("Testing SELECT * FROM two tables.");
             setUp();
 
-            String[] args = {"db", "10000", "10000"};
+            String[] args = { "db", "10000", "10000" };
 
-            String input = """
-                    CREATE TABLE test1 (foo INTEGER PRIMARYKEY);
-                    CREATE TABLE test2 (foo INTEGER PRIMARYKEY);
-                    INSERT INTO test1 VALUES (1), (2), (3);
-                    INSERT INTO test2 VALUES (4), (5), (6);
-                    SELECT * FROM test1, test2;
-                    DROP TABLE test1;
-                    DROP TABLE test2;
-                    QUIT;
-                    """;
+            String input = "CREATE TABLE test1 (foo INTEGER PRIMARYKEY);\nCREATE TABLE test2 (foo INTEGER PRIMARYKEY);\nINSERT INTO test1 VALUES (1), (2), (3);\nINSERT INTO test2 VALUES (4), (5), (6);\nSELECT * FROM test1, test2;\nDROP TABLE test1;\nDROP TABLE test2;\nQUIT;\n";
             ByteArrayInputStream inputIn = new ByteArrayInputStream(input.getBytes());
             System.setIn(inputIn);
 
             Main.main(args);
 
-            String expected = """
-                    > Processed Query: create table test1 (foo integer primarykey);
-                    Table created successfully.
-                    > Processed Query: create table test2 (foo integer primarykey);
-                    Table created successfully.
-                    > Processed Query: insert into test1 values (1), (2), (3);
-                    > Processed Query: insert into test2 values (4), (5), (6);
-                    > Processed Query: select * from test1, test2;
-                    Table created successfully.
-                    | test1.foo|| test2.foo|
-                    ------------------------
-                    |         1||         4|
-                    |         1||         5|
-                    |         1||         6|
-                    |         2||         4|
-                    |         2||         5|
-                    |         2||         6|
-                    |         3||         4|
-                    |         3||         5|
-                    |         3||         6|
-
-                    Schema removed from src.Catalog
-                    > Processed Query: drop table test1;
-                    Schema removed from src.Catalog
-                    > Processed Query: drop table test2;
-                    Schema removed from src.Catalog
-                    > Processed Query: quit;
-                    Shutting down database...
-                    Shutdown complete.
-                    """;
+            String expected = "> Processed Query: create table test1 (foo integer primarykey);\nTable created successfully.\n> Processed Query: create table test2 (foo integer primarykey);\nTable created successfully.\n> Processed Query: insert into test1 values (1), (2), (3);\n> Processed Query: insert into test2 values (4), (5), (6);\n> Processed Query: select * from test1, test2;\nTable created successfully.\n| test1.foo|| test2.foo|\n------------------------\n|         1||         4|\n|         1||         5|\n|         1||         6|\n|         2||         4|\n|         2||         5|\n|         2||         6|\n|         3||         4|\n|         3||         5|\n|         3||         6|\n\nSchema removed from src.Catalog\n> Processed Query: drop table test1;\nSchema removed from src.Catalog\n> Processed Query: drop table test2;\nSchema removed from src.Catalog\n> Processed Query: quit;\nShutting down database...\nShutdown complete.\n";
             expected = expected.replaceAll("\r", "");
             String output = outputStreamCaptor.toString().replaceAll("\r", "");
 
@@ -143,67 +83,23 @@ public class SelectTest {
         }
     }
 
+
     @Test
-    void ThreeTableCartesian(){
+    void ThreeTableCartesian() {
         try {
             tearDown();
             System.out.println("Testing SELECT * FROM three tables with different number of columns.");
             setUp();
 
-            String[] args = {"db", "10000", "10000"};
+            String[] args = { "db", "10000", "10000" };
 
-            String input = """
-                    CREATE TABLE test1 (foo INTEGER PRIMARYKEY);
-                    CREATE TABLE test2 (foo INTEGER PRIMARYKEY, bar INTEGER);
-                    CREATE TABLE test3 (foo INTEGER PRIMARYKEY, bar INTEGER, baz INTEGER);
-                    INSERT INTO test1 VALUES (1), (2);
-                    INSERT INTO test2 VALUES (3 4), (5 6);
-                    INSERT INTO test3 VALUES (7 8 9), (10 11 12);
-                    SELECT * FROM test1, test2, test3;
-                    DROP TABLE test1;
-                    DROP TABLE test2;
-                    DROP TABLE test3;
-                    QUIT;
-                    """;
+            String input = "CREATE TABLE test1 (foo INTEGER PRIMARYKEY);\nCREATE TABLE test2 (foo INTEGER PRIMARYKEY, bar INTEGER);\nCREATE TABLE test3 (foo INTEGER PRIMARYKEY, bar INTEGER, baz INTEGER);\nINSERT INTO test1 VALUES (1), (2);\nINSERT INTO test2 VALUES (3 4), (5 6);\nINSERT INTO test3 VALUES (7 8 9), (10 11 12);\nSELECT * FROM test1, test2, test3;\nDROP TABLE test1;\nDROP TABLE test2;\nDROP TABLE test3;\nQUIT;\n";
             ByteArrayInputStream inputIn = new ByteArrayInputStream(input.getBytes());
             System.setIn(inputIn);
 
             Main.main(args);
 
-            String expected = """
-                    > Processed Query: create table test1 (foo integer primarykey);
-                    Table created successfully.
-                    > Processed Query: create table test2 (foo integer primarykey, bar integer);
-                    Table created successfully.
-                    > Processed Query: create table test3 (foo integer primarykey, bar integer, baz integer);
-                    Table created successfully.
-                    > Processed Query: insert into test1 values (1), (2);
-                    > Processed Query: insert into test2 values (3 4), (5 6);
-                    > Processed Query: insert into test3 values (7 8 9), (10 11 12);
-                    > Processed Query: select * from test1, test2, test3;
-                    Table created successfully.
-                    | test1.foo|| test2.foo|| test2.bar|| test3.foo|| test3.bar|| test3.baz|
-                    ------------------------------------------------------------------------
-                    |         1||         3||         4||         7||         8||         9|
-                    |         1||         3||         4||        10||        11||        12|
-                    |         1||         5||         6||         7||         8||         9|
-                    |         1||         5||         6||        10||        11||        12|
-                    |         2||         3||         4||         7||         8||         9|
-                    |         2||         3||         4||        10||        11||        12|
-                    |         2||         5||         6||         7||         8||         9|
-                    |         2||         5||         6||        10||        11||        12|
-
-                    Schema removed from src.Catalog
-                    > Processed Query: drop table test1;
-                    Schema removed from src.Catalog
-                    > Processed Query: drop table test2;
-                    Schema removed from src.Catalog
-                    > Processed Query: drop table test3;
-                    Schema removed from src.Catalog
-                    > Processed Query: quit;
-                    Shutting down database...
-                    Shutdown complete.
-                    """;
+            String expected = "> Processed Query: create table test1 (foo integer primarykey);\nTable created successfully.\n> Processed Query: create table test2 (foo integer primarykey, bar integer);\nTable created successfully.\n> Processed Query: create table test3 (foo integer primarykey, bar integer, baz integer);\nTable created successfully.\n> Processed Query: insert into test1 values (1), (2);\n> Processed Query: insert into test2 values (3 4), (5 6);\n> Processed Query: insert into test3 values (7 8 9), (10 11 12);\n> Processed Query: select * from test1, test2, test3;\nTable created successfully.\n| test1.foo|| test2.foo|| test2.bar|| test3.foo|| test3.bar|| test3.baz|\n------------------------------------------------------------------------\n|         1||         3||         4||         7||         8||         9|\n|         1||         3||         4||        10||        11||        12|\n|         1||         5||         6||         7||         8||         9|\n|         1||         5||         6||        10||        11||        12|\n|         2||         3||         4||         7||         8||         9|\n|         2||         3||         4||        10||        11||        12|\n|         2||         5||         6||         7||         8||         9|\n|         2||         5||         6||        10||        11||        12|\n\nSchema removed from src.Catalog\n> Processed Query: drop table test1;\nSchema removed from src.Catalog\n> Processed Query: drop table test2;\nSchema removed from src.Catalog\n> Processed Query: drop table test3;\nSchema removed from src.Catalog\n> Processed Query: quit;\nShutting down database...\nShutdown complete.\n";
             expected = expected.replaceAll("\r", "");
             String output = outputStreamCaptor.toString().replaceAll("\r", "");
 
@@ -222,53 +118,15 @@ public class SelectTest {
             System.out.println("Testing SELECT columns FROM two tables.");
             setUp();
 
-            String[] args = {"db", "10000", "10000"};
+            String[] args = { "db", "10000", "10000" };
 
-            String input = """
-                    CREATE TABLE test1 (foo INTEGER PRIMARYKEY, bar INTEGER);
-                    CREATE TABLE test2 (foo INTEGER PRIMARYKEY);
-                    INSERT INTO test1 VALUES (1 1), (2 2), (3 3);
-                    INSERT INTO test2 VALUES (4), (5), (6);
-                    SELECT test1.foo, test2.foo FROM test1, test2;
-                    DROP TABLE test1;
-                    DROP TABLE test2;
-                    QUIT;
-                    """;
+            String input = "CREATE TABLE test1 (foo INTEGER PRIMARYKEY, bar INTEGER);\nCREATE TABLE test2 (foo INTEGER PRIMARYKEY);\nINSERT INTO test1 VALUES (1 1), (2 2), (3 3);\nINSERT INTO test2 VALUES (4), (5), (6);\nSELECT test1.foo, test2.foo FROM test1, test2;\nDROP TABLE test1;\nDROP TABLE test2;\nQUIT;\n";
             ByteArrayInputStream inputIn = new ByteArrayInputStream(input.getBytes());
             System.setIn(inputIn);
 
             Main.main(args);
 
-            String expected = """
-                    > Processed Query: create table test1 (foo integer primarykey, bar integer);
-                    Table created successfully.
-                    > Processed Query: create table test2 (foo integer primarykey);
-                    Table created successfully.
-                    > Processed Query: insert into test1 values (1 1), (2 2), (3 3);
-                    > Processed Query: insert into test2 values (4), (5), (6);
-                    > Processed Query: select test1.foo, test2.foo from test1, test2;
-                    Table created successfully.
-                    | test1.foo|| test2.foo|
-                    ------------------------
-                    |         1||         4|
-                    |         1||         5|
-                    |         1||         6|
-                    |         2||         4|
-                    |         2||         5|
-                    |         2||         6|
-                    |         3||         4|
-                    |         3||         5|
-                    |         3||         6|
-
-                    Schema removed from src.Catalog
-                    > Processed Query: drop table test1;
-                    Schema removed from src.Catalog
-                    > Processed Query: drop table test2;
-                    Schema removed from src.Catalog
-                    > Processed Query: quit;
-                    Shutting down database...
-                    Shutdown complete.
-                    """;
+            String expected = "> Processed Query: create table test1 (foo integer primarykey, bar integer);\nTable created successfully.\n> Processed Query: create table test2 (foo integer primarykey);\nTable created successfully.\n> Processed Query: insert into test1 values (1 1), (2 2), (3 3);\n> Processed Query: insert into test2 values (4), (5), (6);\n> Processed Query: select test1.foo, test2.foo from test1, test2;\nTable created successfully.\n| test1.foo|| test2.foo|\n------------------------\n|         1||         4|\n|         1||         5|\n|         1||         6|\n|         2||         4|\n|         2||         5|\n|         2||         6|\n|         3||         4|\n|         3||         5|\n|         3||         6|\n\nSchema removed from src.Catalog\n> Processed Query: drop table test1;\nSchema removed from src.Catalog\n> Processed Query: drop table test2;\nSchema removed from src.Catalog\n> Processed Query: quit;\nShutting down database...\nShutdown complete.\n";
             expected = expected.replaceAll("\r", "");
             String output = outputStreamCaptor.toString().replaceAll("\r", "");
 
@@ -287,53 +145,15 @@ public class SelectTest {
             System.out.println("Testing SELECT attrs FROM two tables with different attr types.");
             setUp();
 
-            String[] args = {"db", "10000", "10000"};
+            String[] args = { "db", "10000", "10000" };
 
-            String input = """
-                    CREATE TABLE test1 (foo VARCHAR(10) PRIMARYKEY, baz DOUBLE);
-                    CREATE TABLE test2 (foo INTEGER PRIMARYKEY);
-                    INSERT INTO test1 VALUES ('Hello' 1.0), ('Bye' 2.1), ('Kellen' 3.0);
-                    INSERT INTO test2 VALUES (4), (5), (6);
-                    SELECT test1.foo, test2.foo FROM test1, test2;
-                    DROP TABLE test1;
-                    DROP TABLE test2;
-                    QUIT;
-                    """;
+            String input = "CREATE TABLE test1 (foo VARCHAR(10) PRIMARYKEY, baz DOUBLE);\nCREATE TABLE test2 (foo INTEGER PRIMARYKEY);\nINSERT INTO test1 VALUES ('Hello' 1.0), ('Bye' 2.1), ('Kellen' 3.0);\nINSERT INTO test2 VALUES (4), (5), (6);\nSELECT test1.foo, test2.foo FROM test1, test2;\nDROP TABLE test1;\nDROP TABLE test2;\nQUIT;\n";
             ByteArrayInputStream inputIn = new ByteArrayInputStream(input.getBytes());
             System.setIn(inputIn);
 
             Main.main(args);
 
-            String expected = """
-                    > Processed Query: create table test1 (foo varchar(10) primarykey, baz double);
-                    Table created successfully.
-                    > Processed Query: create table test2 (foo integer primarykey);
-                    Table created successfully.
-                    > Processed Query: insert into test1 values ('Hello' 1.0), ('Bye' 2.1), ('Kellen' 3.0);
-                    > Processed Query: insert into test2 values (4), (5), (6);
-                    > Processed Query: select test1.foo, test2.foo from test1, test2;
-                    Table created successfully.
-                    | test1.foo|| test2.foo|
-                    ------------------------
-                    |     "Bye"||         4|
-                    |     "Bye"||         5|
-                    |     "Bye"||         6|
-                    |   "Hello"||         4|
-                    |   "Hello"||         5|
-                    |   "Hello"||         6|
-                    |  "Kellen"||         4|
-                    |  "Kellen"||         5|
-                    |  "Kellen"||         6|
-
-                    Schema removed from src.Catalog
-                    > Processed Query: drop table test1;
-                    Schema removed from src.Catalog
-                    > Processed Query: drop table test2;
-                    Schema removed from src.Catalog
-                    > Processed Query: quit;
-                    Shutting down database...
-                    Shutdown complete.
-                    """;
+            String expected = "> Processed Query: create table test1 (foo varchar(10) primarykey, baz double);\nTable created successfully.\n> Processed Query: create table test2 (foo integer primarykey);\nTable created successfully.\n> Processed Query: insert into test1 values ('Hello' 1.0), ('Bye' 2.1), ('Kellen' 3.0);\n> Processed Query: insert into test2 values (4), (5), (6);\n> Processed Query: select test1.foo, test2.foo from test1, test2;\nTable created successfully.\n| test1.foo|| test2.foo|\n------------------------\n|     \"Bye\"||         4|\n|     \"Bye\"||         5|\n|     \"Bye\"||         6|\n|   \"Hello\"||         4|\n|   \"Hello\"||         5|\n|   \"Hello\"||         6|\n|  \"Kellen\"||         4|\n|  \"Kellen\"||         5|\n|  \"Kellen\"||         6|\n\nSchema removed from src.Catalog\n> Processed Query: drop table test1;\nSchema removed from src.Catalog\n> Processed Query: drop table test2;\nSchema removed from src.Catalog\n> Processed Query: quit;\nShutting down database...\nShutdown complete.\n";
             expected = expected.replaceAll("\r", "");
             String output = outputStreamCaptor.toString().replaceAll("\r", "");
 
@@ -355,52 +175,18 @@ public class SelectTest {
             System.out.println("Testing SELECT out of order attrs.");
             setUp();
 
-            String[] args = {"db", "10000", "10000"};
+            String[] args = { "db", "10000", "10000" };
 
-            String input = """
-                    CREATE TABLE foo( baz INTEGER PRIMARYKEY, bar DOUBLE NOTNULL, bazzle CHAR(10) UNIQUE NOTNULL );
-                    INSERT INTO foo VALUES (1 1 'test');
-                    INSERT INTO foo VALUES (2 1 'testi');
-                    INSERT INTO foo VALUES (3 1 'testin');
-                    SELECT bazzle, baz FROM foo;
-                    DROP TABLE foo;
-                    QUIT;
-                    """;
+            String input = "CREATE TABLE foo( baz INTEGER PRIMARYKEY, bar DOUBLE NOTNULL, bazzle CHAR(10) UNIQUE NOTNULL );\nINSERT INTO foo VALUES (1 1 'test');\nINSERT INTO foo VALUES (2 1 'testi');\nINSERT INTO foo VALUES (3 1 'testin');\nSELECT bazzle, baz FROM foo;\nDROP TABLE foo;\nQUIT;\n";
             ByteArrayInputStream inputIn = new ByteArrayInputStream(input.getBytes());
             System.setIn(inputIn);
 
             Main.main(args);
 
-            String expected = """
-                    > Processed Query: create table foo (baz integer primarykey, bar double notnull, bazzle char(10) unique notnull);
-                    Table created successfully.
-                    > Processed Query: insert into test1 values (1 1 'test');
-                    > Processed Query: insert into test1 values (2 1 'testi');
-                    > Processed Query: insert into test1 values (3 1 'testin');
-                    > Processed Query: select bazzle, baz from foo;
-                    Table created successfully.
-                    |    bazzle||       baz|
-                    ------------------------
-                    |    "test"||         1|
-                    |    "test"||         2|
-                    |    "test"||         3|
-                    |   "testi"||         1|
-                    |   "testi"||         2|
-                    |   "testi"||         3|
-                    |  "testin"||         1|
-                    |  "testin"||         2|
-                    |  "testin"||         3|
-
-                    Schema removed from src.Catalog
-                    > Processed Query: drop table foo;
-                    Schema removed from src.Catalog
-                    > Processed Query: quit;
-                    Shutting down database...
-                    Shutdown complete.
-                    """;
+            String expected = "> Processed Query: create table foo (baz integer primarykey, bar double notnull, bazzle char(10) unique notnull);\nTable created successfully.\n> Processed Query: insert into test1 values (1 1 'test');\n> Processed Query: insert into test1 values (2 1 'testi');\n> Processed Query: insert into test1 values (3 1 'testin');\n> Processed Query: select bazzle, baz from foo;\nTable created successfully.\n|    bazzle||       baz|\n------------------------\n|    \"test\"||         1|\n|    \"test\"||         2|\n|    \"test\"||         3|\n|   \"testi\"||         1|\n|   \"testi\"||         2|\n|   \"testi\"||         3|\n|  \"testin\"||         1|\n|  \"testin\"||         2|\n|  \"testin\"||         3|\n\nSchema removed from src.Catalog\n> Processed Query: drop table foo;\nSchema removed from src.Catalog\n> Processed Query: quit;\nShutting down database...\nShutdown complete.\n";
             expected = expected.replaceAll("\r", "");
             String output = outputStreamCaptor.toString().replaceAll("\r", "");
-            
+
             assertEquals(expected, output);
 
             tearDown();
@@ -416,32 +202,15 @@ public class SelectTest {
             System.out.println("Testing SELECT *, a1, ..., an FROM table.");
             setUp();
 
-            String[] args = {"db", "10000", "10000"};
+            String[] args = { "db", "10000", "10000" };
 
-            String input = """
-                    CREATE TABLE test1 (foo VARCHAR(10) PRIMARYKEY, baz DOUBLE);
-                    INSERT INTO test1 VALUES ('Hello' 1.0), ('Bye' 2.1), ('Kellen' 3.0);
-                    SELECT *, baz FROM test1;
-                    DROP TABLE test1;
-                    QUIT;
-                    """;
+            String input = "CREATE TABLE test1 (foo VARCHAR(10) PRIMARYKEY, baz DOUBLE);\nINSERT INTO test1 VALUES ('Hello' 1.0), ('Bye' 2.1), ('Kellen' 3.0);\nSELECT *, baz FROM test1;\nDROP TABLE test1;\nQUIT;\n";
             ByteArrayInputStream inputIn = new ByteArrayInputStream(input.getBytes());
             System.setIn(inputIn);
 
             Main.main(args);
 
-            String expected = """
-                    > Processed Query: create table test1 (foo varchar(10) primarykey, baz double);
-                    Table created successfully.
-                    > Processed Query: insert into test1 values ('Hello' 1.0), ('Bye' 2.1), ('Kellen' 3.0);
-                    > Processed Query: select *, baz from test1;
-                    Illegal attribute arguments in Select statement.
-                    > Processed Query: drop table test1;
-                    Schema removed from src.Catalog
-                    > Processed Query: quit;
-                    Shutting down database...
-                    Shutdown complete.
-                    """;
+            String expected = "> Processed Query: create table test1 (foo varchar(10) primarykey, baz double);\nTable created successfully.\n> Processed Query: insert into test1 values ('Hello' 1.0), ('Bye' 2.1), ('Kellen' 3.0);\n> Processed Query: select *, baz from test1;\nIllegal attribute arguments in Select statement.\n> Processed Query: drop table test1;\nSchema removed from src.Catalog\n> Processed Query: quit;\nShutting down database...\nShutdown complete.\n";
             expected = expected.replaceAll("\r", "");
             String output = outputStreamCaptor.toString().replaceAll("\r", "");
 
@@ -452,4 +221,5 @@ public class SelectTest {
             fail("Exception Caught!");
         }
     }
+
 }
