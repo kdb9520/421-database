@@ -34,7 +34,7 @@ public class UpdateTest {
         };
 
         // Calling the update function
-        DMLParser.handleQuery(updateString, "./path_to_db");
+        DMLParser.handleQuery(updateString, "./db");
 
     }
 

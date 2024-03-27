@@ -737,9 +737,9 @@ public class DMLParser {
                 for (Record record : page.records) {
                     ArrayList<Object> recordBuilder = new ArrayList<>();
                     for (int j = 0; j < record.getValues().size(); j++) {
-                        if (indices.contains(j)) {
-                            recordBuilder.add(record.getAttribute(j));
-                        }
+                        if (j >= indices.size()) break;
+
+                        recordBuilder.add(record.getAttribute(indices.get(j)));
                     }
                     recordOutput.add(new Record(recordBuilder));
                 }

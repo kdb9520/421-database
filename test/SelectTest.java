@@ -168,8 +168,6 @@ public class SelectTest {
     @Test
     void testAttrsOutOfOrder() {
 
-        assertFalse(true);
-
         try {
             tearDown();
             System.out.println("Testing SELECT out of order attrs.");
@@ -177,13 +175,13 @@ public class SelectTest {
 
             String[] args = { "db", "10000", "10000" };
 
-            String input = "CREATE TABLE foo( baz INTEGER PRIMARYKEY, bar DOUBLE NOTNULL, bazzle CHAR(10) UNIQUE NOTNULL );\nINSERT INTO foo VALUES (1 1 'test');\nINSERT INTO foo VALUES (2 1 'testi');\nINSERT INTO foo VALUES (3 1 'testin');\nSELECT bazzle, baz FROM foo;\nDROP TABLE foo;\nQUIT;\n";
+            String input = "CREATE TABLE foo(baz INTEGER PRIMARYKEY, bar DOUBLE NOTNULL, bazzle CHAR(10) UNIQUE NOTNULL);\nINSERT INTO foo VALUES (1 1 'test');\nINSERT INTO foo VALUES (2 1 'testi');\nINSERT INTO foo VALUES (3 1 'testin');\nSELECT bazzle, baz FROM foo;\nDROP TABLE foo;\nQUIT;\n";
             ByteArrayInputStream inputIn = new ByteArrayInputStream(input.getBytes());
             System.setIn(inputIn);
 
             Main.main(args);
 
-            String expected = "> Processed Query: create table foo (baz integer primarykey, bar double notnull, bazzle char(10) unique notnull);\nTable created successfully.\n> Processed Query: insert into test1 values (1 1 'test');\n> Processed Query: insert into test1 values (2 1 'testi');\n> Processed Query: insert into test1 values (3 1 'testin');\n> Processed Query: select bazzle, baz from foo;\nTable created successfully.\n|    bazzle||       baz|\n------------------------\n|    \"test\"||         1|\n|    \"test\"||         2|\n|    \"test\"||         3|\n|   \"testi\"||         1|\n|   \"testi\"||         2|\n|   \"testi\"||         3|\n|  \"testin\"||         1|\n|  \"testin\"||         2|\n|  \"testin\"||         3|\n\nSchema removed from src.Catalog\n> Processed Query: drop table foo;\nSchema removed from src.Catalog\n> Processed Query: quit;\nShutting down database...\nShutdown complete.\n";
+            String expected = "> Processed Query: create table foo(baz integer primarykey, bar double notnull, bazzle char(10) unique notnull);\nTable created successfully.\n> Processed Query: insert into foo values (1 1 'test');\n> Processed Query: insert into foo values (2 1 'testi');\n> Processed Query: insert into foo values (3 1 'testin');\n> Processed Query: select bazzle, baz from foo;\n|    bazzle||       baz|\n------------------------\n|    \"test\"||         1|\n|   \"testi\"||         2|\n|  \"testin\"||         3|\n\n> Processed Query: drop table foo;\nSchema removed from src.Catalog\n> Processed Query: quit;\nShutting down database...\nShutdown complete.\n";
             expected = expected.replaceAll("\r", "");
             String output = outputStreamCaptor.toString().replaceAll("\r", "");
 
