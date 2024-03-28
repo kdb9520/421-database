@@ -95,23 +95,12 @@ public class BufferManager {
     }
 
     public static void deleteTable(String tableName){
-        for(Page p : bufferPool){
-            if(p.getTableName().equals(tableName)){
-                bufferPool.remove(p);
+        for(int i = 0; i < bufferPool.size(); i++){
+            if(bufferPool.get(i).getTableName().equals(tableName)){
+                bufferPool.remove(i);
+                i--;
             }
-
-            return;
         }
-
-
-        File file = new File(Main.databaseLocation + tableName);
-        if(!file.exists()) {
-            System.err.println("File does not exist");
-            return;
-        }
-
-        file.delete();
-        System.out.println("File deleted successfully");
     }
     public static void addPageToBuffer(Page page){
         // First create a page

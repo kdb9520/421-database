@@ -183,6 +183,7 @@ public class StorageManager {
             try{
             
                 Files.delete(filePath);
+                BufferManager.deleteTable(tableName);
             } catch(Exception e){
                 e.printStackTrace();
             }
