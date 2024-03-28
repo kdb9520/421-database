@@ -434,7 +434,7 @@ public class SelectTest {
     }
 
     @Test
-    void testWhereColumnsNotInSelect() {
+    void testWhereColumnsNotInSelectCartesian() {
         try {
             tearDown();
             System.out.println("Testing SELECT with columns not in the WHERE");
@@ -470,6 +470,48 @@ public class SelectTest {
                     "> Processed Query: drop table test1;\n" +
                     "Schema removed from src.Catalog\n" +
                     "> Processed Query: drop table test2;\n" +
+                    "Schema removed from src.Catalog\n" +
+                    "> Processed Query: quit;\n" +
+                    "Shutting down database...\n" +
+                    "Shutdown complete.\n";
+            expected = expected.replaceAll("\r", "");
+            String output = outputStreamCaptor.toString().replaceAll("\r", "");
+
+            assertEquals(expected, output);
+
+            tearDown();
+        } catch (Exception e) {
+            fail("Exception Caught!");
+        }
+    }
+
+    @Test
+    void testWhereColumnsNotInSelect() {
+        try {
+            tearDown();
+            System.out.println("Testing SELECT with columns not in the WHERE");
+            setUp();
+
+            String[] args = { "db", "10000", "10000" };
+
+            String input = "CREATE TABLE test1 (foo VARCHAR(10) PRIMARYKEY, baz DOUBLE);\n" +
+                    "INSERT INTO test1 VALUES ('A' 1.0), ('Z' 3.1), ('G' 3.0);\n" +
+                    "SELECT foo FROM test1 WHERE baz = 3.1;\n" +
+                    "DROP TABLE test1;\n" +
+                    "QUIT;\n";
+            ByteArrayInputStream inputIn = new ByteArrayInputStream(input.getBytes());
+            System.setIn(inputIn);
+
+            Main.main(args);
+
+            String expected = "> Processed Query: create table test1 (foo varchar(10) primarykey, baz double);\n" +
+                    "Table created successfully.\n" +
+                    "> Processed Query: insert into test1 values ('A' 1.0), ('Z' 3.1), ('G' 3.0);\n" +
+                    "> Processed Query: select foo from test1 where baz = 3.1;\n" +
+                    "|       foo|\n" +
+                    "------------\n" +
+                    "|       \"Z\"|\n\n" +
+                    "> Processed Query: drop table test1;\n" +
                     "Schema removed from src.Catalog\n" +
                     "> Processed Query: quit;\n" +
                     "Shutting down database...\n" +

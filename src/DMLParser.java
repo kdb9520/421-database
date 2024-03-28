@@ -577,7 +577,7 @@ public class DMLParser {
                     whereFound = true;
                     // The remaining part of the query after "where" is the where clause
                     whereClause = String.join(" ", List.of(parts).subList(i + 1, parts.length));
-                    whereClause = whereClause.split("orderby")[0].strip();
+                    whereClause = whereClause.split("orderby")[0].split(";")[0].strip();
                     break; // Exit loop since we found "where"
                 }
 
