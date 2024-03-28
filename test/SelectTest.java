@@ -380,4 +380,109 @@ public class SelectTest {
         }
     }
 
+    @Test
+    void testWhereOrderbyCartesian() {
+        try {
+            tearDown();
+            System.out.println("Testing SELECT * FROM table1, table2 where table1.x = table2.y orderby table2.y");
+            setUp();
+
+            String[] args = { "db", "10000", "10000" };
+
+            String input = "CREATE TABLE test1 (foo VARCHAR(10) PRIMARYKEY, baz DOUBLE);\n" +
+                    "CREATE TABLE test2 (bar VARCHAR(10) PRIMARYKEY, bazzle DOUBLE);\n" +
+                    "INSERT INTO test1 VALUES ('A' 1.0), ('Z' 2.1), ('G' 3.0);\n" +
+                    "INSERT INTO test2 VALUES ('A' 7.0), ('R' 3.1), ('G' 3.2);\n" +
+                    "SELECT * FROM test1, test2 WHERE test1.foo = test2.bar ORDERBY test2.bazzle;\n" +
+                    "DROP TABLE test1;\n" +
+                    "DROP TABLE test2;\n" +
+                    "QUIT;\n";
+            ByteArrayInputStream inputIn = new ByteArrayInputStream(input.getBytes());
+            System.setIn(inputIn);
+
+            Main.main(args);
+
+            String expected = "> Processed Query: create table test1 (foo varchar(10) primarykey, baz double);\n" +
+                    "Table created successfully.\n" +
+                    "> Processed Query: create table test2 (bar varchar(10) primarykey, bazzle double);\n" +
+                    "Table created successfully.\n" +
+                    "> Processed Query: insert into test1 values ('A' 1.0), ('Z' 2.1), ('G' 3.0);\n" +
+                    "> Processed Query: insert into test2 values ('A' 7.0), ('R' 3.1), ('G' 3.2);\n" +
+                    "> Processed Query: select * from test1, test2 where test1.foo = test2.bar orderby test2.bazzle;\n" +
+                    "Table created successfully.\n" +
+                    "| test1.foo|| test1.baz|| test2.bar||test2.bazzle|\n" +
+                    "--------------------------------------------------\n" +
+                    "|       \"G\"||       3.0||       \"G\"||       3.2|\n" +
+                    "|       \"A\"||       1.0||       \"A\"||       7.0|\n\n" +
+                    "Schema removed from src.Catalog\n" +
+                    "> Processed Query: drop table test1;\n" +
+                    "Schema removed from src.Catalog\n" +
+                    "> Processed Query: drop table test2;\n" +
+                    "Schema removed from src.Catalog\n" +
+                    "> Processed Query: quit;\n" +
+                    "Shutting down database...\n" +
+                    "Shutdown complete.\n";
+            expected = expected.replaceAll("\r", "");
+            String output = outputStreamCaptor.toString().replaceAll("\r", "");
+
+            assertEquals(expected, output);
+
+            tearDown();
+        } catch (Exception e) {
+            fail("Exception Caught!");
+        }
+    }
+
+    @Test
+    void testWhereColumnsNotInSelect() {
+        try {
+            tearDown();
+            System.out.println("Testing SELECT with columns not in the WHERE");
+            setUp();
+
+            String[] args = { "db", "10000", "10000" };
+
+            String input = "CREATE TABLE test1 (foo VARCHAR(10) PRIMARYKEY, baz DOUBLE);\n" +
+                    "CREATE TABLE test2 (bar VARCHAR(10) PRIMARYKEY, bazzle DOUBLE);\n" +
+                    "INSERT INTO test1 VALUES ('A' 1.0), ('Z' 3.1), ('G' 3.0);\n" +
+                    "INSERT INTO test2 VALUES ('A' 7.0), ('R' 3.1), ('G' 3.2);\n" +
+                    "SELECT test1.foo, test2.bar FROM test1, test2 WHERE test1.baz = test2.bazzle;\n" +
+                    "DROP TABLE test1;\n" +
+                    "DROP TABLE test2;\n" +
+                    "QUIT;\n";
+            ByteArrayInputStream inputIn = new ByteArrayInputStream(input.getBytes());
+            System.setIn(inputIn);
+
+            Main.main(args);
+
+            String expected = "> Processed Query: create table test1 (foo varchar(10) primarykey, baz double);\n" +
+                    "Table created successfully.\n" +
+                    "> Processed Query: create table test2 (bar varchar(10) primarykey, bazzle double);\n" +
+                    "Table created successfully.\n" +
+                    "> Processed Query: insert into test1 values ('A' 1.0), ('Z' 3.1), ('G' 3.0);\n" +
+                    "> Processed Query: insert into test2 values ('A' 7.0), ('R' 3.1), ('G' 3.2);\n" +
+                    "> Processed Query: select test1.foo, test2.bar from test1, test2 where test1.baz = test2.bazzle;\n" +
+                    "Table created successfully.\n" +
+                    "| test1.foo|| test2.bar|\n" +
+                    "------------------------\n" +
+                    "|       \"Z\"||       \"R\"|\n\n" +
+                    "Schema removed from src.Catalog\n" +
+                    "> Processed Query: drop table test1;\n" +
+                    "Schema removed from src.Catalog\n" +
+                    "> Processed Query: drop table test2;\n" +
+                    "Schema removed from src.Catalog\n" +
+                    "> Processed Query: quit;\n" +
+                    "Shutting down database...\n" +
+                    "Shutdown complete.\n";
+            expected = expected.replaceAll("\r", "");
+            String output = outputStreamCaptor.toString().replaceAll("\r", "");
+
+            assertEquals(expected, output);
+
+            tearDown();
+        } catch (Exception e) {
+            fail("Exception Caught!");
+        }
+    }
+
 }
