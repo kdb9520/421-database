@@ -130,7 +130,7 @@ public class UpdateTest {
     }
 
     @Test
-    void updateVarcharSameCol() {
+    void updatePrimaryKey() {
         try {
             tearDown();
             System.out.println("update students set id = 9 where id = 1;");
@@ -180,7 +180,7 @@ public class UpdateTest {
         }
     }
     @Test
-    void updatePrimaryKey() {
+    void updateVarcharSameCol() {
         try {
             tearDown();
             System.out.println("update students set id = 9 where id = 1");
