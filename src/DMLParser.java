@@ -1,5 +1,6 @@
 package src;
 
+import java.rmi.ServerError;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -523,10 +524,15 @@ public class DMLParser {
             }
 
             SelectOutput selectOutput = buildAttributeTable(attrs, tableSchema, whereClause);
-            //todo - should this be here
             if (query.contains("orderby")) {
+
                 String orderByClause = query.split("orderby")[1];
                 String attr = orderByClause.split(";")[0].strip();
+
+                if(!attrs.contains(attr)){
+                    System.err.println("Error: orderby attribute is not in table schema");
+                    return;
+                }
                 selectOutput.orderBy(attr, "asc");
             }
             if (selectOutput != null) {
@@ -608,6 +614,10 @@ public class DMLParser {
             if (query.contains("orderby")) {
                 String orderByClause = query.split("orderby")[1];
                 String attr = orderByClause.split(";")[0].strip();
+                if(!attributes.contains(attr)){
+                    System.err.println("Error: orderby attribute is not in table schema");
+                    return;
+                }
                 selectOutput.orderBy(attr, "asc");
             }
             if (selectOutput != null) {
