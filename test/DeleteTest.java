@@ -169,4 +169,99 @@ public class DeleteTest {
             fail("Exception Caught!");
         }
     }
+    @Test
+    void deleteOnNullVarchar() {
+        try {
+            tearDown();
+            System.out.println("Testing delete from students where school = \"Z\"");
+            setUp();
+
+            String[] args = { "db", "10000", "10000" };
+
+            String input = "CREATE TABLE students (id INTEGER PRIMARYKEY, school varchar(40));\nINSERT INTO students VALUES (1 \"A\"), (2 \"B\"), (3 \"C\");\nSELECT * FROM students;\ndelete from students where school = \"Z\";\nselect * from students;\nDROP TABLE students;\nQUIT;\n";
+            ByteArrayInputStream inputIn = new ByteArrayInputStream(input.getBytes());
+            System.setIn(inputIn);
+
+            Main.main(args);
+
+            String expected = "> Processed Query: create table students (id integer primarykey, school varchar(40));\n" +
+                    "Table created successfully.\n" +
+                    "> Processed Query: insert into students values (1 \"A\"), (2 \"B\"), (3 \"C\");\n" +
+                    "> Processed Query: select * from students;\n" +
+                    "|        id||    school|\n" +
+                    "------------------------\n" +
+                    "|         1||       \"A\"|\n" +
+                    "|         2||       \"B\"|\n" +
+                    "|         3||       \"C\"|\n" +
+                    "\n" +
+                    "> Processed Query: delete from students where school = \"Z\";\n" +
+                    "> Processed Query: select * from students;\n" +
+                    "|        id||    school|\n" +
+                    "------------------------\n" +
+                    "|         1||       \"A\"|\n" +
+                    "|         2||       \"B\"|\n" +
+                    "|         3||       \"C\"|\n" +
+                    "\n" +
+                    "> Processed Query: drop table students;\n" +
+                    "Schema removed from src.Catalog\n" +
+                    "> Processed Query: quit;\n" +
+                    "Shutting down database...\n" +
+                    "Shutdown complete.\n";
+            expected = expected.replaceAll("\r", "");
+            String output = outputStreamCaptor.toString().replaceAll("\r", "");
+
+            assertEquals(expected, output);
+
+            tearDown();
+        } catch (Exception e) {
+            fail("Exception Caught!");
+        }
+    }
+    @Test
+    void deleteOnVarchar() {
+        try {
+            tearDown();
+            System.out.println("Testing delete from students where school = \"A\"");
+            setUp();
+
+            String[] args = { "db", "10000", "10000" };
+
+            String input = "CREATE TABLE students (id INTEGER PRIMARYKEY, school varchar(40));\nINSERT INTO students VALUES (1 \"A\"), (2 \"B\"), (3 \"C\");\nSELECT * FROM students;\ndelete from students where school = \"A\";\nselect * from students;\nDROP TABLE students;\nQUIT;\n";
+            ByteArrayInputStream inputIn = new ByteArrayInputStream(input.getBytes());
+            System.setIn(inputIn);
+
+            Main.main(args);
+
+            String expected = "> Processed Query: create table students (id integer primarykey, school varchar(40));\n" +
+                    "Table created successfully.\n" +
+                    "> Processed Query: insert into students values (1 \"A\"), (2 \"B\"), (3 \"C\");\n" +
+                    "> Processed Query: select * from students;\n" +
+                    "|        id||    school|\n" +
+                    "------------------------\n" +
+                    "|         1||       \"A\"|\n" +
+                    "|         2||       \"B\"|\n" +
+                    "|         3||       \"C\"|\n" +
+                    "\n" +
+                    "> Processed Query: delete from students where school = \"A\";\n" +
+                    "> Processed Query: select * from students;\n" +
+                    "|        id||    school|\n" +
+                    "------------------------\n" +
+                    "|         2||       \"B\"|\n" +
+                    "|         3||       \"C\"|\n" +
+                    "\n" +
+                    "> Processed Query: drop table students;\n" +
+                    "Schema removed from src.Catalog\n" +
+                    "> Processed Query: quit;\n" +
+                    "Shutting down database...\n" +
+                    "Shutdown complete.\n";
+            expected = expected.replaceAll("\r", "");
+            String output = outputStreamCaptor.toString().replaceAll("\r", "");
+
+            assertEquals(expected, output);
+
+            tearDown();
+        } catch (Exception e) {
+            fail("Exception Caught!");
+        }
+    }
 }
