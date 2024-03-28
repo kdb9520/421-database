@@ -523,6 +523,7 @@ public class DMLParser {
             }
 
             SelectOutput selectOutput = buildAttributeTable(attrs, tableSchema, whereClause);
+            //todo - should this be here
             if (query.contains("orderby")) {
                 String orderByClause = query.split("orderby")[1];
                 String attr = orderByClause.split("")[1];
@@ -603,6 +604,11 @@ public class DMLParser {
             }
 
             SelectOutput selectOutput = buildAttributeTable(attributes, tableSchema, whereClause);
+            if (query.contains("orderby")) {
+                String orderByClause = query.split("orderby")[1];
+                String attr = orderByClause.split(";")[0].strip();
+                selectOutput.orderBy(attr, "asc");
+            }
             if (selectOutput != null) {
                 printSelectTable(selectOutput);
             }

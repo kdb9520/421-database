@@ -53,6 +53,9 @@ public class QueryHandler {
             names[i] = names[i].strip();
             if (i == names.length - 1) {
                 names[i] = names[i].split(";")[0].strip();
+                if(names[i].contains("orderby"))
+                    names[i] = names[i].substring(0, names[i].indexOf("orderby")).strip();
+
             }
         }
         return names;

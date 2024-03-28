@@ -24,7 +24,15 @@ public class SelectOutput {
 
 
     public void orderBy(String attr, String order){
-        int pos = this.attributes.indexOf(attr);
+        int pos = -1;
+        for(int i = 0; i < this.attributes.size(); i ++){
+            if(this.attributes.get(i).attrName.equals(attr))
+                pos = i;
+        }
+        if(pos == -1){
+            System.err.println("Invalid attribute to order on");
+            return;
+        }
         String type = this.attributes.get(pos).getType();
         Record.setType(type);
         Record.setOrderToCompare(order);
