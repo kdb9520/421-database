@@ -240,13 +240,13 @@ public class DMLParser {
 
             if (attrs.size() > attributeSchemas.size() || attrs.size() < attributeSchemas.size()) {
                 // print error and go to command loop
-                System.out.println("Error with inserting record: " + tuple);
-                System.out
+                System.err.println("Error with inserting record: " + tuple);
+                System.err
                         .println("Expected " + attributeSchemas.size() + " values but got " + attrs.size() + " values");
 
-                System.out.println(
+                System.err.println(
                         "If there were records inputted previous to this record, they have been successfully inserted.");
-                System.out.println("All records after the failed record were not inserted.");
+                System.err.println("All records after the failed record were not inserted.");
                 break;
             }
 
@@ -329,12 +329,12 @@ public class DMLParser {
                 }
             } catch (Exception e) {
                 // print error and go to command loop
-                System.out.println("Error with inserting record: " + tuple);
+                System.err.println("Error with inserting record: " + tuple);
                 // e.printStackTrace();
-                System.out.println(e.getMessage());
-                System.out.println(
+                System.err.println(e.getMessage());
+                System.err.println(
                         "If there were records inputted previous to this record, they have been successfully inserted.");
-                System.out.println("All records after the failed record were not inserted.");
+                System.err.println("All records after the failed record were not inserted.");
                 break;
             }
 
@@ -342,8 +342,8 @@ public class DMLParser {
             Record record = new Record(values);
 
             if (!checkUnique(tableName, record, attributeSchemas)) {
-                System.out.println("\nError: A record with that unique value already exists.");
-                System.out.println("Tuple " + tuple + " not inserted!\n");
+                System.err.println("\nError: A record with that unique value already exists.");
+                System.err.println("Tuple " + tuple + " not inserted!\n");
                 return;
             }
 
@@ -351,8 +351,8 @@ public class DMLParser {
             if (tableSchema.getIndexList().isEmpty()) {
 
                 if (!checkUnique(tableName, record, attributeSchemas)) {
-                    System.out.println("\nError: A record with that unique value already exists.");
-                    System.out.println("Tuple " + tuple + " not inserted!\n");
+                    System.err.println("\nError: A record with that unique value already exists.");
+                    System.err.println("Tuple " + tuple + " not inserted!\n");
                     return;
                 }
                 // Create new page (using bufferManager)
@@ -374,8 +374,8 @@ public class DMLParser {
                     Page page = BufferManager.getPage(tableName, i);
                     for (Record r : page.getRecords()) {
                         if (r.getAttribute(primaryKeyCol).equals(record.getAttribute(primaryKeyCol))) {
-                            System.out.println("Error: A record with that primary key already exists.");
-                            System.out.println("Tuple " + tuple + " not inserted!\n");
+                            System.err.println("Error: A record with that primary key already exists.");
+                            System.err.println("Tuple " + tuple + " not inserted!\n");
                             return;
                         }
                     }
@@ -420,8 +420,8 @@ public class DMLParser {
 
                 if (!wasInserted) {
                     if (!checkUnique(tableName, record, attributeSchemas)) {
-                        System.out.println("\nError: A record with that unique value already exists.");
-                        System.out.println("Tuple " + tuple + " not inserted!\n");
+                        System.err.println("\nError: A record with that unique value already exists.");
+                        System.err.println("Tuple " + tuple + " not inserted!\n");
                         return;
                     }
 
@@ -516,7 +516,7 @@ public class DMLParser {
 
             String whereClause = null;
             if (query.contains("where")) {
-                whereClause = query.split("where")[1];
+                whereClause = query.split("where")[1].split(";")[0];
                 if (query.contains("orderby")) {
                     whereClause = whereClause.split("orderby")[0];
                 }
