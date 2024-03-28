@@ -775,7 +775,7 @@ public class DMLParser {
                 }
             }
 
-            TableSchema selectTableSchema = new TableSchema("selectSchema", attributeSchemas);
+            TableSchema selectTableSchema = new TableSchema("selectSchema", tableSchema.attributes);
             for (int i = 0; i < tableSchema.getIndexList().size(); i++) {
                 Page page = BufferManager.getPage(tableSchema.getTableName(), i);
                 for (Record record : page.records) {
