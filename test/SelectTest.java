@@ -289,7 +289,7 @@ public class SelectTest {
     void testWhere() {
         try {
             tearDown();
-            System.out.println("Testing SELECT * FROM table orderby x.");
+            System.out.println("Testing SELECT * FROM table where x = y.");
             setUp();
 
             String[] args = { "db", "10000", "10000" };
@@ -307,7 +307,7 @@ public class SelectTest {
             String expected = "> Processed Query: create table test1 (foo varchar(10) primarykey, baz double);\n" +
                     "Table created successfully.\n" +
                     "> Processed Query: insert into test1 values ('A' 5.0), ('Z' 2.1), ('G' 3.0);\n" +
-                    "> Processed Query: select * from where baz = 5.0;\n" +
+                    "> Processed Query: select * from test1 where baz = 5.0;\n" +
                     "|       foo||       baz|\n" +
                     "------------------------\n" +
                     "|       \"A\"||       5.0|\n\n" +

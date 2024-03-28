@@ -99,11 +99,11 @@ public class OperatorNode implements WhereNode{
                 return false;
             }
         } else if (type.equals("double")) {
-            if ((Double) leftVal == (Double) rightVal) {
+            if (((Double) leftVal).equals((Double) rightVal)) {
                 return true;
-        } else{
-            return false;
-        }
+            } else{
+                return false;
+            }
         }
          else if (type.equals("boolean")) {
             
