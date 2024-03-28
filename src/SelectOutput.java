@@ -34,6 +34,7 @@ public class SelectOutput {
             return;
         }
         String type = this.attributes.get(pos).getType();
+        type = type.split("\\(")[0];
         Record.setType(type);
         Record.setOrderToCompare(order);
         Record.setColToCompare(pos);
