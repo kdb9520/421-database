@@ -62,6 +62,7 @@ public class Main {
                             }
                         } catch(Exception e){
                             System.out.println("Error with command. Debugging statement:");
+                            commandBuilder.setLength(0);
                             e.printStackTrace();
                         }
                         
