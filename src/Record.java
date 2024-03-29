@@ -14,6 +14,10 @@ public class Record implements Comparable<Record>{
 
     private static int colToCompare = 0;
 
+    /**
+     * Sets the type for the comparator
+     * @param type
+     */
     public static void setType(String type) {
         Record.type = type;
     }
@@ -45,10 +49,18 @@ public class Record implements Comparable<Record>{
         }
     }
 
+    /**
+     * Sets column index for comparator
+     * @param c
+     */
     public static void setColToCompare(int c) {
         colToCompare = c;
     }
 
+    /**
+     * Sets the order to compare
+     * @param s - default is ascending
+     */
     public static void setOrderToCompare(String s){
         order = s;
     }

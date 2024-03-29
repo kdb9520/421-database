@@ -23,6 +23,12 @@ public class SelectOutput {
     }
 
 
+    /**
+     * Orders a given selectOutput based off a given attribute and order specification
+     * @param attr - attribute in the orderBy clause
+     * @param order - order specified. Upon further review of project docs, this should be only asc
+     * @author - Jaron Cummings
+     */
     public void orderBy(String attr, String order){
         int pos = -1;
         for(int i = 0; i < this.attributes.size(); i ++){
