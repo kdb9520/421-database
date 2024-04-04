@@ -12,24 +12,26 @@ public class Main {
     public static int pageSize;
     public static int bufferSize;
     public static String databaseLocation;
+    public static boolean useIndex;
 
     // Grab command args in form [DB_Location] [Page_Size] [Buffer_Size]
     // [Page_Size] = integer saying max size of a src.Page in bytes
     // [Buffer_Size] = integer setting how many Pages a src.Page Buffer may hold at once
     public static void main (String[] args) {
 
-        if (args.length != 3) {
+        if (args.length != 4) {
             displayUsage();
         }
         else {
             databaseLocation = args[0];
             pageSize = Integer.valueOf(args[1]);
             bufferSize = Integer.valueOf(args[2]);
+            useIndex = args[3].equals("true");
 
             // restart / create the database
             // Jaron Handling start up of dbint started = src.DatabaseStart.initiateDatabase(dbLoc, pageSize, bufferSize);
             // This will override pageSize command arg if DB exists already
-            boolean started = DatabaseStart.initiateDatabase(databaseLocation, pageSize, bufferSize);
+            boolean started = DatabaseStart.initiateDatabase(databaseLocation, pageSize, bufferSize, useIndex);
 
             Catalog.readCatalog(databaseLocation);
 
