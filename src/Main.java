@@ -138,7 +138,7 @@ public class Main {
     }
 
     public static void displayUsage() {
-        System.out.println("USAGE: java src.Main <db loc> <page size> <buffer size> \n\nEnter 'help;' to list all commands.");
+        System.out.println("USAGE: java src.Main <db loc> <page size> <buffer size> <indexing> \n\nEnter 'help;' to list all commands.");
     }
 
     public static void helpCommand() {
