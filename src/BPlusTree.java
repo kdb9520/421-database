@@ -20,8 +20,44 @@ class BPlusTree {
     }
 
     // Search method
-    public void search(int key) {
-        Node n =
+    public Node search(int key) {
+        Node C = root;
+
+
+
+
+        //Traverse the tree until we reach a leaf node
+        while(!(C instanceof LeafNode)){
+            int i = 0;
+            while (i < C.keys.size()){
+                if(key < C.keys.get(i)){
+                    break;
+                }
+                i +=1;
+            }
+            // need child node functionality
+            //C = node.children[i];
+
+
+            i = 0;
+
+            // Now 'node' points to a leaf node, search for the key within this node
+            while(i < C.keys.size()){
+                if (key == C.keys.get(i)){
+                    // return C.values[i];
+
+                }
+                else if (key < C.keys.size()) {
+                    break;
+                }
+
+                i += 1;
+            }
+
+
+        }
+
+        return null;
     }
 
     // Insert method
