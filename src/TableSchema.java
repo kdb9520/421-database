@@ -20,6 +20,7 @@ public class TableSchema {
     int tableNumber;
     ArrayList<AttributeSchema> attributes;
     ArrayList<Integer> pageIndexes;
+    int rootNodeNum = 0;
 
     /**
      * Constructor for src.TableSchema.  Will take the name (unique) and a list of AttributeSchemas corresponding to the
@@ -40,10 +41,11 @@ public class TableSchema {
         this.pageIndexes = old.pageIndexes;
     }
 
-    public TableSchema(ArrayList<AttributeSchema> attributeList, ArrayList<Integer> pageIndexes, String tableName) {
+    public TableSchema(ArrayList<AttributeSchema> attributeList, ArrayList<Integer> pageIndexes, String tableName, int rootNodeNum) {
         this.attributes = attributeList;
         this.pageIndexes = pageIndexes;
         this.tableName = tableName;
+        this.rootNodeNum = rootNodeNum;
     }
 
     public void dropAttribute(String attrName) {
@@ -155,7 +157,7 @@ public class TableSchema {
             dataOutputStream.writeInt(0);
         }
         
-
+        dataOutputStream.writeInt(rootNodeNum);
         dataOutputStream.close();
         return byteArrayOutputStream.toByteArray();
     }
@@ -182,7 +184,8 @@ public class TableSchema {
             Integer pageIndex = buffer.getInt();
             pageIndexList.add(pageIndex);
         }
-        return new TableSchema(attributeList,pageIndexList,tableName);
+        int rootNodeIndex = buffer.getInt();
+        return new TableSchema(attributeList,pageIndexList,tableName, rootNodeIndex);
     }
 
     public ArrayList<Integer> getIndexList(){
@@ -233,6 +236,14 @@ public class TableSchema {
                 "\n\tTable Number=" + this.tableNumber +
                 "\n\tAttributes=" + this.attributes +
                 "\n}";
+    }
+
+    public void updateRootNode(int newIndex){
+        this.rootNodeNum = newIndex;
+    }
+
+    public int getRootNode(){
+        return this.rootNodeNum;
     }
 }
 
