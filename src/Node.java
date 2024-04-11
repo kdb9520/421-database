@@ -29,7 +29,7 @@ class Node {
         }
     }
 
-    public void insert(int key, Integer value) {
+    public void insert(Object key, Integer value, int pageNum, int recordIndex) {
         if (isLeaf) {
             int index = 0;
             while (index < keys.size() && key > keys.get(index)) {
