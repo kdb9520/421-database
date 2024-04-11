@@ -235,6 +235,7 @@ public class TableSchema {
                 "\n\tName=" + this.tableName +
                 "\n\tTable Number=" + this.tableNumber +
                 "\n\tAttributes=" + this.attributes +
+                "\n\tRoot Node= Node " + this.rootNodeNum +
                 "\n}";
     }
 
