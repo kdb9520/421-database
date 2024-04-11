@@ -1,5 +1,10 @@
 package src;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+
 public class RecordPointer {
     int pageNumber;
     int indexNumber;
@@ -25,7 +30,18 @@ public class RecordPointer {
         return indexNumber;
     }
 
-    public void setIndexNumber(int indexNumber) {
-        this.indexNumber = indexNumber;
+    public byte[] serialize(String tableName) {
+
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                DataOutputStream dataOutputStream = new DataOutputStream(bos);) {
+                dataOutputStream.writeInt(pageNumber);
+                dataOutputStream.writeInt(indexNumber);
+
+                
+                return bos.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
