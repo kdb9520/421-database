@@ -14,8 +14,8 @@ class BPlusTree {
     }
 
     // Insert method
-    public void insert(int key, Object value) {
-        root.insert(key, value);
+    public void insert(int key, Integer index) {
+        root.insert(key, index);
         if (root.isOverflow()) {
             Node newRoot = new Node(false, maxDegree); // New root will be an internal node
             newRoot.addChild(root);
