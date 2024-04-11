@@ -21,6 +21,7 @@ public class TableSchema {
     ArrayList<AttributeSchema> attributes;
     ArrayList<Integer> pageIndexes;
     int rootNodeNum = 0;
+    int maxDegree;
 
     /**
      * Constructor for src.TableSchema.  Will take the name (unique) and a list of AttributeSchemas corresponding to the
@@ -41,11 +42,12 @@ public class TableSchema {
         this.pageIndexes = old.pageIndexes;
     }
 
-    public TableSchema(ArrayList<AttributeSchema> attributeList, ArrayList<Integer> pageIndexes, String tableName, int rootNodeNum) {
+    public TableSchema(ArrayList<AttributeSchema> attributeList, ArrayList<Integer> pageIndexes, String tableName, int rootNodeNum, int maxDegree) {
         this.attributes = attributeList;
         this.pageIndexes = pageIndexes;
         this.tableName = tableName;
         this.rootNodeNum = rootNodeNum;
+        this.maxDegree = maxDegree;
     }
 
     public void dropAttribute(String attrName) {
@@ -158,6 +160,7 @@ public class TableSchema {
         }
         
         dataOutputStream.writeInt(rootNodeNum);
+        dataOutputStream.writeInt(maxDegree);
         dataOutputStream.close();
         return byteArrayOutputStream.toByteArray();
     }
@@ -185,7 +188,8 @@ public class TableSchema {
             pageIndexList.add(pageIndex);
         }
         int rootNodeIndex = buffer.getInt();
-        return new TableSchema(attributeList,pageIndexList,tableName, rootNodeIndex);
+        int maxDegreeNum = buffer.getInt();
+        return new TableSchema(attributeList,pageIndexList,tableName, rootNodeIndex,maxDegreeNum);
     }
 
     public ArrayList<Integer> getIndexList(){
@@ -245,6 +249,14 @@ public class TableSchema {
 
     public int getRootNode(){
         return this.rootNodeNum;
+    }
+
+    public void updateMaxDegree(int newMaxDegree){
+        this.maxDegree = newMaxDegree;
+    }
+
+    public int getMaxDegree(){
+        return this.maxDegree;
     }
 }
 
