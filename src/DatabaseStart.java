@@ -49,7 +49,7 @@ public class DatabaseStart {
                 String indexContent = Files.readString(indexFilePath);
                 // Parse the integer value from the content
                 int ps = Integer.parseInt(content);
-                StorageManager.BPlusExists = Boolean.parseBoolean(indexContent);
+                Main.useIndex = Boolean.parseBoolean(indexContent);
                 // Overwrite the command arg page size user provided with the size stored in files
                 Main.pageSize = ps;
                 success = true;

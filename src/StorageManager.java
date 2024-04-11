@@ -17,7 +17,6 @@ import java.util.Arrays;
 
 public class StorageManager {
     public static Catalog catalog;                  // private instance of src.Catalog, accessible by static methods
-    public static boolean BPlusExists;
 
     private StorageManager() {
        
