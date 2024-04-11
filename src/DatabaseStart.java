@@ -82,7 +82,7 @@ public class DatabaseStart {
             Path indexPath = folder.resolve("index");
             String indexVal = String.valueOf(useIndex);
             Files.write(indexPath, indexVal.getBytes());
-            StorageManager.BPlusExists = useIndex;
+            Main.useIndex = useIndex;
 
             success = true;
             
