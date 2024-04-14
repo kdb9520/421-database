@@ -315,7 +315,7 @@ public class StorageManager {
      */
     public static void writeIndexes(String db_loc) {
         // Ensure the db_loc/Schema directory exists or create it if it doesn't
-        String schemaDirectoryPath = db_loc + "/Schema";
+        String schemaDirectoryPath = db_loc + "/Indexes";
         createDirectoryIfNotExists(schemaDirectoryPath);
 
         for (BPlusTree index : indexes) {
