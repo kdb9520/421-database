@@ -3,7 +3,9 @@ package src;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 
  // Node class
@@ -11,10 +13,10 @@ class Node {
     private boolean isLeaf;
 
 
-    private List<RecordPointer> recordPointers;
-    private List<Object> keys;
-    private List<Integer> indices;
-    private List<Node> children;
+    private ArrayList<RecordPointer> recordPointers;
+    private ArrayList<Object> keys;
+    private ArrayList<Integer> indices;
+    private ArrayList<Node> children;
     private int maxDegree;
     private boolean wasEdited;
 
@@ -27,6 +29,15 @@ class Node {
         if (!isLeaf) {
             this.children = new ArrayList<>();
         }
+    }
+
+    public Node(boolean isLeaf, ArrayList<RecordPointer> recordPointers, ArrayList<Object> keys, ArrayList<Node> children, int maxDegree, String tableName){
+        this.isLeaf = isLeaf;
+        this.recordPointers = recordPointers;
+        this.keys = keys;
+        this.children = children;
+        this.maxDegree = maxDegree;
+        this.tableName = tableName;
     }
 
     public void insert(Object key, Integer value, int pageNum, int recordIndex) {
@@ -161,5 +172,65 @@ class Node {
             e.printStackTrace();
             return null;
         }
+    }
+
+        // Deserialize a byte array into a record object
+    public static Node deserialize(ByteBuffer buffer, String tableName, int maxDegree;) {
+        String type = Catalog.getTableSchema(tableName).getPrimaryKeyType();
+        boolean newIsLeafNode;
+        int newNumRecordPointers;
+        ArrayList<RecordPointer> newRecordPointers;
+        ArrayList<Object> newKeys;
+        ArrayList<Object> children;
+
+        newIsLeafNode = buffer.get() != 0;
+        newNumRecordPointers = buffer.getInt();
+
+        for (int i = 0; i < newNumRecordPointers; i++) {
+            int newPageNum = buffer.getInt();
+            int newIndexNum = buffer.getInt();
+            RecordPointer newRP = new RecordPointer(newPageNum, newIndexNum);
+            newRecordPointers.add(newRP);
+        }
+
+        int keySize = buffer.getInt();
+
+        for(int i = 0; i < keySize; i++){
+            if (type.equals("integer")) {
+                Integer attr = buffer.getInt();
+                newKeys.add(attr);
+            } else if (type.startsWith("varchar")) {
+                // Get length of the varchar
+                int length = buffer.getInt();
+                // Read the varchar in
+                byte[] stringBytes = new byte[length];
+                buffer.get(stringBytes);
+                // Make it a string
+                String attr = new String(stringBytes);
+                newKeys.add(attr);
+            } else if (type.startsWith("char")) {
+                // Get the size of char
+                int numberOfChars = Integer.parseInt(type.substring(type.indexOf("(") + 1, type.indexOf(")")));
+                byte[] stringBytes = new byte[numberOfChars];
+                buffer.get(stringBytes);
+                // Get the string
+                String attr = new String(stringBytes);
+                newKeys.add(attr);
+            } else if (type.equals("double")) {
+                Double attr = buffer.getDouble();
+                newKeys.add(attr);
+            } else if (type.equals("boolean")) {
+                boolean attr = buffer.get() != 0;
+                newKeys.add(attr);
+            }
+        }
+
+        while(buffer.hasRemaining()){
+            Node childNode = deserialize(buffer, tableName); // Assuming deserialize method returns a Node
+            children.add(childNode);
+        }
+
+        return new Node(newIsLeafNode, newRecordPointers, newKeys, children, maxDegree, tableName);
+
     }
 }
