@@ -126,6 +126,22 @@ class Node {
         return this.wasEdited;
     }
 
+    public boolean isLeaf() {
+        return isLeaf;
+    }
+
+    public ArrayList<Object> getKeys() {
+        return keys;
+    }
+
+    public int getNumKeys() {
+        return keys.size();
+    }
+
+    public ArrayList<Node> getChildren() {
+        return children;
+    }
+
     // returns postive if myObject is greater than otherObject
     public int compareObjects(Object myObject, Object otherObject) {
 

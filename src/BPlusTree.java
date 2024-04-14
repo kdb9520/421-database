@@ -80,4 +80,37 @@ class BPlusTree {
         BPlusTree tree = new BPlusTree(tableName, maxDegree, root);
         return tree;
     }
+
+    public void printTree() {
+        if (root == null) {
+            System.out.println("Tree is empty.");
+        } else {
+            printTree(root, 0);
+        }
+    }
+
+    private void printTree(Node node, int level) {
+        if (node != null) {
+            for (int i = 0; i < level; i++) {
+                System.out.print("\t");
+            }
+
+            if (node.isLeaf()) {
+                for (int i = 0; i < node.getNumKeys(); i++) {
+                    System.out.print(node.getKeys().get(i) + " ");
+                }
+                System.out.println();
+            } else {
+                for (int i = 0; i < node.getNumKeys(); i++) {
+                    printTree(node.getChildren().get(i), level + 1);
+                    System.out.print(node.getKeys().get(i) + " ");
+                    if (i == node.getNumKeys() - 1) {
+                        printTree(node.getChildren().get(i + 1), level + 1);
+                    }
+                }
+                System.out.println();
+            }
+        }
+    }
+
 }
