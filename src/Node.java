@@ -49,7 +49,7 @@ class Node {
                 index++;
             }
 
-            recordPointers.add(new RecordPointer(key, index));
+            recordPointers.add(new RecordPointer(pageNum, index));
             this.setEdited();
 
         } else {
@@ -57,7 +57,7 @@ class Node {
             while (index < recordPointers.size() && compareObjects(key, recordPointers.get(index).getPageNumber()) > 0) {
                 index++;
             }
-            children.get(index).insert(key, value);
+            children.get(index).insert(key, value, pageNum, recordIndex);
             if (children.get(index).isOverflow()) {
                 children.get(index).split(this, index);
             }
@@ -199,7 +199,7 @@ class Node {
     }
 
         // Deserialize a byte array into a record object
-    public static Node deserialize(ByteBuffer buffer, String tableName, int maxDegree;) {
+    public static Node deserialize(ByteBuffer buffer, String tableName, int maxDegree) {
         String type = Catalog.getTableSchema(tableName).getPrimaryKeyType();
         boolean newIsLeafNode;
         int newNumRecordPointers;
