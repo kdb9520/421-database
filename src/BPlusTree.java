@@ -113,4 +113,8 @@ class BPlusTree {
         }
     }
 
+    public String getTableName(){
+        return this.tableName;
+    }
+
 }

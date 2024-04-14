@@ -34,6 +34,7 @@ public class Main {
             boolean started = DatabaseStart.initiateDatabase(databaseLocation, pageSize, bufferSize, useIndex);
 
             Catalog.readCatalog(databaseLocation);
+            StorageManager.readIndexes(databaseLocation);
 
             if (started) {
                 Scanner scanner = new Scanner(System.in);
@@ -160,6 +161,7 @@ public class Main {
         System.out.println("Shutting down database...");
         BufferManager.purgeBuffer();
         Catalog.writeCatalog(databaseLocation);
+        StorageManager.writeIndexes(databaseLocation);
         System.out.println("Shutdown complete.");
 //        System.exit(0);
     }

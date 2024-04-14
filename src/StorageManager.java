@@ -17,7 +17,7 @@ import java.util.Arrays;
 
 public class StorageManager {
     public static Catalog catalog;                  // private instance of src.Catalog, accessible by static methods
-
+    private static ArrayList<BPlusTree> indexes; // All the indexes BPlusTrees
     private StorageManager() {
        
     }
@@ -277,6 +277,76 @@ public class StorageManager {
         }
         // Remove the reference from indexList
         indexList.remove(pageNum);
+    }
+
+         /**
+     * Check db_loc/Indexes folder and read in each file, converting it to BPlusTree objects
+     * @return
+     */
+    public static void readIndexes(String db_loc) {
+        
+        try{
+            // Assuming db_loc is a directory path
+            File schemaDirectory = new File(db_loc + "/Indexes");
+
+            if (schemaDirectory.exists() && schemaDirectory.isDirectory()) {
+                File[] schemaFiles = schemaDirectory.listFiles();
+
+                if (schemaFiles != null) {
+                    for (File schemaFile : schemaFiles) {
+                        // Read each schema file and create src.TableSchema objects
+                        BPlusTree tree = BPlusTree.deserialize(Files.readAllBytes(schemaFile.toPath()),schemaFile.getName());
+                        if (tree != null) {
+                            indexes.add(tree);
+                        }
+                    }
+                }
+            }
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+        
+    }
+
+
+        /**
+     * Writes to hardware
+     *
+     */
+    public static void writeIndexes(String db_loc) {
+        // Ensure the db_loc/Schema directory exists or create it if it doesn't
+        String schemaDirectoryPath = db_loc + "/Schema";
+        createDirectoryIfNotExists(schemaDirectoryPath);
+
+        for (BPlusTree index : indexes) {
+            // Generate a unique filename for each src.TableSchema (you may need to adjust this)
+            String filename = schemaDirectoryPath + "/" + index.getTableName();
+
+            // Write the src.TableSchema to the file
+           // Write the src.TableSchema to the file
+        try (FileOutputStream fileOutputStream = new FileOutputStream(filename)) {
+            // Serialize the src.TableSchema to obtain a byte array
+            byte[] serializedData = index.serialize(index.getTableName());
+
+            // Write the byte array to the file
+            fileOutputStream.write(serializedData);
+            System.out.println("src.Index written to: " + filename);
+        } catch (IOException e) {
+            e.printStackTrace();
+            // Handle the exception according to your requirements
+        }
+        }
+    }
+
+    private static void createDirectoryIfNotExists(String directoryPath) {
+        try {
+            Path path = Path.of(directoryPath);
+            if (!Files.exists(path)) {
+                Files.createDirectories(path);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }
