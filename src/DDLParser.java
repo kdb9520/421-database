@@ -136,30 +136,32 @@ public class DDLParser {
         // write the file to the disk
         StorageManager.writeTableToDisk(tableName);
 
-        String type = Catalog.getTableSchema(tableName).getPrimaryKeyType();
-        int typeSize = 0;
-        if (type.equals("integer")) {
-            typeSize = Integer.BYTES;
-        } else if (type.startsWith("varchar")) {
-            // Get length of the varchar
-            int numberOfChars = Integer.parseInt(type.substring(type.indexOf("(") + 1, type.indexOf(")")));;
-            typeSize = numberOfChars * Character.BYTES; // Size of string of length 'numberOfChars' in bytes
-        } else if (type.startsWith("char")) {
-            // Get the size of char
-            int numberOfChars = Integer.parseInt(type.substring(type.indexOf("(") + 1, type.indexOf(")")));
-            typeSize = numberOfChars * Character.BYTES; // Size of string of length 'numberOfChars' in bytes
-        } else if (type.equals("double")) {
-            typeSize = Double.BYTES; // Size of double in bytes
-        } else if (type.equals("boolean")) {
-            typeSize = Byte.BYTES; // Size of boolean in bytes
-        }
-        
-        // Max Degree = pageSize / (sizeOf(recordPtr) + sizeOf(searchKey))
-        int maxDegree = Main.pageSize / (Integer.BYTES + Integer.BYTES + typeSize);
+        if(Main.useIndex){
+            String type = Catalog.getTableSchema(tableName).getPrimaryKeyType();
+            int typeSize = 0;
+            if (type.equals("integer")) {
+                typeSize = Integer.BYTES;
+            } else if (type.startsWith("varchar")) {
+                // Get length of the varchar
+                int numberOfChars = Integer.parseInt(type.substring(type.indexOf("(") + 1, type.indexOf(")")));;
+                typeSize = numberOfChars * Character.BYTES; // Size of string of length 'numberOfChars' in bytes
+            } else if (type.startsWith("char")) {
+                // Get the size of char
+                int numberOfChars = Integer.parseInt(type.substring(type.indexOf("(") + 1, type.indexOf(")")));
+                typeSize = numberOfChars * Character.BYTES; // Size of string of length 'numberOfChars' in bytes
+            } else if (type.equals("double")) {
+                typeSize = Double.BYTES; // Size of double in bytes
+            } else if (type.equals("boolean")) {
+                typeSize = Byte.BYTES; // Size of boolean in bytes
+            }
+            
+            // Max Degree = pageSize / (sizeOf(recordPtr) + sizeOf(searchKey))
+            int maxDegree = Main.pageSize / (Integer.BYTES + Integer.BYTES + typeSize);
 
-        // Make the empty B+ tree and store it in storagemanger indexes
-        BPlusTree index = new BPlusTree(maxDegree, tableName);
-        StorageManager.addIndex(index);
+            // Make the empty B+ tree and store it in storagemanger indexes
+            BPlusTree index = new BPlusTree(maxDegree, tableName);
+            StorageManager.addIndex(index);
+    }
     }
 
     /**
