@@ -203,9 +203,9 @@ class Node {
         String type = Catalog.getTableSchema(tableName).getPrimaryKeyType();
         boolean newIsLeafNode;
         int newNumRecordPointers;
-        ArrayList<RecordPointer> newRecordPointers;
-        ArrayList<Object> newKeys;
-        ArrayList<Object> children;
+        ArrayList<RecordPointer> newRecordPointers = new ArrayList<>();
+        ArrayList<Object> newKeys = new ArrayList<>();
+        ArrayList<Node> children = new ArrayList<>();
 
         newIsLeafNode = buffer.get() != 0;
         newNumRecordPointers = buffer.getInt();
@@ -250,7 +250,7 @@ class Node {
         }
 
         while(buffer.hasRemaining()){
-            Node childNode = deserialize(buffer, tableName); // Assuming deserialize method returns a Node
+            Node childNode = deserialize(buffer, tableName, maxDegree); // Assuming deserialize method returns a Node
             children.add(childNode);
         }
 
