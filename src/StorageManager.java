@@ -349,4 +349,9 @@ public class StorageManager {
         }
     }
 
+
+    public static void addIndex(BPlusTree index) {
+        indexes.add(index);
+    }
+
 }
