@@ -18,6 +18,10 @@ import java.util.Arrays;
 public class StorageManager {
     public static Catalog catalog;                  // private instance of src.Catalog, accessible by static methods
     private static ArrayList<BPlusTree> indexes; // All the indexes BPlusTrees
+
+    static{
+        indexes = new ArrayList<>();
+    }
     private StorageManager() {
        
     }

@@ -27,9 +27,8 @@ class Node {
         this.keys = new ArrayList<>();
         this.indices = new ArrayList<>();
         this.maxDegree = maxDegree;
-        if (!isLeaf) {
-            this.children = new ArrayList<>();
-        }
+        this.children = new ArrayList<>();
+        
         this.tableName = tableName;
     }
 
@@ -201,6 +200,7 @@ class Node {
                 }
                         
 
+            if()
             dataOutputStream.write(children.size());
             for(Node n : children){
                 byte[] nodeBytes = n.serialize(tableName);
