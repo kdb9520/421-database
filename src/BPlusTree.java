@@ -6,18 +6,20 @@ import java.util.List;
 class BPlusTree {
     private Node root;
     private int maxDegree;
+    private String tableName;
 
     // Constructor
-    public BPlusTree(int maxDegree) {
+    public BPlusTree(int maxDegree, String tableName) {
         this.maxDegree = maxDegree;
-        this.root = new Node(true, maxDegree); // Initially, root is a leaf node
+        this.root = new Node(true, maxDegree, tableName); // Initially, root is a leaf node
+        this.tableName = tableName;
     }
 
     // Insert method
-    public void insert(int key, Integer index) {
+    public void insert(Object key, Integer index) {
         root.insert(key, index);
         if (root.isOverflow()) {
-            Node newRoot = new Node(false, maxDegree); // New root will be an internal node
+            Node newRoot = new Node(false, maxDegree, tableName); // New root will be an internal node
             newRoot.addChild(root);
             root.split(newRoot, 0);
             root = newRoot;

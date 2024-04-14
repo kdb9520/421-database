@@ -19,8 +19,9 @@ class Node {
     private ArrayList<Node> children;
     private int maxDegree;
     private boolean wasEdited;
+    private String tableName;
 
-    public Node(boolean isLeaf, int maxDegree) {
+    public Node(boolean isLeaf, int maxDegree, String tableName) {
         this.isLeaf = isLeaf;
         this.recordPointers = new ArrayList<>();
         this.keys = new ArrayList<>();
@@ -29,6 +30,7 @@ class Node {
         if (!isLeaf) {
             this.children = new ArrayList<>();
         }
+        this.tableName = tableName;
     }
 
     public Node(boolean isLeaf, ArrayList<RecordPointer> recordPointers, ArrayList<Object> keys, ArrayList<Node> children, int maxDegree, String tableName){
@@ -43,7 +45,7 @@ class Node {
     public void insert(Object key, Integer value, int pageNum, int recordIndex) {
         if (isLeaf) {
             int index = 0;
-            while (index < keys.size() && key > keys.get(index)) {
+            while (index < keys.size() && compareObjects(key, keys.get(index)) > 0) {
                 index++;
             }
 
@@ -52,7 +54,7 @@ class Node {
 
         } else {
             int index = 0;
-            while (index < recordPointers.size() && key > recordPointers.get(index).getPageNumber()) {
+            while (index < recordPointers.size() && compareObjects(key, recordPointers.get(index).getPageNumber()) > 0) {
                 index++;
             }
             children.get(index).insert(key, value);
@@ -92,7 +94,7 @@ class Node {
     }
 
     public void split(Node parent, int index) {
-        Node newNode = new Node(isLeaf, maxDegree);
+        Node newNode = new Node(isLeaf, maxDegree, tableName);
         newNode.keys.addAll(keys.subList(maxDegree / 2, keys.size()));
         newNode.indices.addAll(indices.subList(maxDegree / 2, indices.size()));
         keys.subList(maxDegree / 2, keys.size()).clear();
@@ -122,6 +124,28 @@ class Node {
 
     public boolean wasEdited(){
         return this.wasEdited;
+    }
+
+    // returns postive if myObject is greater than otherObject
+    public int compareObjects(Object myObject, Object otherObject) {
+
+        String type = Catalog.getTableSchema(tableName).getPrimaryKeyType();
+
+        if(type.equals("integer")){
+            return (Integer) myObject - (Integer) otherObject;
+        }
+        else if(type.equals("varchar") || type.equals("char")){
+            String myString = (String) myObject;
+            String otherString = (String) otherObject;
+            return myString.compareTo(otherString);
+        }
+        else if (type.equals("double")){
+            return Double.compare((Double) myObject, (Double) otherObject);
+        }
+        else if(type.equals("boolean")){
+            return Boolean.compare((Boolean) myObject, (Boolean) otherObject);
+        }
+        return 0;
     }
 
     // Store nodes in following format:
