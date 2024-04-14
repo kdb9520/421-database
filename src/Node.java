@@ -200,7 +200,6 @@ class Node {
                 }
                         
 
-            if()
             dataOutputStream.write(children.size());
             for(Node n : children){
                 byte[] nodeBytes = n.serialize(tableName);

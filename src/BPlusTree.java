@@ -55,6 +55,7 @@ class BPlusTree {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 DataOutputStream dataOutputStream = new DataOutputStream(bos);) {
         
+            System.out.println(maxDegree);
             dataOutputStream.writeInt(maxDegree);
             byte[] nodeBytes = root.serialize(tableName);
             dataOutputStream.write(nodeBytes);
@@ -73,7 +74,7 @@ class BPlusTree {
 
         // Read number of records
         int maxDegree = buffer.getInt();
-        
+        System.out.println(maxDegree);
         Node root = Node.deserialize(buffer, tableName, maxDegree);
 
         // Create and return the src.Page object
