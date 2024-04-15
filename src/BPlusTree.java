@@ -74,7 +74,7 @@ class BPlusTree {
 
         // Read number of records
         int maxDegree = buffer.getInt();
-        System.out.println(maxDegree);
+        System.out.println("Max degree of index " + tableName + ": " + maxDegree);
         Node root = Node.deserialize(buffer, tableName, maxDegree);
 
         // Create and return the src.Page object

@@ -200,7 +200,7 @@ class Node {
                 }
                         
 
-            dataOutputStream.write(children.size());
+            dataOutputStream.writeInt(children.size());
             for(Node n : children){
                 byte[] nodeBytes = n.serialize(tableName);
                 dataOutputStream.write(nodeBytes);
@@ -224,7 +224,7 @@ class Node {
 
         newIsLeafNode = buffer.get() != 0;
         newNumRecordPointers = buffer.getInt();
-
+        System.out.println("Num of record pointers: " + newNumRecordPointers);
         for (int i = 0; i < newNumRecordPointers; i++) {
             int newPageNum = buffer.getInt();
             int newIndexNum = buffer.getInt();
@@ -233,7 +233,7 @@ class Node {
         }
 
         int keySize = buffer.getInt();
-
+        System.out.println("Key size: " + keySize);
         for(int i = 0; i < keySize; i++){
             if (type.equals("integer")) {
                 Integer attr = buffer.getInt();
@@ -264,7 +264,9 @@ class Node {
             }
         }
 
-        while(buffer.hasRemaining()){
+        int childrenSize = buffer.getInt();
+        System.out.println("Number of children in node: " + childrenSize);
+        for(int i = 0; i < childrenSize; i++){
             Node childNode = deserialize(buffer, tableName, maxDegree); // Assuming deserialize method returns a Node
             children.add(childNode);
         }
