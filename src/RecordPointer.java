@@ -30,6 +30,10 @@ public class RecordPointer {
         return indexNumber;
     }
 
+    public void setIndexNumber(int indexNumber) {
+        this.indexNumber = indexNumber;
+    }
+
     public byte[] serialize(String tableName) {
 
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();

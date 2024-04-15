@@ -63,6 +63,24 @@ class Node {
         }
     }
 
+    // Given a page number and index find the record pointer and update it to new values
+    // TODO: I am not sure if this should just take the primary key val of that record and do it this way
+    // Or if it should take a page and index to find it. Will leave this stubbed for now
+    // key should be swapped to object too
+    // Returns: Success if record exists and pointer updated
+    // Fail if record not found
+    public boolean updateRecordPointer(int oldPageIndex, int oldIndex, int newPageIndex, int newIndex, int key){
+        RecordPointer record = search(key);
+
+        if(record != null){
+            record.setPageNumber(newPageIndex);
+            record.setIndexNumber(newIndex);
+            return true;
+        }
+        return false;
+    }
+
+    // TODO: Swap key to Object
     public RecordPointer search(int key) {
         if (isLeaf) {
             int index = -1;
