@@ -409,6 +409,14 @@ public class DMLParser {
                 // record
                 int primaryKeyCol = tableSchema.findPrimaryKeyColNum();
 
+                BPlusTree bPlusTree = StorageManager.getTree(tableName);
+                if (Main.useIndex && bPlusTree != null){
+                    if (bPlusTree.search(record.getAttribute(primaryKeyCol)) != null){
+                        bPlusTree.insert(tuples, null, 0, 0);
+                    }
+
+                }
+
                 for (int i = 0; i < numPages; i++) {
                     Page page = BufferManager.getPage(tableName, i);
                     for (Record r : page.getRecords()) {
