@@ -155,6 +155,11 @@ public class StorageManager {
         }
     }
 
+    /**
+     * Gets a single tree from the index list
+     * @param tableName - table name
+     * @return - a b+ tree if found, null if not (and error printed)
+     */
     public static BPlusTree getTree(String tableName){
         for (BPlusTree bPlusTree : indexes){
             if(bPlusTree.getTableName().equals(tableName)){
