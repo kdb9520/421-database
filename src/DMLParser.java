@@ -94,7 +94,10 @@ public class DMLParser {
         // assuming the logic for b+ tree goes here
 
         if(true && true){// replace with variables for b+ tree enabled and primarykey in where clause
+            BPlusTree bPlusTree = StorageManager.getTree(tableName);
+            if(bPlusTree != null){
 
+            }
 
         }
 

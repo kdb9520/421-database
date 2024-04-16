@@ -81,15 +81,15 @@ class Node {
     }
 
     // TODO: Swap key to Object
-    public RecordPointer search(int key) {
+    public RecordPointer search(Object key) {
         if (isLeaf) {
             int index = -1;
             int c = 0;
             for(RecordPointer rp : this.recordPointers){
-                if(rp.getPageNumber() == key){
-                    index  = c;
-                    break;
-                }
+//                if(rp.getPageNumber() == key){
+//                    index  = c;
+//                    break;
+//                }
                 c ++;
             }
             if (index != -1) {
@@ -99,9 +99,9 @@ class Node {
             }
         } else {
             int index = 0;
-            while (index < recordPointers.size() && key > recordPointers.get(index).getPageNumber()) {
-                index++;
-            }
+//            while (index < recordPointers.size() && key > recordPointers.get(index).getPageNumber()) {
+//                index++;
+//            }
             return children.get(index).search(key);
         }
     }
