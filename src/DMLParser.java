@@ -7,7 +7,7 @@ import java.util.List;
 
 public class DMLParser {
 
-    public static void handleQuery(String query, String databaseLocation) {
+    public static void handleQuery(String query, String databaseLocation, Boolean useIndex) {
 
         if (query.startsWith("insert into ")) {
             insert(query.substring(12));
@@ -18,7 +18,7 @@ public class DMLParser {
         }
 
         else if (query.startsWith("delete ")) {
-            delete(query.substring(12));
+            delete(query.substring(12), useIndex);
         }
 
         else if (query.strip().equals("display schema;")) {
@@ -159,7 +159,7 @@ public class DMLParser {
         return null;
     }
 
-    private static void delete(String substring) {
+    private static void delete(String substring, Boolean useIndex) {
         String[] split = substring.split("[\\s;]+|(?<=[<>!=]=)|(?=[<>!=]=)");
         String tableName = split[0];
         if (Catalog.getTableSchema(tableName) == null) {
@@ -169,7 +169,7 @@ public class DMLParser {
         TableSchema tableSchema = Catalog.getTableSchema(tableName);
         String whereClause = String.join(" ", Arrays.copyOfRange(split, 1, split.length));
         if (tableSchema != null) {
-            deleteRecord(tableSchema, whereClause);
+            deleteRecord(tableSchema, whereClause, useIndex);
         }
     }
 
@@ -179,7 +179,7 @@ public class DMLParser {
      * @param tableSchema - the name of the table
      * @param whereClause - the condition
      */
-    public static void deleteRecord(TableSchema tableSchema, String whereClause) {
+    public static void deleteRecord(TableSchema tableSchema, String whereClause, Boolean useIndex) {
         WhereParser wp = new WhereParser();
         WhereNode whereTree = wp.parse(whereClause);
         ArrayList<String> variableNames = wp.getVariableNames();
@@ -187,27 +187,33 @@ public class DMLParser {
         // Print all values in table
         // Loop through the table and print each page
         // For each page in table tableName
-        int num_pages = tableSchema.getIndexList().size();
-        for (int i = 0; i < num_pages; i++) {
-            Page page = BufferManager.getPage(tableSchema.tableName, i);
-            page.toggleLock();
-            ArrayList<Record> records = page.getRecords();
-            for (int j = 0; j < records.size(); j++) {
-                Record r = records.get(j);
-                ArrayList<Object> variables = new ArrayList<>();
-                for (String varName : variableNames) {
-                    // First figure out what index of the var is in the record
-                    int index = tableSchema.findAttribute(varName);
-                    variables.add(r.getAttribute(index));
+        if (!useIndex){
+            int num_pages = tableSchema.getIndexList().size();
+            for (int i = 0; i < num_pages; i++) {
+                Page page = BufferManager.getPage(tableSchema.tableName, i);
+                page.toggleLock();
+                ArrayList<Record> records = page.getRecords();
+                for (int j = 0; j < records.size(); j++) {
+                    Record r = records.get(j);
+                    ArrayList<Object> variables = new ArrayList<>();
+                    for (String varName : variableNames) {
+                        // First figure out what index of the var is in the record
+                        int index = tableSchema.findAttribute(varName);
+                        variables.add(r.getAttribute(index));
+                    }
+                    if (whereTree.evaluate(variables, variableNames, tableSchema)) { // todo - wait for where clause
+                                                                                    // implementation
+                        page.removeRecord(j);
+                        j--; // Since we removed record we
+                    }
                 }
-                if (whereTree.evaluate(variables, variableNames, tableSchema)) { // todo - wait for where clause
-                                                                                 // implementation
-                    page.removeRecord(j);
-                    j--; // Since we removed record we
-                }
-            }
-            page.toggleLock();
+                page.toggleLock();
 
+            }
+        }
+        // B+ Tree implementation
+        else {
+            // find record in tree
         }
 
     }
