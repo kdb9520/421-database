@@ -90,46 +90,56 @@ public class DMLParser {
 
         // We now know that the constants type matches the column type
 
-        // For each page go and see if we need to update record
-        int num_pages = tSchema.getIndexList().size();
-        for (int i = 0; i < num_pages; i++) {
-            Page page = BufferManager.getPage(tSchema.tableName, i);
-            page.toggleLock();
-            for (int j = 0; j < page.getRecords().size(); j++) {
-                Record r = page.getRecords().get(j);
-                ArrayList<Object> variables = new ArrayList<>();
-                // Get all variables
-                for (String varName : variableNames) {
-                    // First figure out what index of the var is in the record
-                    int index = tSchema.findAttribute(varName);
-                    variables.add(r.getAttribute(index));
-                }
-                if (whereTree.evaluate(variables, wp.getVariableNames(), tSchema)) {
-                    // If not PK
-                    if (!isPk) {
-                        page.updateValue(j, colNum, valueString, colType);
-                    } else {
-                        // First remove the value from the page
-                        page.removeRecord(j);
 
-                        Record r_clone = new Record(r.cloneValues());
-                        // Update its value
-                        r_clone.setCol(colNum, valueString, valType);
-                        System.out.println(r_clone.prettyPrint(tableName));
+        // assuming the logic for b+ tree goes here
 
-                        // Insert it back into the table
-                        Boolean success = insert(r_clone, tableName);
+        if(true && true){// replace with variables for b+ tree enabled and primarykey in where clause
 
-                        // If insert failed then revert the record and re-insert to old spot
-                        if (!success) {
+
+        }
+
+        else {  // brute force
+            // For each page go and see if we need to update record
+            int num_pages = tSchema.getIndexList().size();
+            for (int i = 0; i < num_pages; i++) {
+                Page page = BufferManager.getPage(tSchema.tableName, i);
+                page.toggleLock();
+                for (int j = 0; j < page.getRecords().size(); j++) {
+                    Record r = page.getRecords().get(j);
+                    ArrayList<Object> variables = new ArrayList<>();
+                    // Get all variables
+                    for (String varName : variableNames) {
+                        // First figure out what index of the var is in the record
+                        int index = tSchema.findAttribute(varName);
+                        variables.add(r.getAttribute(index));
+                    }
+                    if (whereTree.evaluate(variables, wp.getVariableNames(), tSchema)) {
+                        // If not PK
+                        if (!isPk) {
+                            page.updateValue(j, colNum, valueString, colType);
+                        } else {
+                            // First remove the value from the page
+                            page.removeRecord(j);
+
+                            Record r_clone = new Record(r.cloneValues());
                             // Update its value
-                            success = insert(r, tableName);
-                            System.out.println(r.prettyPrint(tableName));
+                            r_clone.setCol(colNum, valueString, valType);
+                            System.out.println(r_clone.prettyPrint(tableName));
+
+                            // Insert it back into the table
+                            Boolean success = insert(r_clone, tableName);
+
+                            // If insert failed then revert the record and re-insert to old spot
+                            if (!success) {
+                                // Update its value
+                                success = insert(r, tableName);
+                                System.out.println(r.prettyPrint(tableName));
+                            }
                         }
                     }
                 }
+                page.toggleLock();
             }
-            page.toggleLock();
         }
     }
 

@@ -155,6 +155,16 @@ public class StorageManager {
         }
     }
 
+    public static BPlusTree getTree(String tableName){
+        for (BPlusTree bPlusTree : indexes){
+            if(bPlusTree.getTableName().equals(tableName)){
+                return bPlusTree;
+            }
+
+        }
+        System.err.println("B+ tree for specified index not found");
+        return null;
+    }
 
     public static int readNumberOfPages(File file) {
         try (FileInputStream fis = new FileInputStream(file)) {
