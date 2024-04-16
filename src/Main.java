@@ -130,7 +130,7 @@ public class Main {
             query.startsWith("update ")){
 
                 // give buffer manager too
-                DMLParser.handleQuery(query, dbloc);
+                DMLParser.handleQuery(query, dbloc, useIndex);
         }
         else {
             System.out.println("Command not valid!\n\nEnter 'help;' to list all commands.");
