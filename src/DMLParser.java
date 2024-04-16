@@ -187,7 +187,30 @@ public class DMLParser {
         // Print all values in table
         // Loop through the table and print each page
         // For each page in table tableName
-        if (!useIndex){
+
+            // get if a variable in the where clause is the primary key
+            String keyName = null;
+            boolean keyFound = false;
+            ArrayList<String> initialVarNames = wp.getVariableNames();
+            ArrayList<AttributeSchema> initialSchemas = tableSchema.getAttributeSchema();
+            for( int i = 0; i< initialVarNames.size(); i++) {
+                for (int j = 0; j < initialSchemas.size(); j++) {
+                    if ( initialSchemas.get(j).isPrimaryKey && initialVarNames.get(i).equals(initialSchemas.get(j).getAttributeName())) {
+                        keyName = initialVarNames.get(i);
+                        keyFound = true;
+                        break;
+                    }
+                }
+                if (keyFound) {
+                    break;
+                }
+            }
+
+            if (keyFound) {
+                // B+ search on key value
+                // B+ delete on result
+            }
+
             int num_pages = tableSchema.getIndexList().size();
             for (int i = 0; i < num_pages; i++) {
                 Page page = BufferManager.getPage(tableSchema.tableName, i);
@@ -204,17 +227,13 @@ public class DMLParser {
                     if (whereTree.evaluate(variables, variableNames, tableSchema)) { // todo - wait for where clause
                                                                                     // implementation
                         page.removeRecord(j);
+                        // TODO Delete from B+ tree
                         j--; // Since we removed record we
                     }
                 }
                 page.toggleLock();
 
             }
-        }
-        // B+ Tree implementation
-        else {
-            // find record in tree
-        }
 
     }
 
