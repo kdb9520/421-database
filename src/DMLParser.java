@@ -126,8 +126,17 @@ public class DMLParser {
 
             // B+ delete on result
             tree.delete(keyValue);
-            BufferManager.getPage(tSchema.getTableName(), ptr.getPageNumber()).removeRecord(ptr.getIndexNumber());
+            Page p = BufferManager.getPage(tSchema.getTableName(), ptr.getPageNumber());
+            Record r = p.removeRecord(ptr.getIndexNumber());
+            // clone the record
+            Record r_clone = new Record(r.cloneValues());
+            // Update its value
+            r_clone.setCol(colNum, valueString, valType);
 
+            // insert back onto the page
+            String query = "insert into " + tableName + " values " + r_clone.toString() + ";";
+
+            insert(query);
         }
 
         else {  // brute force
