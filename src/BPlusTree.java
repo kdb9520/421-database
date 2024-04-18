@@ -38,7 +38,7 @@ class BPlusTree {
     }
 
     // Search method
-    public Object search(Object key) {
+    public RecordPointer search(Object key) {
         return root.search(key);
     }
 
