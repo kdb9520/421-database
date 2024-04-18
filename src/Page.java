@@ -272,9 +272,11 @@ public class Page {
     }
 
 
-    public void removeRecord(int indexOfRecord){
-        this.records.remove(indexOfRecord);
+    public Record removeRecord(int indexOfRecord){
+        Record deletedRecord = this.records.remove(indexOfRecord);
         this.wasEdited = true;
+        return deletedRecord;
+
 
     }
 

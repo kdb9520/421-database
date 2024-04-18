@@ -38,7 +38,7 @@ public class DMLParser {
         String tableName = split[0];
         String columnName = split[2]; // <name> set <columnName>
         String valueString = split[4];
-
+        Object keyValue = null;
         TableSchema tSchema = Catalog.getTableSchema(tableName);
         // Get the where clause
         // Construct the WHERE clause from split[6] to the end
@@ -46,6 +46,7 @@ public class DMLParser {
         WhereParser wp = new WhereParser();
         WhereNode whereTree = wp.parse(whereClause);
         ArrayList<String> variableNames = wp.getVariableNames();
+        ArrayList<String> initialVarNames = wp.getVariableNames();
 
         // Now we can do some error checking here with type of valueString matching the
         // schema
@@ -90,14 +91,42 @@ public class DMLParser {
 
         // We now know that the constants type matches the column type
 
+        boolean keyFound = false;
+        boolean singleClause = true;
+        String keyName = initialVarNames.get(0);
+
+        // check if primary key is in where clause
+        if (Main.useIndex) {
+            if (initialVarNames.size() != 1) {
+                singleClause = false;
+            }
+
+
+            ArrayList<AttributeSchema> initialSchemas = tSchema.getAttributeSchema();
+            for (int j = 0; j < initialSchemas.size(); j++) {
+                if ( initialSchemas.get(j).isPrimaryKey && keyName.equals(initialSchemas.get(j).getAttributeName())) {
+                    keyFound = true;
+                    break;
+                }
+            }
+        }
 
         // assuming the logic for b+ tree goes here
+        BPlusTree tree = StorageManager.getTree(tSchema.getTableName());
+        if(Main.useIndex && keyFound && singleClause){// replace with variables for b+ tree enabled and primarykey in where clause
+            List<String> tokens = WhereParser.tokenize(whereClause);
 
-        if(true && true){// replace with variables for b+ tree enabled and primarykey in where clause
-            BPlusTree bPlusTree = StorageManager.getTree(tableName);
-            if(bPlusTree != null){
+            keyValue = (Object) tokens.get(2);
+            // B+ search on key value
+            RecordPointer ptr = tree.search(keyValue);
 
+            if (ptr == null){
+                return;
             }
+
+            // B+ delete on result
+            tree.delete(keyValue);
+            BufferManager.getPage(tSchema.getTableName(), ptr.getPageNumber()).removeRecord(ptr.getIndexNumber());
 
         }
 
