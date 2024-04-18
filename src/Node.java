@@ -50,7 +50,7 @@ class Node {
          this.type = type;
      }
 
-     public void insert(Object key, Integer value, int pageNum, int recordIndex) {
+     public void insert(Object key, int pageNum, int recordIndex) {
         if (isLeaf) {
             int index = 0;
             while (index < keys.size() && compareObjects(key, keys.get(index)) > 0) {
@@ -65,7 +65,7 @@ class Node {
             while (index < recordPointers.size() && compareObjects(key, recordPointers.get(index).getPageNumber()) > 0) {
                 index++;
             }
-            children.get(index).insert(key, value, pageNum, recordIndex);
+            children.get(index).insert(key, pageNum, recordIndex);
             if (children.get(index).isOverflow()) {
                 children.get(index).split(this, index);
             }

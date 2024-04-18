@@ -436,9 +436,10 @@ public class DMLParser {
                 BPlusTree bPlusTree = StorageManager.getTree(tableName);
                 if (Main.useIndex && bPlusTree != null){
                     if (bPlusTree.search(record.getAttribute(primaryKeyCol)) != null){
-                        bPlusTree.insert(tuples, null, 0, 0);
+                        System.err.println("Error: A record with that primary key already exists.");
+                        System.err.println("Tuple " + tuple + " not inserted!\n");
+                        return;
                     }
-
                 }
 
                 for (int i = 0; i < numPages; i++) {
@@ -475,6 +476,7 @@ public class DMLParser {
 
                         Page splitPage = page.addRecord(record);
                         wasInserted = true;
+                        bPlusTree.insert(record, page.getPageNumber(), page.getRecordIndex(record));
                         if (splitPage != null) { // If we split update stuff as needed
                             tableSchema.addToIndexList(i + 1, numPages);
                             // Update all pages in the buffer pool list to have the correct page number
@@ -498,6 +500,7 @@ public class DMLParser {
 
                     // Insert the record into the last page of the table
                     Page lastPage = BufferManager.getPage(tableName, numPages - 1).addRecord(record);
+                    bPlusTree.insert(record, lastPage.getPageNumber(), lastPage.getRecordIndex(record));
 
                     if (lastPage != null) {
                         tableSchema.addToIndexList(numPages);

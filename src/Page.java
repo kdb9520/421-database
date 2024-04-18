@@ -166,6 +166,20 @@ public class Page {
         }
     }
 
+    public int getRecordIndex(Record r){
+        if(this.records == null || this.records.size() == 0){
+            return -1;
+        }
+        else{
+            for (int i = 0; i < records.size(); i++) {
+                if (records.get(i).equals(r)){
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
     public int getPageSize() {
         return this.records.size();
     }

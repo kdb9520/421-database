@@ -30,8 +30,8 @@ class BPlusTree {
     }
 
     // Insert method
-    public void insert(Object key, Integer index, int pageNumber, int indexNumber) {
-        root.insert(key, index, pageNumber, indexNumber);
+    public void insert(Object key, int pageNumber, int indexNumber) {
+        root.insert(key, pageNumber, indexNumber);
         if (root.isOverflow()) {
             Node newRoot = new Node(false, maxDegree, tableName); // New root will be an internal node
             newRoot.addChild(root);
