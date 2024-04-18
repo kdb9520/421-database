@@ -11,11 +11,14 @@ class BPlusTree {
     private int maxDegree;
     private String tableName;
 
+    private String type;
+
     // Constructor
     public BPlusTree(int maxDegree, String tableName) {
         this.maxDegree = maxDegree;
-        this.root = new Node(true, maxDegree, tableName); // Initially, root is a leaf node
         this.tableName = tableName;
+        this.type = Catalog.getTableSchema(this.tableName).getPrimaryKeyType();
+        this.root = new Node(true, maxDegree, tableName, type); // Initially, root is a leaf node
     }
 
 

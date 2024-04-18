@@ -21,6 +21,8 @@ class Node {
     private boolean wasEdited;
     private String tableName;
 
+    private String type;
+
     public Node(boolean isLeaf, int maxDegree, String tableName) {
         this.isLeaf = isLeaf;
         this.recordPointers = new ArrayList<>();
@@ -41,7 +43,14 @@ class Node {
         this.tableName = tableName;
     }
 
-    public void insert(Object key, Integer value, int pageNum, int recordIndex) {
+     public Node(boolean b, int maxDegree, String tableName, String type) {
+         this.isLeaf = b;
+         this.maxDegree = maxDegree;
+         this.tableName = tableName;
+         this.type = type;
+     }
+
+     public void insert(Object key, Integer value, int pageNum, int recordIndex) {
         if (isLeaf) {
             int index = 0;
             while (index < keys.size() && compareObjects(key, keys.get(index)) > 0) {
@@ -97,9 +106,10 @@ class Node {
             }
         } else {
             int index = 0;
-//            while (index < recordPointers.size() && key > recordPointers.get(index).getPageNumber()) {
-//                index++;
-//            }
+
+            while (index < recordPointers.size() && key > keys.get(index)) {
+                index++;
+            }
             return children.get(index).search(key);
         }
     }
