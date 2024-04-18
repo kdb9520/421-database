@@ -84,14 +84,12 @@ class Node {
     public RecordPointer search(Object key) {
         if (isLeaf) {
             int index = -1;
-            int c = 0;
-            for(RecordPointer rp : this.recordPointers){
-//                if(rp.getPageNumber() == key){
-//                    index  = c;
-//                    break;
-//                }
-                c ++;
+            for(int i = 0; i < this.keys.size(); i ++){
+                if(this.keys.get(i).equals(key)){
+                    index = i;
+                }
             }
+
             if (index != -1) {
                 return this.recordPointers.get(index);
             } else {
