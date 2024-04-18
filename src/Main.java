@@ -34,7 +34,11 @@ public class Main {
             boolean started = DatabaseStart.initiateDatabase(databaseLocation, pageSize, bufferSize, useIndex);
 
             Catalog.readCatalog(databaseLocation);
-            StorageManager.readIndexes(databaseLocation);
+            
+            if(useIndex){
+                StorageManager.readIndexes(databaseLocation);
+            }
+            
 
             if (started) {
                 Scanner scanner = new Scanner(System.in);
