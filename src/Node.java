@@ -112,79 +112,41 @@ class Node {
             } else {
                 return null;
             }
-        } else {            // find
+        } else {
+                int index = 0;
 
-
-
-            // check the very first key in the node, because there will not be a previous key.
-            int index = 0;
-            Object k = this.keys.get(0);
-            Boolean found = false;
-            if(type.equals("integer")){
-                if((Integer) key < (Integer) k){
-                    found = true;
-                }
-            }
-
-            else if(type.equals("varchar") || type.equals("char")){
-                String s = (String) k;
-                String s1 = (String) key;
-
-                if(s.compareTo(s1) < 0){
-                    found = true;
-                }
-            }
-
-            else if(type.equals("double")){
-                if((Double) key < (Double) k){
-                    found = true;
-                }
-            }
-
-            else if(type.equals("boolean")){
-                if(Boolean.compare((Boolean) key, (Boolean) k) < 0){
-                    found = true;
-                }
-
-            }
-
-
-            // check middle of node, from index = 1 to size() - 1, to see if the search key fits in the range from the
-            // previous value to the current key index in the list.
-            if(!found) {
-                index = 1;
-                while (index < children.size() - 1) {
-                    Object previousK = this.keys.get(index - 1);    // the previous key
-                    k = this.keys.get(index);
+                // iterate through the node
+                while (index < children.size()) {
+                    Object k = this.keys.get(index);
                     if (type.equals("integer")) {
-                        if ((Integer) key < (Integer) k && (Integer) key > (Integer) previousK) {
+                        if ((Integer) key < (Integer) k) {
                             break;
                         }
                     } else if (type.equals("varchar") || type.equals("char")) {
                         String s = (String) k;
                         String s1 = (String) key;
-                        String previousS = (String) previousK;
-                        if (s.compareTo(s1) < 0 && s.compareTo(previousS) > 0) {
+                        if (s.compareTo(s1) < 0) {
                             break;
                         }
                     } else if (type.equals("double")) {
-                        if ((Double) key < (Double) k && (Double) key > (Double) previousK) {
+                        if ((Double) key < (Double) k) {
                             break;
                         }
                     } else if (type.equals("boolean")) {
-                        if (Boolean.compare((Boolean) key, (Boolean) k) < 0 && Boolean.compare((Boolean) key, (Boolean) previousK) > 0) {
+                        if (Boolean.compare((Boolean) key, (Boolean) k) < 0) {
                             break;
                         }
 
                     }
 
 
-                    index++;
+                    index++;        // internal nodes can have 5 children, but only 4 keys. Pretty sure this line is right
+                                    // in order for the last possible child node to be reached. If index hits the size of the key list
+                                    // then there should still be a child node at this location
                 }
                 return children.get(index).search(key);
             }
-            return children.get(this.keys.size())
-        }
+
     }
 
     public boolean isOverflow() {
