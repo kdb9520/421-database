@@ -89,28 +89,101 @@ class Node {
         return false;
     }
 
+     /**
+      * Searches a node for a value
+      * @param key - the key to search for
+      * @return - a RecordPointer if found, null if no node contains the search key
+      */
     // TODO: Swap key to Object
     public RecordPointer search(Object key) {
+
+        // base case - node is a leaf
         if (isLeaf) {
             int index = -1;
             for(int i = 0; i < this.keys.size(); i ++){
+                // find a key in the node that equals search key
                 if(this.keys.get(i).equals(key)){
                     index = i;
                 }
             }
-
+            // return corresponding Record Pointer
             if (index != -1) {
                 return this.recordPointers.get(index);
             } else {
                 return null;
             }
-        } else {
-            int index = 0;
+        } else {            // find
 
-            while (index < recordPointers.size() && key > keys.get(index)) {
-                index++;
+
+
+            // check the very first key in the node, because there will not be a previous key.
+            int index = 0;
+            Object k = this.keys.get(0);
+            Boolean found = false;
+            if(type.equals("integer")){
+                if((Integer) key < (Integer) k){
+                    found = true;
+                }
             }
-            return children.get(index).search(key);
+
+            else if(type.equals("varchar") || type.equals("char")){
+                String s = (String) k;
+                String s1 = (String) key;
+
+                if(s.compareTo(s1) < 0){
+                    found = true;
+                }
+            }
+
+            else if(type.equals("double")){
+                if((Double) key < (Double) k){
+                    found = true;
+                }
+            }
+
+            else if(type.equals("boolean")){
+                if(Boolean.compare((Boolean) key, (Boolean) k) < 0){
+                    found = true;
+                }
+
+            }
+
+
+            // check middle of node, from index = 1 to size() - 1, to see if the search key fits in the range from the
+            // previous value to the current key index in the list.
+            if(!found) {
+                index = 1;
+                while (index < children.size() - 1) {
+                    Object previousK = this.keys.get(index - 1);    // the previous key
+                    k = this.keys.get(index);
+                    if (type.equals("integer")) {
+                        if ((Integer) key < (Integer) k && (Integer) key > (Integer) previousK) {
+                            break;
+                        }
+                    } else if (type.equals("varchar") || type.equals("char")) {
+                        String s = (String) k;
+                        String s1 = (String) key;
+                        String previousS = (String) previousK;
+                        if (s.compareTo(s1) < 0 && s.compareTo(previousS) > 0) {
+                            break;
+                        }
+                    } else if (type.equals("double")) {
+                        if ((Double) key < (Double) k && (Double) key > (Double) previousK) {
+                            break;
+                        }
+                    } else if (type.equals("boolean")) {
+                        if (Boolean.compare((Boolean) key, (Boolean) k) < 0 && Boolean.compare((Boolean) key, (Boolean) previousK) > 0) {
+                            break;
+                        }
+
+                    }
+
+
+                    index++;
+                }
+                return children.get(index).search(key);
+            }
+            return children.get(this.keys.size())
         }
     }
 
