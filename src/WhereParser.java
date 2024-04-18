@@ -34,7 +34,7 @@ public class WhereParser {
         return result;
     }
 
-    private List<String> tokenize(String expression) {
+    public static List<String> tokenize(String expression) {
         // This is a simple tokenizer; you might want to enhance it based on your needs
         String[] parts = expression.split("\\s+|(?<=[<>!=]=)|(?=[<>!=]=);");
 

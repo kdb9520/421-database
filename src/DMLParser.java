@@ -201,29 +201,49 @@ public class DMLParser {
         // Loop through the table and print each page
         // For each page in table tableName
 
-            // get if a variable in the where clause is the primary key
-            String keyName = null;
-            boolean keyFound = false;
-            ArrayList<String> initialVarNames = wp.getVariableNames();
+        // get if a variable in the where clause is the primary key
+        Object keyValue = null;
+        boolean keyFound = false;
+        boolean singleClause = true;
+        ArrayList<String> initialVarNames = wp.getVariableNames();
+        String keyName = initialVarNames.get(0);
+        if (useIndex) {
+            if (initialVarNames.size() != 1) {
+                singleClause = false;
+            }
             ArrayList<AttributeSchema> initialSchemas = tableSchema.getAttributeSchema();
-            for( int i = 0; i< initialVarNames.size(); i++) {
-                for (int j = 0; j < initialSchemas.size(); j++) {
-                    if ( initialSchemas.get(j).isPrimaryKey && initialVarNames.get(i).equals(initialSchemas.get(j).getAttributeName())) {
-                        keyName = initialVarNames.get(i);
-                        keyFound = true;
-                        break;
-                    }
-                }
-                if (keyFound) {
+            for (int j = 0; j < initialSchemas.size(); j++) {
+                if ( initialSchemas.get(j).isPrimaryKey && keyName.equals(initialSchemas.get(j).getAttributeName())) {
+                    keyFound = true;
                     break;
                 }
             }
+        }
+        // Use B+ tree if indexing is on and the value was found to be primary key
+        // B+ tree delete is only going to be used if pimrary key = value, everything else use the old way
+        BPlusTree tree = StorageManager.getTree(tableSchema.getTableName());
+        if (useIndex && keyFound && singleClause) {
+            List<String> tokens = WhereParser.tokenize(whereClause);
 
-            if (keyFound) {
-                // B+ search on key value
-                // B+ delete on result
+            if (tokens.get(1).equals("=")){
+                
+            }
+            // check if one clause, equals sign, get the value
+
+            keyValue = (Object) tokens.get(2);
+            // B+ search on key value
+            RecordPointer ptr = tree.search(keyValue);
+            
+            if (ptr == null){ 
+                return;
             }
 
+            // B+ delete on result
+            tree.delete(keyValue);
+            BufferManager.getPage(tableSchema.getTableName(), ptr.getPageNumber()).removeRecord(ptr.getIndexNumber());
+        }
+        // Old way of deleting
+        else {
             int num_pages = tableSchema.getIndexList().size();
             for (int i = 0; i < num_pages; i++) {
                 Page page = BufferManager.getPage(tableSchema.tableName, i);
@@ -240,13 +260,17 @@ public class DMLParser {
                     if (whereTree.evaluate(variables, variableNames, tableSchema)) { // todo - wait for where clause
                                                                                     // implementation
                         page.removeRecord(j);
-                        // TODO Delete from B+ tree
                         j--; // Since we removed record we
+                        // Delete from the B+ tree even if the clause did not meet the requirements
+                        if (useIndex) {
+                            tree.delete(r.getValues().get(tableSchema.findPrimaryKeyColNum()));
+                        }
                     }
                 }
                 page.toggleLock();
 
             }
+        }
 
     }
 
