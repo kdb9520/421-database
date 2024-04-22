@@ -23,8 +23,9 @@ class Node {
     private String tableName;
     private String type;
     private Node parent;
-
-    public Node(boolean isLeaf, int maxDegree, String tableName) {
+    private boolean isRoot;
+    
+    public Node(boolean isLeaf, boolean isRoot, int maxDegree, String tableName) {
         this.isLeaf = isLeaf;
         this.recordPointers = new ArrayList<>();
         this.keys = new ArrayList<>();
@@ -36,7 +37,7 @@ class Node {
         this.tableName = tableName;
     }
 
-    public Node(boolean isLeaf, ArrayList<RecordPointer> recordPointers, ArrayList<Object> keys, ArrayList<Node> children, int maxDegree, String tableName){
+    public Node(boolean isLeaf, boolean isRoot, ArrayList<RecordPointer> recordPointers, ArrayList<Object> keys, ArrayList<Node> children, int maxDegree, String tableName){
         this.isLeaf = isLeaf;
         this.recordPointers = recordPointers;
         this.keys = keys;
@@ -179,7 +180,7 @@ class Node {
     }
 
     public void split(Node parent, int index) {
-        Node newNode = new Node(isLeaf, maxDegree, tableName);
+        Node newNode = new Node(isLeaf, false, maxDegree, tableName);
         newNode.keys.addAll(keys.subList(maxDegree / 2, keys.size()));
         newNode.indices.addAll(indices.subList(maxDegree / 2, indices.size()));
         keys.subList(maxDegree / 2, keys.size()).clear();
@@ -364,7 +365,7 @@ class Node {
             children.add(childNode);
         }
 
-        return new Node(newIsLeafNode, newRecordPointers, newKeys, children, maxDegree, tableName);
+        return new Node(newIsLeafNode, false, newRecordPointers, newKeys, children, maxDegree, tableName);
 
     }
 
@@ -405,7 +406,7 @@ class Node {
     private void handleUnderflow() {
         if (isLeaf) {
             // Handle underflow for leaf node
-            if (this == root) {
+            if (this.isRoot) {
                 // If the root is a leaf node and becomes empty, simply clear the keys
                 keys.clear();
                 recordPointers.clear();
@@ -434,11 +435,12 @@ class Node {
             // You need to consider redistributing keys or merging with siblings to maintain B+ tree properties
             // This might involve redistributing keys from parent or merging with a sibling
             // Handle underflow for internal node
-            if (this == root) {
+            if (this.isRoot) {
                 // If the root is an internal node and becomes empty, set its first child as the new root
                 if (children.size() == 1) {
-                    root = children.get(0);
-                    root.setParent(null);
+                    children.get(0).setRoot(true);
+                    children.get(0).setParent(null);
+                    this.isRoot = false;
                 }
             } else {
                 // If the internal node is not the root, find its siblings
@@ -460,6 +462,10 @@ class Node {
                 }
             }
         }
+    }
+
+    private void setRoot(Boolean status) {
+        this.isRoot = status;
     }
 
     private void redistributeFromLeft(Node leftSibling) {
