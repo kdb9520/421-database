@@ -500,7 +500,23 @@ public class DMLParser {
                         return;
                     }
                 }
+                if (Main.useIndex && bPlusTree != null){
+                    RecordPointer index = bPlusTree.insert(pk_val,-1,-1);
+                    Page page = BufferManager.getPage(tableName, index.getPageNumber());
+                    Page splitPage = page.addRecord(record);
 
+                    if (splitPage != null) { // If we split update stuff as needed
+                        tableSchema.addToIndexList(index.getPageNumber() + 1, numPages);
+                        // Update all pages in the buffer pool list to have the correct page number
+                        BufferManager.updatePageNumbersOnSplit(tableName, splitPage.getPageNumber());
+                        BufferManager.addPageToBuffer(splitPage);
+                        // Break out of for loop; go to next row to insert
+                        break;
+                    }
+                }
+                else{
+
+                
                 for (int i = 0; i < numPages; i++) {
                     Page page = BufferManager.getPage(tableName, i);
                     for (Record r : page.getRecords()) {
@@ -569,6 +585,7 @@ public class DMLParser {
                     }
                 }
             }
+         }
         }
     }
 

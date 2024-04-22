@@ -54,25 +54,27 @@ class Node {
         this.children = new ArrayList<>();
      }
 
-     public void insert(Object key, int pageNum, int recordIndex) {
+     public RecordPointer insert(Object key, int pageNum, int recordIndex) {
         if (isLeaf) {
             int index = 0;
             while (index < keys.size() && compareObjects(key, keys.get(index)) > 0) {
                 index++;
             }
 
-            recordPointers.add(new RecordPointer(pageNum, index));
-            this.setEdited();
+            keys.add(index,key); // Add it to keys in right spot
+            //recordPointers.add(new RecordPointer(pageNum, index));
+            return recordPointers.get(index);
 
         } else {
             int index = 0;
             while (index < recordPointers.size() && compareObjects(key, recordPointers.get(index).getPageNumber()) > 0) {
                 index++;
             }
-            children.get(index).insert(key, pageNum, recordIndex);
+            RecordPointer result_index = children.get(index).insert(key, pageNum, recordIndex);
             if (children.get(index).isOverflow()) {
                 children.get(index).split(this, index);
             }
+            return result_index;
         }
     }
 

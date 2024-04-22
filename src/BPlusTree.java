@@ -30,14 +30,15 @@ class BPlusTree {
     }
 
     // Insert method
-    public void insert(Object key, int pageNumber, int indexNumber) {
-        root.insert(key, pageNumber, indexNumber);
+    public RecordPointer insert(Object key, int pageNumber, int indexNumber) {
+        RecordPointer result = root.insert(key, pageNumber, indexNumber);
         if (root.isOverflow()) {
             Node newRoot = new Node(false, maxDegree, tableName); // New root will be an internal node
             newRoot.addChild(root);
             root.split(newRoot, 0);
             root = newRoot;
         }
+        return result;
     }
 
     // Search method

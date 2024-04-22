@@ -116,6 +116,10 @@ public class Main {
         else if (query.startsWith("help")) {
             helpCommand();
         }
+        else if (query.startsWith("display index ")) {
+            String[] splitstring5 = query.split("\\s+");
+            displayIndexes(splitstring5[1]);
+        }
         else if (query.startsWith("create ")) {
             DDLParser.createTable(query);
         }
@@ -140,6 +144,11 @@ public class Main {
             System.out.println("Command not valid!\n\nEnter 'help;' to list all commands.");
         }
         return true;
+    }
+
+    private static void displayIndexes(String tableName) {
+        BPlusTree indexes = StorageManager.getTree(tableName);
+        indexes.printTree();
     }
 
     public static void displayUsage() {
