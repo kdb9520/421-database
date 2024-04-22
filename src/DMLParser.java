@@ -442,7 +442,23 @@ public class DMLParser {
             // We now have the record made correctly, we need to insert it into right place
             Record record = new Record(values);
 
-            if (!checkUnique(tableName, record, attributeSchemas)) {
+            // If we have an index we check with it to make sure record is unique
+            // Otherwise do old method
+
+            BPlusTree tree = StorageManager.getTree(tableSchema.getTableName());
+            Object pk_val = null;
+            if (Main.useIndex) {
+                pk_val = record.getAttribute(tableSchema.findPrimaryKeyColNum());
+                RecordPointer ptr = tree.search(pk_val); // Search tree if this records PK value exists already
+                
+                if (ptr == null){ 
+                    System.err.println("\nError: A record with that unique value already exists.");
+                    System.err.println("Tuple " + tuple + " not inserted!\n");
+                    return;
+                }
+
+               // 
+            } else if (!checkUnique(tableName, record, attributeSchemas)) {
                 System.err.println("\nError: A record with that unique value already exists.");
                 System.err.println("Tuple " + tuple + " not inserted!\n");
                 return;
@@ -462,6 +478,10 @@ public class DMLParser {
                 // add this entry to a new page
                 newPage.addRecord(record);
                 tableSchema.addToIndexList(0);
+                if(Main.useIndex){
+                    tree.insert(pk_val,0,0);
+                }
+                
                 // Else the table is not empty! We need to find where to insert this record now
             } else {
                 // Get the primary key and its type so we can compare
@@ -471,6 +491,7 @@ public class DMLParser {
                 // record
                 int primaryKeyCol = tableSchema.findPrimaryKeyColNum();
 
+                // Use B+ tree to check if
                 BPlusTree bPlusTree = StorageManager.getTree(tableName);
                 if (Main.useIndex && bPlusTree != null){
                     if (bPlusTree.search(record.getAttribute(primaryKeyCol)) != null){

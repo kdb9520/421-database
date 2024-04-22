@@ -48,6 +48,10 @@ class Node {
          this.maxDegree = maxDegree;
          this.tableName = tableName;
          this.type = type;
+         this.recordPointers = new ArrayList<>();
+        this.keys = new ArrayList<>();
+        this.indices = new ArrayList<>();
+        this.children = new ArrayList<>();
      }
 
      public void insert(Object key, int pageNum, int recordIndex) {
