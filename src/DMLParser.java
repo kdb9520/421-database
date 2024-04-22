@@ -451,7 +451,7 @@ public class DMLParser {
                 pk_val = record.getAttribute(tableSchema.findPrimaryKeyColNum());
                 RecordPointer ptr = tree.search(pk_val); // Search tree if this records PK value exists already
                 
-                if (ptr == null){ 
+                if (ptr != null){ 
                     System.err.println("\nError: A record with that unique value already exists.");
                     System.err.println("Tuple " + tuple + " not inserted!\n");
                     return;

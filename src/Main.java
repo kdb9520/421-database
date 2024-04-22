@@ -118,7 +118,7 @@ public class Main {
         }
         else if (query.startsWith("display index ")) {
             String[] splitstring5 = query.split("\\s+");
-            displayIndexes(splitstring5[1]);
+            displayIndexes(splitstring5[2]);
         }
         else if (query.startsWith("create ")) {
             DDLParser.createTable(query);
@@ -147,7 +147,7 @@ public class Main {
     }
 
     private static void displayIndexes(String tableName) {
-        BPlusTree indexes = StorageManager.getTree(tableName);
+        BPlusTree indexes = StorageManager.getTree(tableName.substring(0, tableName.length() - 1));
         indexes.printTree();
     }
 
