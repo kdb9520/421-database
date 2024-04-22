@@ -18,6 +18,7 @@ class Node {
     private ArrayList<Integer> indices;
     private ArrayList<Node> children;
     private int maxDegree;
+    private int minKeys;
     private boolean wasEdited;
     private String tableName;
 
@@ -29,6 +30,7 @@ class Node {
         this.keys = new ArrayList<>();
         this.indices = new ArrayList<>();
         this.maxDegree = maxDegree;
+        this.minKeys = maxDegree / 2;
         this.children = new ArrayList<>();
         
         this.tableName = tableName;
@@ -40,15 +42,17 @@ class Node {
         this.keys = keys;
         this.children = children;
         this.maxDegree = maxDegree;
+        this.minKeys = maxDegree / 2;
         this.tableName = tableName;
     }
 
      public Node(boolean b, int maxDegree, String tableName, String type) {
-         this.isLeaf = b;
-         this.maxDegree = maxDegree;
-         this.tableName = tableName;
-         this.type = type;
-         this.recordPointers = new ArrayList<>();
+        this.isLeaf = b;
+        this.maxDegree = maxDegree;
+        this.minKeys = maxDegree / 2;
+        this.tableName = tableName;
+        this.type = type;
+        this.recordPointers = new ArrayList<>();
         this.keys = new ArrayList<>();
         this.indices = new ArrayList<>();
         this.children = new ArrayList<>();
@@ -340,5 +344,39 @@ class Node {
 
         return new Node(newIsLeafNode, newRecordPointers, newKeys, children, maxDegree, tableName);
 
+    }
+
+    public boolean delete(Object key) {
+        if (isLeaf) {
+            int index = findKeyIndex(key);
+            if (index != -1) {
+                keys.remove(index);
+                recordPointers.remove(index);
+    
+                // Check for underflow and handle it if necessary
+                if (keys.size() < minKeys) {
+                    // Handle underflow by merging or redistributing keys
+                    // Note: You need to implement this part to ensure the B+ tree properties are maintained
+                    handleUnderflow();
+                }
+                return true; // Key found and deleted successfully
+            }
+            return false; // Key not found in the leaf node
+        } else {
+            int index = findChildIndex(key);
+            if (index != -1) {
+                boolean deleted = children.get(index).delete(key);
+                if (deleted) {
+                    // Check for underflow and handle it if necessary
+                    if (children.get(index).getNumKeys() < minKeys) {
+                        // Handle underflow by merging or redistributing keys
+                        // Note: You need to implement this part to ensure the B+ tree properties are maintained
+                        handleUnderflow();
+                    }
+                    return true; // Key found and deleted successfully
+                }
+            }
+            return false; // Key not found in the internal node's children
+        }
     }
 }
