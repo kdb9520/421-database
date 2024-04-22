@@ -47,9 +47,12 @@ class BPlusTree {
 
     // Delete method
     // TODO: Implement tree delete
-    public void delete(Object key) {
-        // root.delete(key)
-        return;
+    public boolean delete(Object key) {
+        boolean deleted = root.delete(key);
+        if (root.getNumKeys() == 0 && !root.isLeaf()) {
+            root = root.getChildren().get(0); // Update root if it becomes empty after deletion
+        }
+        return deleted;
     }
 
         // Store nodes in following format:
