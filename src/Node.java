@@ -369,6 +369,27 @@ class Node {
 
     }
 
+    public int findKeyIndex(Object key) {
+        for (int i = 0; i < keys.size(); i++) {
+            if (compareObjects(key, keys.get(i)) == 0) {
+                return i; // Return the index of the key if found
+            }
+        }
+        return -1; // Return -1 if key is not found
+    }
+    
+    public int findChildIndex(Object key) {
+        if (isLeaf) {
+            return -1; // Leaf nodes do not have children
+        }
+        for (int i = 0; i < keys.size(); i++) {
+            if (compareObjects(key, keys.get(i)) < 0) {
+                return i; // Return the index of the child node where the key should be inserted
+            }
+        }
+        return keys.size(); // If key is greater than all keys, return index of the last child
+    }
+
     public boolean delete(Object key) {
         if (isLeaf) {
             int index = findKeyIndex(key);
