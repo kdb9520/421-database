@@ -602,7 +602,7 @@ class Node {
         }
     
         // Split internal node
-        Node newChild = new Node(isLeaf, maxDegree, tableName); // Create a new internal node
+        Node newChild = new Node(isLeaf, false, maxDegree, tableName); // Create a new internal node
         int midIndex = keys.size() / 2; // Find the index to split the keys and children
     
         // Move keys and children to the new child node
@@ -620,7 +620,7 @@ class Node {
         Node parent = getParent();
         if (parent == null) {
             // Create a new root node if the current node is the root
-            parent = new Node(false, maxDegree, tableName);
+            parent = new Node(false, true, maxDegree, tableName);
             parent.addChild(this);
             setParent(parent);
         }
