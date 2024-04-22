@@ -21,8 +21,8 @@ class Node {
     private int minKeys;
     private boolean wasEdited;
     private String tableName;
-
     private String type;
+    private Node parent;
 
     public Node(boolean isLeaf, int maxDegree, String tableName) {
         this.isLeaf = isLeaf;
@@ -44,6 +44,10 @@ class Node {
         this.maxDegree = maxDegree;
         this.minKeys = maxDegree / 2;
         this.tableName = tableName;
+        // Set parent for each child node
+        for (Node child : children) {
+            child.setParent(this);
+        }
     }
 
      public Node(boolean b, int maxDegree, String tableName, String type) {
@@ -56,29 +60,39 @@ class Node {
         this.keys = new ArrayList<>();
         this.indices = new ArrayList<>();
         this.children = new ArrayList<>();
+        // Set parent for each child node
+        for (Node child : children) {
+            child.setParent(this);
+        }
      }
 
-     public RecordPointer insert(Object key, int pageNum, int recordIndex) {
+     public Node getParent() {
+        return parent;
+    }
+    
+    public void setParent(Node parent) {
+        this.parent = parent;
+    }
+
+     public void insert(Object key, int pageNum, int recordIndex) {
         if (isLeaf) {
             int index = 0;
             while (index < keys.size() && compareObjects(key, keys.get(index)) > 0) {
                 index++;
             }
 
-            keys.add(index,key); // Add it to keys in right spot
-            //recordPointers.add(new RecordPointer(pageNum, index));
-            return recordPointers.get(index);
+            recordPointers.add(new RecordPointer(pageNum, index));
+            this.setEdited();
 
         } else {
             int index = 0;
             while (index < recordPointers.size() && compareObjects(key, recordPointers.get(index).getPageNumber()) > 0) {
                 index++;
             }
-            RecordPointer result_index = children.get(index).insert(key, pageNum, recordIndex);
+            children.get(index).insert(key, pageNum, recordIndex);
             if (children.get(index).isOverflow()) {
                 children.get(index).split(this, index);
             }
-            return result_index;
         }
     }
 
@@ -379,4 +393,171 @@ class Node {
             return false; // Key not found in the internal node's children
         }
     }
+
+    private void handleUnderflow() {
+        if (isLeaf) {
+            // Handle underflow for leaf node
+            if (this == root) {
+                // If the root is a leaf node and becomes empty, simply clear the keys
+                keys.clear();
+                recordPointers.clear();
+            } else {
+                // If the leaf node is not the root, find its siblings
+                Node leftSibling = findLeftSibling();
+                Node rightSibling = findRightSibling();
+                
+                // Attempt redistribution with siblings
+                if (leftSibling != null && leftSibling.getNumKeys() > minKeys) {
+                    redistributeFromLeft(leftSibling);
+                } else if (rightSibling != null && rightSibling.getNumKeys() > minKeys) {
+                    redistributeFromRight(rightSibling);
+                } else {
+                    // If redistribution is not possible, merge with siblings
+                    if (leftSibling != null) {
+                        mergeWithLeftSibling(leftSibling);
+                    } else if (rightSibling != null) {
+                        mergeWithRightSibling(rightSibling);
+                    }
+                }
+            }
+        } else {
+            // Handle underflow for internal node
+            // This part needs to be implemented based on your B+ tree structure and properties
+            // You need to consider redistributing keys or merging with siblings to maintain B+ tree properties
+            // This might involve redistributing keys from parent or merging with a sibling
+            // Handle underflow for internal node
+            if (this == root) {
+                // If the root is an internal node and becomes empty, set its first child as the new root
+                if (children.size() == 1) {
+                    root = children.get(0);
+                    root.setParent(null);
+                }
+            } else {
+                // If the internal node is not the root, find its siblings
+                Node leftSibling = findLeftSibling();
+                Node rightSibling = findRightSibling();
+                
+                // Attempt redistribution with siblings
+                if (leftSibling != null && leftSibling.getNumKeys() > minKeys) {
+                    redistributeFromLeft(leftSibling);
+                } else if (rightSibling != null && rightSibling.getNumKeys() > minKeys) {
+                    redistributeFromRight(rightSibling);
+                } else {
+                    // If redistribution is not possible, merge with siblings
+                    if (leftSibling != null) {
+                        mergeWithLeftSibling(leftSibling);
+                    } else if (rightSibling != null) {
+                        mergeWithRightSibling(rightSibling);
+                    }
+                }
+            }
+        }
+    }
+
+    private void redistributeFromLeft(Node leftSibling) {
+        // Get the last key from the left sibling and its last child (if any)
+        Object lastKeyFromLeftSibling = leftSibling.getKeys().get(leftSibling.getKeys().size() - 1);
+        Node lastChildFromLeftSibling = leftSibling.getChildren().isEmpty() ? null : leftSibling.getChildren().get(leftSibling.getChildren().size() - 1);
+    
+        // Move the last key from the left sibling to the parent
+        int parentIndex = getParent().getChildren().indexOf(this);
+        getParent().getKeys().set(parentIndex - 1, lastKeyFromLeftSibling);
+    
+        // If the left sibling has a child, move it to the current node's children list
+        if (lastChildFromLeftSibling != null) {
+            children.add(0, lastChildFromLeftSibling);
+            lastChildFromLeftSibling.setParent(this);
+            leftSibling.getChildren().remove(leftSibling.getChildren().size() - 1);
+        }
+    
+        // Move the first key from the left sibling to the current node
+        Object firstKeyFromLeftSibling = leftSibling.getKeys().remove(leftSibling.getKeys().size() - 1);
+        keys.add(0, firstKeyFromLeftSibling);
+    }
+    
+    private void redistributeFromRight(Node rightSibling) {
+        // Get the first key from the right sibling and its first child (if any)
+        Object firstKeyFromRightSibling = rightSibling.getKeys().get(0);
+        Node firstChildFromRightSibling = rightSibling.getChildren().isEmpty() ? null : rightSibling.getChildren().get(0);
+    
+        // Move the first key from the right sibling to the parent
+        int parentIndex = getParent().getChildren().indexOf(this);
+        getParent().getKeys().set(parentIndex, firstKeyFromRightSibling);
+    
+        // If the right sibling has a child, move it to the current node's children list
+        if (firstChildFromRightSibling != null) {
+            children.add(firstChildFromRightSibling);
+            firstChildFromRightSibling.setParent(this);
+            rightSibling.getChildren().remove(0);
+        }
+    
+        // Move the last key from the right sibling to the current node
+        Object lastKeyFromRightSibling = rightSibling.getKeys().remove(0);
+        keys.add(lastKeyFromRightSibling);
+    }
+
+    private void mergeWithRightSibling(Node rightSibling) {
+        // Move keys and children from the right sibling to the current node
+        keys.add(rightSibling.getKeys().remove(0));
+        keys.addAll(rightSibling.getKeys());
+    
+        children.addAll(rightSibling.getChildren());
+    
+        // Update parent keys and children
+        Node parent = getParent();
+        int parentIndex = parent.getChildren().indexOf(this);
+        parent.getKeys().remove(parentIndex);
+        parent.getChildren().remove(rightSibling);
+    
+        // Update child-parent relationship
+        for (Node child : rightSibling.getChildren()) {
+            child.setParent(this);
+        }
+    }
+    
+    private void mergeWithLeftSibling(Node leftSibling) {
+        // Move keys and children from the left sibling to the current node
+        keys.addAll(0, leftSibling.getKeys());
+        keys.add(0, leftSibling.getKeys().remove(leftSibling.getKeys().size() - 1));
+    
+        children.addAll(0, leftSibling.getChildren());
+    
+        // Update parent keys and children
+        Node parent = getParent();
+        int parentIndex = parent.getChildren().indexOf(leftSibling);
+        parent.getKeys().remove(parentIndex);
+        parent.getChildren().remove(leftSibling);
+    
+        // Update child-parent relationship
+        for (Node child : leftSibling.getChildren()) {
+            child.setParent(this);
+        }
+    }
+
+    public Node findLeftSibling() {
+        Node parent = getParent();
+        if (parent == null) {
+            return null; // No parent, hence no left sibling
+        }
+        int index = parent.getChildren().indexOf(this);
+        if (index > 0) {
+            return parent.getChildren().get(index - 1); // Return the left sibling
+        } else {
+            return null; // No left sibling if the current node is the first child of the parent
+        }
+    }
+    
+    public Node findRightSibling() {
+        Node parent = getParent();
+        if (parent == null) {
+            return null; // No parent, hence no right sibling
+        }
+        int index = parent.getChildren().indexOf(this);
+        if (index < parent.getChildren().size() - 1) {
+            return parent.getChildren().get(index + 1); // Return the right sibling
+        } else {
+            return null; // No right sibling if the current node is the last child of the parent
+        }
+    }
+
 }
