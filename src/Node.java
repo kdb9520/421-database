@@ -80,18 +80,19 @@ class Node {
             while (index < keys.size() && compareObjects(key, keys.get(index)) > 0) {
                 index++;
             }
-
-            recordPointers.add(new RecordPointer(pageNum, index));
-            this.setEdited();
-
+            recordPointers.add(index, new RecordPointer(pageNum, recordIndex));
+            keys.add(index, key);
+            if (isOverflow()) {
+                handleOverflow();
+            }
         } else {
             int index = 0;
-            while (index < recordPointers.size() && compareObjects(key, recordPointers.get(index).getPageNumber()) > 0) {
+            while (index < keys.size() && compareObjects(key, keys.get(index)) > 0) {
                 index++;
             }
             children.get(index).insert(key, pageNum, recordIndex);
             if (children.get(index).isOverflow()) {
-                children.get(index).split(this, index);
+                children.get(index).handleOverflow();
             }
         }
     }
@@ -224,6 +225,13 @@ class Node {
 
     public ArrayList<Node> getChildren() {
         return children;
+    }
+
+    public void setChildren(List<Node> newChildren) {
+        this.children = new ArrayList<>(newChildren);
+        for (Node child : children) {
+            child.setParent(this);
+        }
     }
 
     // returns postive if myObject is greater than otherObject
@@ -557,6 +565,52 @@ class Node {
             return parent.getChildren().get(index + 1); // Return the right sibling
         } else {
             return null; // No right sibling if the current node is the last child of the parent
+        }
+    }
+
+    private void handleOverflow() {
+        if (isLeaf) {
+            // Handle overflow for leaf nodes (if necessary)
+            return; // Leaf nodes don't overflow in this implementation
+        }
+    
+        // Split internal node
+        Node newChild = new Node(isLeaf, maxDegree, tableName); // Create a new internal node
+        int midIndex = keys.size() / 2; // Find the index to split the keys and children
+    
+        // Move keys and children to the new child node
+        List<Object> newKeys = new ArrayList<>(keys.subList(midIndex + 1, keys.size()));
+        List<Node> newChildren = new ArrayList<>(children.subList(midIndex + 1, children.size()));
+    
+        // Remove moved keys and children from the current node
+        keys.subList(midIndex, keys.size()).clear();
+        children.subList(midIndex + 1, children.size()).clear();
+    
+        // Get the median key to move up to the parent
+        Object medianKey = keys.remove(midIndex);
+    
+        // Add the median key to the parent node
+        Node parent = getParent();
+        if (parent == null) {
+            // Create a new root node if the current node is the root
+            parent = new Node(false, maxDegree, tableName);
+            parent.addChild(this);
+            setParent(parent);
+        }
+    
+        // Insert the median key and new child into the parent node
+        parent.keys.add(keys.indexOf(medianKey), medianKey);
+        parent.children.add(keys.indexOf(medianKey) + 1, newChild);
+    
+        // Update child-parent relationship for the new child node
+        for (Node child : newChildren) {
+            child.setParent(newChild);
+        }
+        newChild.setChildren(newChildren);
+    
+        // If the parent node is overflowed, handle overflow recursively
+        if (parent.isOverflow()) {
+            parent.handleOverflow();
         }
     }
 
