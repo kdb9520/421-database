@@ -602,13 +602,13 @@ class Node {
         }
     
         // Split internal node
-        Node newChild = new Node(isLeaf, false, maxDegree, tableName); // Create a new internal node
+        
         int midIndex = keys.size() / 2; // Find the index to split the keys and children
     
         // Move keys and children to the new child node
-        List<Object> newKeys = new ArrayList<>(keys.subList(midIndex + 1, keys.size()));
-        List<Node> newChildren = new ArrayList<>(children.subList(midIndex + 1, children.size()));
-    
+        ArrayList<Object> newKeys = new ArrayList<>(keys.subList(midIndex + 1, keys.size()));
+        ArrayList<Node> newChildren = new ArrayList<>(children.subList(midIndex + 1, children.size()));
+        Node newChild = new Node(isLeaf, false, null, newKeys, newChildren, maxDegree, tableName); // Create a new internal node
         // Remove moved keys and children from the current node
         keys.subList(midIndex, keys.size()).clear();
         children.subList(midIndex + 1, children.size()).clear();
