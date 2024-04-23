@@ -15,7 +15,7 @@ class Node {
 
     private ArrayList<RecordPointer> recordPointers;
     private ArrayList<Object> keys;
-    private ArrayList<Integer> indices;
+    //private ArrayList<Integer> indices;
     private ArrayList<Node> children;
     private int maxDegree;
     private int minKeys;
@@ -29,7 +29,7 @@ class Node {
         this.isLeaf = isLeaf;
         this.recordPointers = new ArrayList<>();
         this.keys = new ArrayList<>();
-        this.indices = new ArrayList<>();
+        //this.indices = new ArrayList<>();
         this.maxDegree = maxDegree;
         this.minKeys = maxDegree / 2;
         this.children = new ArrayList<>();
@@ -59,7 +59,7 @@ class Node {
         this.type = type;
         this.recordPointers = new ArrayList<>();
         this.keys = new ArrayList<>();
-        this.indices = new ArrayList<>();
+        // this.indices = new ArrayList<>();
         this.children = new ArrayList<>();
         // Set parent for each child node
         for (Node child : children) {
@@ -92,9 +92,18 @@ class Node {
                 index++;
             }
             children.get(index).insert(key, pageNum, recordIndex);
+
+            // Explicit Parent Code 1
+            // Node child = children.get(index);
+            // child.insert(key, pageNum, recordIndex);
+
             if (children.get(index).isOverflow()) {
                 children.get(index).handleOverflow();
             }
+
+            // Explicit Parent Code 2
+            // Update parent reference for the child node
+            // child.setParent(this);
         }
     }
 
@@ -182,9 +191,9 @@ class Node {
     public void split(Node parent, int index) {
         Node newNode = new Node(isLeaf, false, maxDegree, tableName);
         newNode.keys.addAll(keys.subList(maxDegree / 2, keys.size()));
-        newNode.indices.addAll(indices.subList(maxDegree / 2, indices.size()));
+        // newNode.indices.addAll(indices.subList(maxDegree / 2, indices.size()));
         keys.subList(maxDegree / 2, keys.size()).clear();
-        indices.subList(maxDegree / 2, indices.size()).clear();
+        // indices.subList(maxDegree / 2, indices.size()).clear();
 
         if (!isLeaf) {
             newNode.children.addAll(children.subList(maxDegree / 2, children.size()));
