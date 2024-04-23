@@ -81,7 +81,7 @@ class Node {
             while (index < keys.size() && compareObjects(key, keys.get(index)) > 0) {
                 index++;
             }
-            recordPointers.add(index, new RecordPointer(pageNum, recordIndex));
+            //recordPointers.add(index, new RecordPointer(pageNum, recordIndex));
             keys.add(index, key);
             if (isOverflow()) {
                 handleOverflow();

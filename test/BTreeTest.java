@@ -56,11 +56,16 @@ public class BTreeTest {
 
             
             tree.insert(1,0,0);
-            
             tree.printTree();
-            tree.insert(2,0,1);
             assertEquals("1", outputStreamCaptor.toString().strip());
+
+            for(int i = 2; i < 300; i++){
+                tree.insert(i,0,0);
+            }
+       
             tree.printTree();
+            assertEquals("1 \n1 2", outputStreamCaptor.toString().strip());
+
             tree.insert(3,0,2);
             tree.printTree();
 
@@ -68,7 +73,7 @@ public class BTreeTest {
             assert(true);
 
         } catch (Exception e) {
-            fail("Exception Caught!");
+            fail(e);
         }
     }
  
