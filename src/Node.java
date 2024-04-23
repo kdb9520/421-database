@@ -190,9 +190,9 @@ class Node {
 
     public void split(Node parent, int index) {
         Node newNode = new Node(isLeaf, false, maxDegree, tableName);
-        newNode.keys.addAll(keys.subList(maxDegree / 2, keys.size()));
+        newNode.keys.addAll(keys.subList(maxDegree / 2, keys.size()));  // copy elements over to the new node
         // newNode.indices.addAll(indices.subList(maxDegree / 2, indices.size()));
-        keys.subList(maxDegree / 2, keys.size()).clear();
+        keys.subList(maxDegree / 2, keys.size()).clear(); // clear the current node of the elements copied into new node
         // indices.subList(maxDegree / 2, indices.size()).clear();
 
         if (!isLeaf) {
