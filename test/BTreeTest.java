@@ -1,7 +1,5 @@
 package test;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,7 +59,7 @@ public class BTreeTest {
             
             tree.printTree();
             tree.insert(2,0,1);
-            assertEquals("1", outputStreamCaptor.toString());
+            assertEquals("1", outputStreamCaptor.toString().strip());
             tree.printTree();
             tree.insert(3,0,2);
             tree.printTree();
