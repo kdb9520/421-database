@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
-class BPlusTree {
+public class BPlusTree {
     private Node root;
     private int maxDegree;
     private String tableName;
@@ -31,14 +31,16 @@ class BPlusTree {
 
     // Insert method
     public RecordPointer insert(Object key, int pageNumber, int indexNumber) {
-        RecordPointer result = root.insert(key, pageNumber, indexNumber);
+        //RecordPointer result = root.insert(key, pageNumber, indexNumber);
+        root.insert(key, pageNumber, indexNumber);
         if (root.isOverflow()) {
-            Node newRoot = new Node(false, maxDegree, tableName); // New root will be an internal node
+            Node newRoot = new Node(false, true, maxDegree, tableName); // New root will be an internal node
             newRoot.addChild(root);
             root.split(newRoot, 0);
+            root.setRoot(false);
             root = newRoot;
         }
-        return result;
+        return null;
     }
 
     // Search method

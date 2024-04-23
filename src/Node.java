@@ -485,7 +485,7 @@ class Node {
         }
     }
 
-    private void setRoot(Boolean status) {
+    public void setRoot(Boolean status) {
         this.isRoot = status;
     }
 
