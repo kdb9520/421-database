@@ -16,22 +16,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class BTreeTest {
-    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
-private final PrintStream originalOut = System.out;
-private final PrintStream originalErr = System.err;
+    private final PrintStream standardOut = System.out;
+    private final PrintStream standardErr = System.err;
+    private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
 
-@Before
-public void setUpStreams() {
-    System.setOut(new PrintStream(outContent));
-    System.setErr(new PrintStream(errContent));
-}
+    @BeforeEach
+    public void setUp() {
+        System.setOut(new PrintStream(outputStreamCaptor)); // Redirect System.out to capture output
+        System.setErr(new PrintStream(outputStreamCaptor)); // Redirect System.err
+    }
 
-@After
-public void restoreStreams() {
-    System.setOut(originalOut);
-    System.setErr(originalErr);
-}
+    @AfterEach
+    public void tearDown() {
+        System.setOut(standardOut); // Restore System.out
+        System.setErr(standardErr); // Restore System.err
+        System.setIn(System.in); // Restore System.in
+    }
 
     @Test
     void insertValues() {
@@ -61,7 +61,7 @@ public void restoreStreams() {
             
             tree.printTree();
             tree.insert(2,0,1);
-            assertEquals("1", outContent.toString());
+            assertEquals("1", outputStreamCaptor.toString());
             tree.printTree();
             tree.insert(3,0,2);
             tree.printTree();
