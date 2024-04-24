@@ -86,7 +86,7 @@ public class InternalNodeDraft extends nodeDraft{
      * Is this node borrowable?
      * @return
      */
-    public boolean borrowable(){
+    public boolean isLendable(){
         return this.degree > this.minDegree;
     }
 
@@ -94,7 +94,7 @@ public class InternalNodeDraft extends nodeDraft{
      * is this node allowed to bew merged?
      * @return
      */
-    public boolean mergable(){
+    public boolean isMergeable(){
         return this.degree == this.minDegree;
     }
 

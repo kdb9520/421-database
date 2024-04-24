@@ -12,8 +12,8 @@ public class leafNodeDraft extends nodeDraft{
      * deletes a leaf node
      * @param index
      */
-    public void delete(int index){
-        this.dictionary[index] = null;
+    public void delete(int key){
+        this.dictionary[key] = null;
         numPairs--;
     }
 
@@ -55,7 +55,7 @@ public class leafNodeDraft extends nodeDraft{
      * checks if a value can be borrowed
      * @return
      */
-    public boolean borrowable(){
+    public boolean isLendable(){
         return numPairs > minNumPairs;
     }
 
@@ -63,7 +63,7 @@ public class leafNodeDraft extends nodeDraft{
      * checks if you can borrow
      * @return
      */
-    public boolean mergeable(){
+    public boolean isMergeable(){
         return numPairs == minNumPairs;
     }
 

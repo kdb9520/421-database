@@ -145,9 +145,9 @@ public class bplustreedraft {
       }
     }
 
-    else if (in.leftSibling != null && in.leftSibling.borrowable()) {
+    else if (in.leftSibling != null && in.leftSibling.isLendable()) {
       sibling = in.leftSibling;
-    } else if (in.rightSibling != null && in.rightSibling.borrowable()) {
+    } else if (in.rightSibling != null && in.rightSibling.isLendable()) {
       sibling = in.rightSibling;
 
       int borrowedKey = sibling.keys[0];
@@ -162,9 +162,9 @@ public class bplustreedraft {
       Arrays.sort(sibling.keys);
       sibling.removePointer(0);
       shiftDown(in.childPointers, 1);
-    } else if (in.leftSibling != null && in.leftSibling.mergable()) {
+    } else if (in.leftSibling != null && in.leftSibling.isMergeable()) {
 
-    } else if (in.rightSibling != null && in.rightSibling.mergable()) {
+    } else if (in.rightSibling != null && in.rightSibling.isMergeable()) {
       sibling = in.rightSibling;
       sibling.keys[sibling.degree - 1] = parent.keys[parent.degree - 2];
       Arrays.sort(sibling.keys, 0, sibling.degree);
@@ -308,6 +308,20 @@ private void splitInternalNode(InternalNodeDraft in) {
     }
 
     return halfKeys;
+  }
+
+  public void delete(int key){
+    if (isEmpty()){
+        return;
+    }
+
+    else{
+        leafNodeDraft ln = (this.root == null) ? this.firstLeaf : findLeafNode(key);
+        ln.delete(key);
+        if(ln.isTooLow()){
+            
+        }
+    }
   }
 
   public void insert(int key, double value) {
