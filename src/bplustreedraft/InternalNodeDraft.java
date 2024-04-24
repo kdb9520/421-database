@@ -12,7 +12,7 @@ public class InternalNodeDraft extends nodeDraft{
     nodeDraft[] childPointers;
 
 
-    private InternalNodeDraft(int m, Integer[] keys) {
+    public InternalNodeDraft(int m, Integer[] keys) {
         this.maxDegree = m;
         this.minDegree = (int) Math.ceil(m / 2.0);
         this.degree = 0;
@@ -20,7 +20,7 @@ public class InternalNodeDraft extends nodeDraft{
         this.childPointers = new nodeDraft[this.maxDegree + 1];
     }
 
-    private InternalNodeDraft(int m, Integer[] keys, nodeDraft[] pointers) {
+    public InternalNodeDraft(int m, Integer[] keys, nodeDraft[] pointers) {
         this.maxDegree = m;
         this.minDegree = (int) Math.ceil(m / 2.0);
         this.degree = bplustreedraft.linearNullSearch(pointers);   // don't know what this is for
@@ -32,7 +32,7 @@ public class InternalNodeDraft extends nodeDraft{
      * This adds a new child pointer to the node, to the end of the array
      * @param pointer
      */
-    private void appendChildPointer(nodeDraft pointer) {
+    public void appendChildPointer(nodeDraft pointer) {
         this.childPointers[degree] = pointer;
         this.degree++;
     }
@@ -42,7 +42,7 @@ public class InternalNodeDraft extends nodeDraft{
      * @param pointer
      * @return
      */
-    private int findIndexOfPointer(nodeDraft pointer) {
+    public int findIndexOfPointer(nodeDraft pointer) {
         for (int i = 0; i < childPointers.length; i++) {
             if (childPointers[i] == pointer) {
                 return i;
@@ -55,7 +55,7 @@ public class InternalNodeDraft extends nodeDraft{
      * adds child node pointer to beginning of list, shifts everything up
      * @param pointer
      */
-    private void prependChildPointer(nodeDraft pointer) {
+    public void prependChildPointer(nodeDraft pointer) {
         for (int i = degree - 1; i >= 0; i--) {
             childPointers[i + 1] = childPointers[i];
         }
@@ -66,7 +66,7 @@ public class InternalNodeDraft extends nodeDraft{
     /**
      * This inserts a pointer at a given index in the array
      */
-    private void insertChildPointer(nodeDraft pointer, int index) {
+    public void insertChildPointer(nodeDraft pointer, int index) {
         for (int i = degree - 1; i >= index; i--) {
             childPointers[i + 1] = childPointers[i];
         }
@@ -78,7 +78,7 @@ public class InternalNodeDraft extends nodeDraft{
      * Determines if the degree of hte node is too low
      * @return
      */
-    private boolean degreeToLow(){
+    public boolean degreeToLow(){
         return this.degree < this.minDegree;
     }
 
@@ -86,7 +86,7 @@ public class InternalNodeDraft extends nodeDraft{
      * Is this node borrowable?
      * @return
      */
-    private boolean borrowable(){
+    public boolean borrowable(){
         return this.degree > this.minDegree;
     }
 
@@ -94,7 +94,7 @@ public class InternalNodeDraft extends nodeDraft{
      * is this node allowed to bew merged?
      * @return
      */
-    private boolean mergable(){
+    public boolean mergable(){
         return this.degree == this.minDegree;
     }
 
@@ -102,7 +102,7 @@ public class InternalNodeDraft extends nodeDraft{
      * is this node overfilled?
      * @return
      */
-    private boolean overfilled(){
+    public boolean overfilled(){
         return this.degree == maxDegree + 1;
     }
 
@@ -111,7 +111,7 @@ public class InternalNodeDraft extends nodeDraft{
      * Constant amount of pointers
      * @param index
      */
-    private void removeKey(int index){
+    public void removeKey(int index){
         this.keys[index] = null;
     }
 
@@ -119,7 +119,7 @@ public class InternalNodeDraft extends nodeDraft{
      * Removes pointer from the node based off certain index.
      * @param index
      */
-    private void removePointer(int index) {
+    public void removePointer(int index) {
         this.childPointers[index] = null;
         this.degree--;
     }
@@ -129,7 +129,7 @@ public class InternalNodeDraft extends nodeDraft{
      * removes a specific pointer from the list
      * @param pointer
      */
-    private void removePointer(nodeDraft pointer) {
+    public void removePointer(nodeDraft pointer) {
         for (int i = 0; i < childPointers.length; i++) {
             if (childPointers[i] == pointer) {
                 this.childPointers[i] = null;
@@ -138,5 +138,32 @@ public class InternalNodeDraft extends nodeDraft{
         this.degree--;
     }
 
+    @Override
+    public String toString() {
+        String str = "Intenral node:\t";
+        if(keys != null){
+            for(Integer i : keys){
+                str += i;
+                str += "\t";
+            }
+    
+        }
+        
+        if(childPointers != null){
+            for(nodeDraft child : childPointers ){
+                if(child instanceof InternalNodeDraft){
+                    InternalNodeDraft internalNode = (InternalNodeDraft) child;
+                    str += internalNode.toString();
+                }
+    
+                if(child instanceof leafNodeDraft){
+                    leafNodeDraft internalNode = (leafNodeDraft) child;
+                    str += internalNode.toString();
+                }
+            }
+        }
+        
+    return str;
+}
 
 }

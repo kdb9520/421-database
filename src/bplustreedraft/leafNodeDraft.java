@@ -94,4 +94,17 @@ public class leafNodeDraft extends nodeDraft{
         this.parent = parent;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder str = new StringBuilder("Leaf node: [ ");
+        for (int i = 0; i < numPairs; i++) {
+            str.append("(").append(dictionary[i].key).append(",").append(dictionary[i].value).append(")");
+            if (i < numPairs - 1) {
+                str.append(", ");
+            }
+        }
+        str.append(" ]");
+        return str.toString();
+    }
+
 }
