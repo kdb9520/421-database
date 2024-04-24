@@ -502,11 +502,6 @@ private void mergeWithLeftSibling(leafNodeDraft ln) {
         
         if(parent.keys[j] != null && ln.dictionary[i].key == parent.keys[j]){
             parent.removeKey(j);
-            // Go in and shift other keys down
-            for(int k = j; k < parent.keys.length-1; k++){
-                parent.keys[k] = parent.keys[k+1];
-            }
-            
         }
       }
       
@@ -518,6 +513,7 @@ private void mergeWithLeftSibling(leafNodeDraft ln) {
   // Update parent pointers
   
   parent.removePointer(ln);
+  // Maybe shift down?
 
   // Update references
   if (ln.rightSibling != null) {
@@ -532,26 +528,32 @@ private void mergeWithLeftSibling(leafNodeDraft ln) {
 
 private void mergeWithRightSibling(leafNodeDraft ln) {
   leafNodeDraft rightSibling = ln.rightSibling;
+  InternalNodeDraft parent = ln.parent;
 
   // Move all key-value pairs from right sibling to current node
-  for (int i = 0; i < rightSibling.numPairs; i++) {
-      ln.insert(rightSibling.dictionary[i]);
+  for (int i = 0; i < ln.numPairs; i++) {
+      rightSibling.insert(ln.dictionary[i]);
+
+      for(int j = 0; j < parent.keys.length; j++){
+        if(parent.keys[j] != null && ln.dictionary[i].key == parent.keys[j]){
+            parent.removeKey(j);
+        }
+      }
   }
 
   // Update sibling pointers
-  ln.rightSibling = rightSibling.rightSibling;
+ rightSibling.leftSibling = ln.leftSibling;
 
   // Update parent pointers
-  InternalNodeDraft parent = rightSibling.parent;
-  parent.removePointer(rightSibling);
+  parent.removePointer(ln);
 
   // Update references
-  if (rightSibling.rightSibling != null) {
-      rightSibling.rightSibling.leftSibling = ln;
+  if (ln.leftSibling != null) {
+      ln.leftSibling.rightSibling = rightSibling;
   }
 
   // Check if parent becomes deficient
-  if (parent != null && parent.degreeToLow()) {
+  if (parent != root && parent != null && parent.degreeToLow()) {
       handleDeficiency(parent);
   }
 }
