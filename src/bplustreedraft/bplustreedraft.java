@@ -61,8 +61,8 @@ public class bplustreedraft {
      * @return
      */
     private leafNodeDraft findLeafNode(InternalNodeDraft internalNodeDraft, int key){
-        Integer[] keys = this.root.keys;
-        Integer i;
+        Integer[] keys = internalNodeDraft.keys;
+        int i;
         // iterate through until the key being searched for is less than the current value in the array traversal
         for(i = 0; i < this.root.degree - 1; i ++){
             if(key < keys[i]){
@@ -71,12 +71,15 @@ public class bplustreedraft {
         }
 
         // set child to the one of this location
-        nodeDraft child = this.root.childPointers[i];
+        nodeDraft child = internalNodeDraft.childPointers[i];
         // if it is a leaf node, return this child
-        if(child instanceof leafNodeDraft) return (leafNodeDraft) child;
+        if(child instanceof leafNodeDraft){
+            return (leafNodeDraft) child;
+        } 
 
-        // otherwise, recurse
-        else return findLeafNode((InternalNodeDraft) internalNodeDraft.childPointers[i], key);
+        else{
+            return findLeafNode((InternalNodeDraft) internalNodeDraft.childPointers[i], key);
+        }
     }
 
     /**
