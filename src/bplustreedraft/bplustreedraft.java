@@ -310,20 +310,6 @@ private void splitInternalNode(InternalNodeDraft in) {
     return halfKeys;
   }
 
-  public void delete(int key){
-    if (isEmpty()){
-        return;
-    }
-
-    else{
-        leafNodeDraft ln = (this.root == null) ? this.firstLeaf : findLeafNode(key);
-        ln.delete(key);
-        if(ln.isTooLow()){
-            
-        }
-    }
-  }
-
   public void insert(int key, double value) {
     if (isEmpty()) {
 
@@ -446,7 +432,114 @@ private void splitInternalNode(InternalNodeDraft in) {
 }
 
 
+public void delete(int key){
+  if (isEmpty()){
+      return;
+  }
 
+  leafNodeDraft ln = (this.root == null) ? this.firstLeaf : findLeafNode(key);
+  int index = ln.searchKeyIndex(key);
+
+  if (index == -1) {
+      // Key not found
+      return;
+  }
+
+  ln.delete(index);
+  if (ln.isTooLow()){
+      handleLeafNodeDeficiency(ln);
+  }
+}
+
+private void handleLeafNodeDeficiency(leafNodeDraft ln) {
+  // Check if borrowing from or merging with siblings is possible
+  if (ln.leftSibling != null && ln.leftSibling.isLendable()) {
+      // Borrow from left sibling
+      borrowFromLeftSibling(ln);
+  } else if (ln.rightSibling != null && ln.rightSibling.isLendable()) {
+      // Borrow from right sibling
+      borrowFromRightSibling(ln);
+  } else if (ln.leftSibling != null && ln.leftSibling.isMergeable()) {
+      // Merge with left sibling
+      mergeWithLeftSibling(ln);
+  } else if (ln.rightSibling != null && ln.rightSibling.isMergeable()) {
+      // Merge with right sibling
+      mergeWithRightSibling(ln);
+  }
+}
+
+private void borrowFromLeftSibling(leafNodeDraft ln) {
+  leafNodeDraft leftSibling = ln.leftSibling;
+  int borrowedIndex = leftSibling.numPairs - 1;
+
+  // Move key-value pair from left sibling to current node
+  ln.insert(leftSibling.dictionary[borrowedIndex]);
+
+  // Remove borrowed key-value pair from left sibling
+  leftSibling.delete(borrowedIndex);
+}
+
+private void borrowFromRightSibling(leafNodeDraft ln) {
+  leafNodeDraft rightSibling = ln.rightSibling;
+
+  // Move key-value pair from right sibling to current node
+  ln.insert(rightSibling.dictionary[0]);
+
+  // Remove borrowed key-value pair from right sibling
+  rightSibling.delete(0);
+}
+
+private void mergeWithLeftSibling(leafNodeDraft ln) {
+  leafNodeDraft leftSibling = ln.leftSibling;
+
+  // Move all key-value pairs from current node to left sibling
+  for (int i = 0; i < ln.numPairs; i++) {
+      leftSibling.insert(ln.dictionary[i]);
+  }
+
+  // Update sibling pointers
+  leftSibling.rightSibling = ln.rightSibling;
+
+  // Update parent pointers
+  InternalNodeDraft parent = ln.parent;
+  parent.removePointer(ln);
+
+  // Update references
+  if (ln.rightSibling != null) {
+      ln.rightSibling.leftSibling = leftSibling;
+  }
+
+  // Check if parent becomes deficient
+  if (parent != null && parent.degreeToLow()) {
+      handleDeficiency(parent);
+  }
+}
+
+private void mergeWithRightSibling(leafNodeDraft ln) {
+  leafNodeDraft rightSibling = ln.rightSibling;
+
+  // Move all key-value pairs from right sibling to current node
+  for (int i = 0; i < rightSibling.numPairs; i++) {
+      ln.insert(rightSibling.dictionary[i]);
+  }
+
+  // Update sibling pointers
+  ln.rightSibling = rightSibling.rightSibling;
+
+  // Update parent pointers
+  InternalNodeDraft parent = rightSibling.parent;
+  parent.removePointer(rightSibling);
+
+  // Update references
+  if (rightSibling.rightSibling != null) {
+      rightSibling.rightSibling.leftSibling = ln;
+  }
+
+  // Check if parent becomes deficient
+  if (parent != null && parent.degreeToLow()) {
+      handleDeficiency(parent);
+  }
+}
 
 }
 

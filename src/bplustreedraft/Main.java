@@ -26,8 +26,7 @@ public class Main {
     bpt.insert(1, 10);
     bpt.insert(2, 10);
     bpt.insert(3, 10);
-
-
+    bpt.delete(37);
 
 
 
