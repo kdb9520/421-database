@@ -1,132 +1,143 @@
 package src;
-
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.List;
 
-public class BPlusTree {
-    private Node root;
-    private int maxDegree;
-    private String tableName;
+class BPlusTree<T extends Comparable<T>> {
+    private Node<T> root;
+    private final int degree;
 
-    private String type;
-
-    // Constructor
-    public BPlusTree(int maxDegree, String tableName) {
-        this.maxDegree = maxDegree;
-        this.tableName = tableName;
-        this.type = Catalog.getTableSchema(this.tableName).getPrimaryKeyType();
-        this.root = new Node(true, maxDegree, tableName, type); // Initially, root is a leaf node
+    public BPlusTree(int degree) {
+        this.degree = degree;
+        this.root = new LeafNode<>();
     }
 
-
-    // Constructor for deserialzing an already existing BPlussTree
-    public BPlusTree(String tableName, int maxDegree, Node root) {
-        this.tableName = tableName;
-        this.maxDegree = maxDegree;
-        this.root = root;
-    }
-
-    // Insert method
-    public RecordPointer insert(Object key, int pageNumber, int indexNumber) {
-        //RecordPointer result = root.insert(key, pageNumber, indexNumber);
-        root.insert(key, pageNumber, indexNumber);
+    public void insert(T key) {
+        root.insert(key);
         if (root.isOverflow()) {
-            Node newRoot = new Node(false, true, maxDegree, tableName); // New root will be an internal node
+            Node<T> newRoot = new InternalNode<>();
             newRoot.addChild(root);
             root.split(newRoot, 0);
-            root.setRoot(false);
             root = newRoot;
         }
-        return null;
-    }
-
-    // Search method
-    public RecordPointer search(Object key) {
-        return root.search(key);
-    }
-
-    // Delete method
-    // TODO: Implement tree delete
-    public boolean delete(Object key) {
-        boolean deleted = root.delete(key);
-        if (root.getNumKeys() == 0 && !root.isLeaf()) {
-            root = root.getChildren().get(0); // Update root if it becomes empty after deletion
-        }
-        return deleted;
-    }
-
-        // Store nodes in following format:
-    // boolean isLeaf, int numRecordPointers, recordPoint1,recordPointer2,....recordPointern
-    // int numKeys, key1...n (size depends on table PK), int numChildren, child1...n (node) (call node.serialize on those) 
-    public byte[] serialize(String tableName) {
-
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                DataOutputStream dataOutputStream = new DataOutputStream(bos);) {
-        
-            System.out.println(maxDegree);
-            dataOutputStream.writeInt(maxDegree);
-            byte[] nodeBytes = root.serialize(tableName);
-            dataOutputStream.write(nodeBytes);
-            dataOutputStream.close();
-            return bos.toByteArray();
-    } catch (IOException e) {
-        e.printStackTrace();
-        return null;
-    }
-    }
-
-    public static BPlusTree deserialize(byte[] data, String tableName) throws IOException {
-        
-        ByteBuffer buffer = ByteBuffer.wrap(data);
-
-
-        // Read number of records
-        int maxDegree = buffer.getInt();
-        System.out.println("Max degree of index " + tableName + ": " + maxDegree);
-        Node root = Node.deserialize(buffer, tableName, maxDegree);
-
-        // Create and return the src.Page object
-        BPlusTree tree = new BPlusTree(tableName, maxDegree, root);
-        return tree;
     }
 
     public void printTree() {
-        if (root == null) {
-            System.out.println("Tree is empty.");
-        } else {
-            printTree(root, 0);
+        root.print();
+    }
+
+    private interface Node<T extends Comparable<T>> {
+        void insert(T key);
+        boolean isOverflow();
+        void split(Node<T> parent, int index);
+        void addChild(Node<T> child);
+        void print();
+    }
+
+    private class InternalNode<T extends Comparable<T>> implements Node<T> {
+        private final List<T> keys;
+        private final List<Node<T>> children;
+
+        public InternalNode() {
+            this.keys = new ArrayList<>();
+            this.children = new ArrayList<>();
+        }
+
+        @Override
+        public void insert(T key) {
+            int index = 0;
+            while (index < keys.size() && key.compareTo(keys.get(index)) >= 0) {
+                index++;
+            }
+            children.get(index).insert(key);
+            if (children.get(index).isOverflow()) {
+                children.get(index).split(this, index);
+            }
+        }
+
+        @Override
+        public boolean isOverflow() {
+            return keys.size() >= degree;
+        }
+
+        @Override
+        public void split(Node<T> parent, int index) {
+            InternalNode<T> newNode = new InternalNode<>();
+        
+            // Determine the midpoint index
+            int midIndex = (keys.size() - 1) / 2;
+        
+            // Move keys and children to the new child node
+            newNode.keys.addAll(keys.subList(midIndex + 1, keys.size()));
+            newNode.children.addAll(children.subList(midIndex + 1, children.size()));
+        
+            // Clear the keys and children from the current node
+            keys.subList(midIndex, keys.size()).clear();
+            children.subList(midIndex + 1, children.size()).clear();
+        
+            // Get the median key to move up to the parent
+            T medianKey = keys.remove(midIndex);
+        
+            // Add the median key to the parent node
+            parent.addChild(newNode);
+            ((InternalNode<T>) parent).keys.add(index, medianKey);
+        }
+
+        @Override
+        public void addChild(Node<T> child) {
+            children.add(child);
+        }
+
+        @Override
+        public void print() {
+            for (int i = 0; i < children.size(); i++) {
+                children.get(i).print();
+                if (i < keys.size()) {
+                    System.out.print(keys.get(i) + " ");
+                }
+            }
+            System.out.println();
         }
     }
 
-    private void printTree(Node node, int level) {
-        if (node != null) {
-            for (int i = 0; i < level; i++) {
-                System.out.print("\t");
-            }
+    private class LeafNode<T extends Comparable<T>> implements Node<T> {
+        private final List<T> keys;
 
-            if (node.isLeaf()) {
-                for (int i = 0; i < node.getNumKeys(); i++) {
-                    System.out.print(node.getKeys().get(i) + " ");
-                }
-                System.out.println();
-            } else {
-                for (int i = 0; i < node.getNumKeys(); i++) {
-                    printTree(node.getChildren().get(i), level + 1);
-                    System.out.print(node.getKeys().get(i) + " ");
-                    if (i == node.getNumKeys() - 1) {
-                        printTree(node.getChildren().get(i + 1), level + 1);
-                    }
-                }
-                System.out.println();
+        public LeafNode() {
+            this.keys = new ArrayList<>();
+        }
+
+        @Override
+        public void insert(T key) {
+            keys.add(key);
+            keys.sort(Comparable::compareTo);
+        }
+
+        @Override
+        public boolean isOverflow() {
+            return keys.size() >= degree;
+        }
+
+        @Override
+        public void split(Node<T> parent, int index) {
+            LeafNode<T> newNode = new LeafNode<>();
+            newNode.keys.addAll(keys.subList(degree / 2, keys.size()));
+            keys.subList(degree / 2, keys.size()).clear();
+
+            parent.addChild(newNode);
+            T medianKey = newNode.keys.get(0);
+            ((InternalNode<T>) parent).keys.add(index, medianKey);
+        }
+
+        @Override
+        public void addChild(Node<T> child) {
+            throw new UnsupportedOperationException("Leaf nodes cannot have children.");
+        }
+
+        @Override
+        public void print() {
+            for (T key : keys) {
+                System.out.print(key + " ");
             }
         }
     }
-
-    public String getTableName(){
-        return this.tableName;
-    }
-
 }
