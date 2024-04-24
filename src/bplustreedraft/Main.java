@@ -11,15 +11,24 @@ public class Main {
     bpt.insert(25, 31);
     bpt.insert(35, 41);
     bpt.insert(45, 10);
-    bpt.insert(55, 10);
-    bpt.print();
+    bpt.insert(55, 10); 
     bpt.insert(56, 10);
     bpt.insert(57, 10);
-    bpt.insert(58, 10);
     bpt.insert(59, 10);
+    bpt.insert(58, 10);
     bpt.insert(60, 10);
-    bpt.insert(47, 10);
-    bpt.insert(46, 10);
+
+    bpt.insert(7, 10);
+    bpt.insert(8, 10);
+    bpt.insert(36, 10);
+    bpt.insert(37, 10);
+    bpt.insert(49, 10);
+    bpt.insert(1, 10);
+    bpt.insert(2, 10);
+    bpt.insert(3, 10);
+
+
+
 
 
 

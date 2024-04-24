@@ -140,7 +140,7 @@ public class InternalNodeDraft extends nodeDraft{
 
     @Override
     public String toString() {
-        String str = "Intenral node:\t";
+        String str = "Internal node:\t";
         if(keys != null){
             for(Integer i : keys){
                 str += i;

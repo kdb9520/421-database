@@ -6,7 +6,7 @@ public class leafNodeDraft extends nodeDraft{
     int numPairs;
     leafNodeDraft leftSibling;
     leafNodeDraft rightSibling;
-    DictionaryPairDraft[] dictionary;
+    public DictionaryPairDraft[] dictionary;
 
     /**
      * deletes a leaf node

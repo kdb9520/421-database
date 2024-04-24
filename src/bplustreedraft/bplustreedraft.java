@@ -64,7 +64,7 @@ public class bplustreedraft {
         Integer[] keys = internalNodeDraft.keys;
         int i;
         // iterate through until the key being searched for is less than the current value in the array traversal
-        for(i = 0; i < this.root.degree - 1; i ++){
+        for(i = 0; i < internalNodeDraft.degree - 1; i ++){
             if(key < keys[i]){
                 break;                      // break;
             }
