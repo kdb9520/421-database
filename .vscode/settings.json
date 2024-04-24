@@ -2,5 +2,6 @@
     "java.debug.settings.onBuildFailureProceed": true,
     "java.debug.settings.showHex": true,
     "java.debug.settings.showQualifiedNames": true,
-    "java.debug.settings.showLogicalStructure": false
+    "java.debug.settings.showLogicalStructure": false,
+    "java.debug.settings.showStaticVariables": true
 }
