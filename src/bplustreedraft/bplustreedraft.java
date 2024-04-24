@@ -494,17 +494,29 @@ private void borrowFromRightSibling(leafNodeDraft ln) {
 
 private void mergeWithLeftSibling(leafNodeDraft ln) {
   leafNodeDraft leftSibling = ln.leftSibling;
-
+  InternalNodeDraft parent = ln.parent;
   // Move all key-value pairs from current node to left sibling
   for (int i = 0; i < ln.numPairs; i++) {
       leftSibling.insert(ln.dictionary[i]);
+      for(int j = 0; j < parent.keys.length; j++){
+        
+        if(parent.keys[j] != null && ln.dictionary[i].key == parent.keys[j]){
+            parent.removeKey(j);
+            // Go in and shift other keys down
+            for(int k = j; k < parent.keys.length-1; k++){
+                parent.keys[k] = parent.keys[k+1];
+            }
+            
+        }
+      }
+      
   }
 
   // Update sibling pointers
   leftSibling.rightSibling = ln.rightSibling;
 
   // Update parent pointers
-  InternalNodeDraft parent = ln.parent;
+  
   parent.removePointer(ln);
 
   // Update references
