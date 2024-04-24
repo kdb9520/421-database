@@ -17,14 +17,6 @@ public class leafNodeDraft extends nodeDraft{
         numPairs--;
     }
 
-    public int searchKeyIndex(int key) {
-        for (int i = 0; i < numPairs; i++) {
-            if (dictionary[i] != null && dictionary[i].key == key) {
-                return i;
-            }
-        }
-        return -1; // Key not found
-    }
 
     /**
      * inserts a key value pair into the tree
@@ -113,6 +105,16 @@ public class leafNodeDraft extends nodeDraft{
         }
         str.append(" ]");
         return str.toString();
+    }
+
+
+    public int searchKeyIndex(int key) {
+        for (int i = 0; i < numPairs; i++) {
+            if (dictionary[i] != null && dictionary[i].key == key) {
+                return i;
+            }
+        }
+        return -1; // Key not found
     }
 
 }

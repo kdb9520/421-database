@@ -448,6 +448,7 @@ public void delete(int key){
   ln.delete(index);
   if (ln.isTooLow()){
       handleLeafNodeDeficiency(ln);
+
   }
 }
 
@@ -510,7 +511,7 @@ private void mergeWithLeftSibling(leafNodeDraft ln) {
   }
 
   // Check if parent becomes deficient
-  if (parent != null && parent.degreeToLow()) {
+  if (parent != root && parent != null && parent.degreeToLow()) {
       handleDeficiency(parent);
   }
 }
