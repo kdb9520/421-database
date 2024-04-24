@@ -62,9 +62,9 @@ public class bplustreedraft {
      */
     private leafNodeDraft findLeafNode(InternalNodeDraft internalNodeDraft, int key){
         Integer[] keys = this.root.keys;
-        int i;
+        Integer i;
         // iterate through until the key being searched for is less than the current value in the array traversal
-        for(i = 0; i < this.root.degree; i ++){
+        for(i = 0; i < this.root.degree - 1; i ++){
             if(key < keys[i]){
                 break;                      // break;
             }
