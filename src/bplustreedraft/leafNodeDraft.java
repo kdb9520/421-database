@@ -16,15 +16,21 @@ public class leafNodeDraft extends nodeDraft{
     public void delete(int key){
         this.dictionary[key] = null;
         numPairs--;
-
-        // Shift down values beyond the deleted key
-    for (int i = key + 1; i < this.dictionary.length; i++) {
-        if (this.dictionary[i] == null) {
-            break; // Stop shifting when encountering a null element
-        }
-        this.dictionary[i - 1] = this.dictionary[i]; // Shift the element up
-        this.dictionary[i] = null; // Clear the original position
     }
+
+    public void deleteForReal(int key){
+        System.out.println(this);
+        this.dictionary[key] = null;
+        numPairs--;
+    
+        // Shift down values beyond the deleted key
+        for (int i = key; i < numPairs; i++) {
+            if (this.dictionary[i] == null) {
+                this.dictionary[i] = this.dictionary[i+1]; // Shift the element up
+                this.dictionary[i+1] = null; // Clear the original position
+            }
+            
+        }
     }
 
 
@@ -84,7 +90,7 @@ public class leafNodeDraft extends nodeDraft{
      */
     public leafNodeDraft(int m, DictionaryPairDraft dp) {
         this.maxNumPairs = m - 1;
-        this.minNumPairs = (int) (Math.ceil(m / 2) - 1);
+        this.minNumPairs = (int) (Math.ceil((m- 1) / 2) );
         this.dictionary = new DictionaryPairDraft[m];
         this.numPairs = 0;
         this.insert(dp);
@@ -98,7 +104,7 @@ public class leafNodeDraft extends nodeDraft{
      */
     public leafNodeDraft(int m, DictionaryPairDraft[] dps, InternalNodeDraft parent) {
         this.maxNumPairs = m - 1;
-        this.minNumPairs = (int) (Math.ceil(m / 2) - 1);
+        this.minNumPairs = (int) (Math.ceil((m-1) / 2));
         this.dictionary = dps;
         this.numPairs = bplustreedraft.linearNullSearch(dps);
         this.parent = parent;

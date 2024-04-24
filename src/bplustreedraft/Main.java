@@ -14,10 +14,10 @@ public class Main {
     bpt.insert(55, 10); 
     bpt.insert(65, 10); 
     bpt.insert(75, 10); 
-
+   
     bpt.delete(35);
-
     bpt.print();
+   
     
 
     if(1==1){

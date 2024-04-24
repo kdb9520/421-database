@@ -445,7 +445,7 @@ public void delete(int key){
       return;
   }
 
-  ln.delete(index);
+  ln.deleteForReal(index);
   if (ln.isTooLow()){
       handleLeafNodeDeficiency(ln);
 
@@ -453,19 +453,21 @@ public void delete(int key){
 }
 
 private void handleLeafNodeDeficiency(leafNodeDraft ln) {
+
+if (ln.leftSibling != null && ln.leftSibling.isMergeable()) {
+    // Merge with left sibling
+    mergeWithLeftSibling(ln);
+} else if (ln.rightSibling != null && ln.rightSibling.isMergeable()) {
+    // Merge with right sibling
+    mergeWithRightSibling(ln);
+}
   // Check if borrowing from or merging with siblings is possible
-  if (ln.leftSibling != null && ln.leftSibling.isLendable()) {
+  else if (ln.leftSibling != null && ln.leftSibling.isLendable()) {
       // Borrow from left sibling
       borrowFromLeftSibling(ln);
   } else if (ln.rightSibling != null && ln.rightSibling.isLendable()) {
       // Borrow from right sibling
       borrowFromRightSibling(ln);
-  } else if (ln.leftSibling != null && ln.leftSibling.isMergeable()) {
-      // Merge with left sibling
-      mergeWithLeftSibling(ln);
-  } else if (ln.rightSibling != null && ln.rightSibling.isMergeable()) {
-      // Merge with right sibling
-      mergeWithRightSibling(ln);
   }
 }
 
