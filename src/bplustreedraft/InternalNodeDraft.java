@@ -124,11 +124,7 @@ public class InternalNodeDraft extends nodeDraft{
      */
     public void removePointer(int index) {
         this.childPointers[index] = null;
-        this.degree--;
-
-        for(int i = index; i < childPointers.length-1; i++){
-            childPointers[i] = childPointers[i+1];
-        }
+        this.degree--;     
     }
 
 

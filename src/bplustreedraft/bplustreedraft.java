@@ -479,7 +479,14 @@ private void borrowFromLeftSibling(leafNodeDraft ln) {
   ln.insert(leftSibling.dictionary[borrowedIndex]);
 
   // Remove borrowed key-value pair from left sibling
-  leftSibling.delete(borrowedIndex);
+  leftSibling.deleteForReal(borrowedIndex);
+
+  // Update the parents value
+  
+  // Find the index of the key in parent
+  InternalNodeDraft parent = ln.parent;
+  // Move all key-value pairs from current node to left sibling
+  parent.keys[0] = ln.dictionary[0].key;
 }
 
 private void borrowFromRightSibling(leafNodeDraft ln) {
@@ -489,7 +496,12 @@ private void borrowFromRightSibling(leafNodeDraft ln) {
   ln.insert(rightSibling.dictionary[0]);
 
   // Remove borrowed key-value pair from right sibling
-  rightSibling.delete(0);
+  rightSibling.deleteForReal(0);
+
+  // Find the index of the key in parent
+  InternalNodeDraft parent = ln.parent;
+  // Move all key-value pairs from current node to left sibling
+  parent.keys[0] = rightSibling.dictionary[0].key;
 }
 
 private void mergeWithLeftSibling(leafNodeDraft ln) {
@@ -498,12 +510,7 @@ private void mergeWithLeftSibling(leafNodeDraft ln) {
   // Move all key-value pairs from current node to left sibling
   for (int i = 0; i < ln.numPairs; i++) {
       leftSibling.insert(ln.dictionary[i]);
-      for(int j = 0; j < parent.keys.length; j++){
-        
-        if(parent.keys[j] != null && ln.dictionary[i].key == parent.keys[j]){
-            parent.removeKey(j);
-        }
-      }
+     
       
   }
 
@@ -514,6 +521,19 @@ private void mergeWithLeftSibling(leafNodeDraft ln) {
   
   parent.removePointer(ln);
   // Maybe shift down?
+
+  // Remove the key for the removed node
+  int perm_i;
+  for(perm_i = 0; perm_i < parent.childPointers.length-1; perm_i++){
+    if (parent.childPointers[perm_i] == null && parent.keys[perm_i] != null){
+        parent.removeKey(perm_i);
+    }
+  }
+
+  // Now we can shift down the child pointers to fill the gap
+  for(int i = perm_i; i < parent.childPointers.length-1; i++){
+    parent.childPointers[i] = parent.childPointers[i+1];
+}
 
   // Update references
   if (ln.rightSibling != null) {
@@ -527,18 +547,15 @@ private void mergeWithLeftSibling(leafNodeDraft ln) {
 }
 
 private void mergeWithRightSibling(leafNodeDraft ln) {
+    
   leafNodeDraft rightSibling = ln.rightSibling;
   InternalNodeDraft parent = ln.parent;
-
+  System.out.println(parent.childPointers.length);
   // Move all key-value pairs from right sibling to current node
   for (int i = 0; i < ln.numPairs; i++) {
       rightSibling.insert(ln.dictionary[i]);
 
-      for(int j = 0; j < parent.keys.length; j++){
-        if(parent.keys[j] != null && ln.dictionary[i].key == parent.keys[j]){
-            parent.removeKey(j);
-        }
-      }
+    
   }
 
   // Update sibling pointers
@@ -547,6 +564,16 @@ private void mergeWithRightSibling(leafNodeDraft ln) {
   // Update parent pointers
   parent.removePointer(ln);
 
+  int perm_i;
+  for(perm_i = 0; perm_i < parent.childPointers.length-1; perm_i++){
+    if (parent.childPointers[perm_i] == null && parent.keys[perm_i] != null){
+        parent.removeKey(perm_i);
+    }
+  }
+
+  for(int i = perm_i; i < parent.childPointers.length-1; i++){
+        parent.childPointers[i] = parent.childPointers[i+1];
+    }
   // Update references
   if (ln.leftSibling != null) {
       ln.leftSibling.rightSibling = rightSibling;
