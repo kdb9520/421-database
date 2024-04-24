@@ -15,6 +15,15 @@ public class leafNodeDraft extends nodeDraft{
     public void delete(int key){
         this.dictionary[key] = null;
         numPairs--;
+
+        // Shift down values beyond the deleted key
+    for (int i = key + 1; i < this.dictionary.length; i++) {
+        if (this.dictionary[i] == null) {
+            break; // Stop shifting when encountering a null element
+        }
+        this.dictionary[i - 1] = this.dictionary[i]; // Shift the element up
+        this.dictionary[i] = null; // Clear the original position
+    }
     }
 
 

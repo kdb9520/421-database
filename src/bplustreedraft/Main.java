@@ -15,6 +15,8 @@ public class Main {
     bpt.insert(65, 10); 
     bpt.insert(75, 10); 
 
+    bpt.delete(35);
+
     bpt.print();
     
 
