@@ -406,7 +406,7 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
         Node root = Node.deserialize(buffer);
 
         // Create and return the src.Page object
-        BxTree tree = new BPlusTree(N, root);
+        BxTree tree = new BXTree(N, root);
         return tree;
     }
 
