@@ -11,21 +11,13 @@ public class DMLParser {
 
         if (query.startsWith("insert into ")) {
             insert(query.substring(12));
-        }
-
-        else if (query.startsWith("update ")) {
+        } else if (query.startsWith("update ")) {
             update(query.substring(7));
-        }
-
-        else if (query.startsWith("delete ")) {
+        } else if (query.startsWith("delete ")) {
             delete(query.substring(12), useIndex);
-        }
-
-        else if (query.strip().equals("display schema;")) {
+        } else if (query.strip().equals("display schema;")) {
             displaySchema(databaseLocation);
-        }
-
-        else if (query.startsWith("display info ")) {
+        } else if (query.startsWith("display info ")) {
             displayInfo(query.substring(13));
         } else if (query.startsWith("select")) {
             select(query.substring(6));
@@ -38,7 +30,7 @@ public class DMLParser {
         String tableName = split[0];
         String columnName = split[2]; // <name> set <columnName>
         String valueString = split[4];
-        Object keyValue = null;
+        Object pk = null;
         TableSchema tSchema = Catalog.getTableSchema(tableName);
         // Get the where clause
         // Construct the WHERE clause from split[6] to the end
@@ -104,7 +96,7 @@ public class DMLParser {
 
             ArrayList<AttributeSchema> initialSchemas = tSchema.getAttributeSchema();
             for (int j = 0; j < initialSchemas.size(); j++) {
-                if ( initialSchemas.get(j).isPrimaryKey && keyName.equals(initialSchemas.get(j).getAttributeName())) {
+                if (initialSchemas.get(j).isPrimaryKey && keyName.equals(initialSchemas.get(j).getAttributeName())) {
                     keyFound = true;
                     break;
                 }
@@ -112,20 +104,21 @@ public class DMLParser {
         }
 
         // assuming the logic for b+ tree goes here
-        BPlusTree tree = StorageManager.getTree(tSchema.getTableName());
-        if(Main.useIndex && keyFound && singleClause){// replace with variables for b+ tree enabled and primarykey in where clause
+        BxTree tree = StorageManager.getTree(tSchema.getTableName());
+        if (Main.useIndex && keyFound && singleClause) {// replace with variables for b+ tree enabled and primarykey in where clause
             List<String> tokens = WhereParser.tokenize(whereClause);
 
-            keyValue = (Object) tokens.get(2);
+            pk = tokens.get(2);
             // B+ search on key value
-            RecordPointer ptr = tree.search(keyValue);
+            RecordPointer ptr = findRecordPointer(pk, tSchema, tree);
 
-            if (ptr == null){
+            if (ptr == null) {
                 return;
             }
 
             // B+ delete on result
-            tree.delete(keyValue);
+            boolean deleted = deleteBxNode(pk, tSchema, tree);
+
             Page p = BufferManager.getPage(tSchema.getTableName(), ptr.getPageNumber());
             Record r = p.removeRecord(ptr.getIndexNumber());
             // clone the record
@@ -137,9 +130,7 @@ public class DMLParser {
             String query = "insert into " + tableName + " values " + r_clone.toString() + ";";
 
             insert(query);
-        }
-
-        else {  // brute force
+        } else {  // brute force
             // For each page go and see if we need to update record
             int num_pages = tSchema.getIndexList().size();
             for (int i = 0; i < num_pages; i++) {
@@ -226,7 +217,7 @@ public class DMLParser {
 
     /**
      * Deletes records from a table given a condition
-     * 
+     *
      * @param tableSchema - the name of the table
      * @param whereClause - the condition
      */
@@ -235,12 +226,14 @@ public class DMLParser {
         WhereNode whereTree = wp.parse(whereClause);
         ArrayList<String> variableNames = wp.getVariableNames();
 
+        String type = Catalog.getTableSchema(tableSchema.getTableName()).getPrimaryKeyType();
+
         // Print all values in table
         // Loop through the table and print each page
         // For each page in table tableName
 
         // get if a variable in the where clause is the primary key
-        Object keyValue = null;
+        String keyValue = null;
         boolean keyFound = false;
         boolean singleClause = true;
         ArrayList<String> initialVarNames = wp.getVariableNames();
@@ -251,7 +244,7 @@ public class DMLParser {
             }
             ArrayList<AttributeSchema> initialSchemas = tableSchema.getAttributeSchema();
             for (int j = 0; j < initialSchemas.size(); j++) {
-                if ( initialSchemas.get(j).isPrimaryKey && keyName.equals(initialSchemas.get(j).getAttributeName())) {
+                if (initialSchemas.get(j).isPrimaryKey && keyName.equals(initialSchemas.get(j).getAttributeName())) {
                     keyFound = true;
                     break;
                 }
@@ -259,25 +252,26 @@ public class DMLParser {
         }
         // Use B+ tree if indexing is on and the value was found to be primary key
         // B+ tree delete is only going to be used if pimrary key = value, everything else use the old way
-        BPlusTree tree = StorageManager.getTree(tableSchema.getTableName());
+        BxTree tree = StorageManager.getTree(tableSchema.getTableName());
         if (useIndex && keyFound && singleClause) {
             List<String> tokens = WhereParser.tokenize(whereClause);
 
-            if (tokens.get(1).equals("=")){
-                
+            if (tokens.get(1).equals("=")) {
+
             }
             // check if one clause, equals sign, get the value
 
-            keyValue = (Object) tokens.get(2);
+            Object pk = tokens.get(2);
             // B+ search on key value
-            RecordPointer ptr = tree.search(keyValue);
-            
-            if (ptr == null){ 
+            RecordPointer ptr = findRecordPointer(pk, tableSchema, tree);
+
+            if (ptr == null) {
                 return;
             }
 
             // B+ delete on result
-            tree.delete(keyValue);
+            boolean deleted = deleteBxNode(pk, tableSchema, tree);
+
             BufferManager.getPage(tableSchema.getTableName(), ptr.getPageNumber()).removeRecord(ptr.getIndexNumber());
         }
         // Old way of deleting
@@ -296,12 +290,14 @@ public class DMLParser {
                         variables.add(r.getAttribute(index));
                     }
                     if (whereTree.evaluate(variables, variableNames, tableSchema)) { // todo - wait for where clause
-                                                                                    // implementation
+                        // implementation
                         page.removeRecord(j);
                         j--; // Since we removed record we
                         // Delete from the B+ tree even if the clause did not meet the requirements
                         if (useIndex) {
-                            tree.delete(r.getValues().get(tableSchema.findPrimaryKeyColNum()));
+                            Object pk = r.getValues().get(tableSchema.findPrimaryKeyColNum());
+
+                            boolean deleted = deleteBxNode(pk, tableSchema, tree);
                         }
                     }
                 }
@@ -445,19 +441,19 @@ public class DMLParser {
             // If we have an index we check with it to make sure record is unique
             // Otherwise do old method
 
-            BPlusTree tree = StorageManager.getTree(tableSchema.getTableName());
-            Object pk_val = null;
+            BxTree tree = StorageManager.getTree(tableSchema.getTableName());
+            Object pk = null;
             if (Main.useIndex) {
-                pk_val = record.getAttribute(tableSchema.findPrimaryKeyColNum());
-                RecordPointer ptr = tree.search(pk_val); // Search tree if this records PK value exists already
-                
-                if (ptr != null){ 
+                pk = record.getAttribute(tableSchema.findPrimaryKeyColNum());
+                RecordPointer ptr = findRecordPointer(pk, tableSchema, tree);
+
+                if (ptr != null) {
                     System.err.println("\nError: A record with that unique value already exists.");
                     System.err.println("Tuple " + tuple + " not inserted!\n");
                     return;
                 }
 
-               // 
+                //
             } else if (!checkUnique(tableName, record, attributeSchemas)) {
                 System.err.println("\nError: A record with that unique value already exists.");
                 System.err.println("Tuple " + tuple + " not inserted!\n");
@@ -478,10 +474,10 @@ public class DMLParser {
                 // add this entry to a new page
                 newPage.addRecord(record);
                 tableSchema.addToIndexList(0);
-                if(Main.useIndex){
-                    tree.insert(pk_val,0,0);
+                if (Main.useIndex) {
+                    insertIntoBxTree(pk, new RecordPointer(0, 0), tableSchema, tree);
                 }
-                
+
                 // Else the table is not empty! We need to find where to insert this record now
             } else {
                 // Get the primary key and its type so we can compare
@@ -492,101 +488,170 @@ public class DMLParser {
                 int primaryKeyCol = tableSchema.findPrimaryKeyColNum();
 
                 // Use B+ tree to check if
-                BPlusTree bPlusTree = StorageManager.getTree(tableName);
-                if (Main.useIndex && bPlusTree != null){
-                    if (bPlusTree.search(record.getAttribute(primaryKeyCol)) != null){
+                if (Main.useIndex && tree != null) {
+                    RecordPointer rp = findRecordPointer(record.getAttribute(primaryKeyCol), tableSchema, tree);
+
+                    if (rp != null) {
                         System.err.println("Error: A record with that primary key already exists.");
                         System.err.println("Tuple " + tuple + " not inserted!\n");
                         return;
                     }
-                }
-                if (Main.useIndex && bPlusTree != null){
-                    RecordPointer index = bPlusTree.insert(pk_val,-1,-1);
-                    Page page = BufferManager.getPage(tableName, index.getPageNumber());
-                    Page splitPage = page.addRecord(record);
 
-                    if (splitPage != null) { // If we split update stuff as needed
-                        tableSchema.addToIndexList(index.getPageNumber() + 1, numPages);
-                        // Update all pages in the buffer pool list to have the correct page number
-                        BufferManager.updatePageNumbersOnSplit(tableName, splitPage.getPageNumber());
-                        BufferManager.addPageToBuffer(splitPage);
-                        // Break out of for loop; go to next row to insert
-                        break;
+                    boolean wasInserted = insertIntoPage(record, tableName, tree);
+
+                } else {
+
+
+                    for (int i = 0; i < numPages; i++) {
+                        Page page = BufferManager.getPage(tableName, i);
+                        for (Record r : page.getRecords()) {
+                            if (r.getAttribute(primaryKeyCol).equals(record.getAttribute(primaryKeyCol))) {
+                                System.err.println("Error: A record with that primary key already exists.");
+                                System.err.println("Tuple " + tuple + " not inserted!\n");
+                                return;
+                            }
+                        }
                     }
-                }
-                else{
 
-                
-                for (int i = 0; i < numPages; i++) {
-                    Page page = BufferManager.getPage(tableName, i);
-                    for (Record r : page.getRecords()) {
-                        if (r.getAttribute(primaryKeyCol).equals(record.getAttribute(primaryKeyCol))) {
-                            System.err.println("Error: A record with that primary key already exists.");
+                    boolean wasInserted = insertIntoPage(record, tableName, null);
+
+                    // Cycled through all pages -> src.Record belongs on the last page of the table
+
+                    if (!wasInserted) {
+                        if (!checkUnique(tableName, record, attributeSchemas)) {
+                            System.err.println("\nError: A record with that unique value already exists.");
                             System.err.println("Tuple " + tuple + " not inserted!\n");
                             return;
                         }
-                    }
-                }
 
-                boolean wasInserted = false;
-                // Loop through pages and find which one to insert record into. Look ahead
-                // algorithm
-                Page next = null;
-                for (int i = 0; i < tableSchema.getIndexList().size(); i++) {
-                    // See if we are going to be out of bounds
-                    if (i + 1 >= tableSchema.getIndexList().size()) {
-                        break;
-                    }
-                    // Get the next page (must use src.BufferManager to get it)
-                    next = BufferManager.getPage(tableName, i + 1);
+                        // Insert the record into the last page of the table
+                        Page lastPage = BufferManager.getPage(tableName, numPages - 1).addRecord(record);
 
-                    Record firstRecordOfNextPage = next.getFirstRecord();
-
-                    // If it's less than the first value of next page (i+1) then it belongs to page
-                    // 'i'
-                    // Type cast appropriately then compare records
-                    if (Page.isLessThan(record, firstRecordOfNextPage, tableName)) {
-                        // Add record to current page
-                        Page page = BufferManager.getPage(tableName, i);
-
-                        Page splitPage = page.addRecord(record);
-                        wasInserted = true;
-                        bPlusTree.insert(record, page.getPageNumber(), page.getRecordIndex(record));
-                        if (splitPage != null) { // If we split update stuff as needed
-                            tableSchema.addToIndexList(i + 1, numPages);
+                        if (lastPage != null) {
+                            tableSchema.addToIndexList(numPages);
                             // Update all pages in the buffer pool list to have the correct page number
-                            BufferManager.updatePageNumbersOnSplit(tableName, splitPage.getPageNumber());
-                            BufferManager.addPageToBuffer(splitPage);
-                            // Break out of for loop; go to next row to insert
-                            break;
+                            BufferManager.updatePageNumbersOnSplit(tableName, lastPage.getPageNumber());
+                            BufferManager.addPageToBuffer(lastPage);
                         }
-                        break;
-                    }
-                }
-
-                // Cycled through all pages -> src.Record belongs on the last page of the table
-
-                if (!wasInserted) {
-                    if (!checkUnique(tableName, record, attributeSchemas)) {
-                        System.err.println("\nError: A record with that unique value already exists.");
-                        System.err.println("Tuple " + tuple + " not inserted!\n");
-                        return;
-                    }
-
-                    // Insert the record into the last page of the table
-                    Page lastPage = BufferManager.getPage(tableName, numPages - 1).addRecord(record);
-                    bPlusTree.insert(record, lastPage.getPageNumber(), lastPage.getRecordIndex(record));
-
-                    if (lastPage != null) {
-                        tableSchema.addToIndexList(numPages);
-                        // Update all pages in the buffer pool list to have the correct page number
-                        BufferManager.updatePageNumbersOnSplit(tableName, lastPage.getPageNumber());
-                        BufferManager.addPageToBuffer(lastPage);
                     }
                 }
             }
-         }
         }
+    }
+
+    private static void insertIntoBxTree(Object pk, RecordPointer ptr, TableSchema tableSchema, BxTree tree) {
+        String type = tableSchema.getPrimaryKeyType();
+        Object rtn;
+        try {
+            switch (type) {
+                case "integer":
+                    tree.insert((int) pk, ptr);
+                case "double":
+                    tree.insert((Double) pk, ptr);
+                case "boolean":
+                    tree.insert((Boolean) pk, ptr);
+                case "char":
+                case "varchar":
+                default:
+                    tree.insert((String) pk, ptr);
+            }
+        } catch (Exception e) {
+            System.err.println("Error deleting record: " + e.getMessage());
+        }
+    }
+
+    private static boolean deleteBxNode(Object pk, TableSchema tableSchema, BxTree tree) {
+        String type = tableSchema.getPrimaryKeyType();
+        RecordPointer ptr = null;
+        Object rtn;
+        try {
+            switch (type) {
+                case "integer":
+                    return (tree.delete((int) pk) != null);
+                case "double":
+                    return (tree.delete((Double) pk) != null);
+                case "boolean":
+                    return (tree.delete((Boolean) pk) != null);
+                case "char":
+                case "varchar":
+                default:
+                    return (tree.delete((String) pk) != null);
+            }
+        } catch (Exception e) {
+            System.err.println("Error deleting record: " + e.getMessage());
+        }
+        return false;
+    }
+
+    private static RecordPointer findRecordPointer(Object pk, TableSchema tableSchema, BxTree tree) {
+        String type = tableSchema.getPrimaryKeyType();
+        RecordPointer ptr = null;
+        try {
+            switch (type) {
+                case "integer":
+                    return ptr = tree.find((int) pk);
+                case "double":
+                    return ptr = tree.find((Double) pk);
+                case "boolean":
+                    return ptr = tree.find((Boolean) pk);
+                case "char":
+                case "varchar":
+                default:
+                    return ptr = tree.find((String) pk);
+            }
+        } catch (Exception e) {
+            System.err.println("Error finding record: " + e.getMessage());
+        }
+        return null;
+    }
+
+    private static boolean insertIntoPage(Record record, String tableName, BxTree tree) {
+        TableSchema tableSchema = Catalog.getTableSchema(tableName);
+        int numPages = tableSchema.getIndexList().size();
+
+        boolean wasInserted = false;
+        // Loop through pages and find which one to insert record into. Look ahead
+        // algorithm
+        Page next = null;
+        for (int i = 0; i < tableSchema.getIndexList().size(); i++) {
+            // See if we are going to be out of bounds
+            if (i + 1 >= tableSchema.getIndexList().size()) {
+                break;
+            }
+            // Get the next page (must use src.BufferManager to get it)
+            next = BufferManager.getPage(tableName, i + 1);
+
+            Record firstRecordOfNextPage = next.getFirstRecord();
+
+            // If it's less than the first value of next page (i+1) then it belongs to page
+            // 'i'
+            // Type cast appropriately then compare records
+            if (Page.isLessThan(record, firstRecordOfNextPage, tableName)) {
+                // Add record to current page
+                Page page = BufferManager.getPage(tableName, i);
+
+                Page splitPage = page.addRecord(record);
+                wasInserted = true;
+
+                if (tree != null) {
+                    Object pk = record.getAttribute(tableSchema.findPrimaryKeyColNum());
+                    RecordPointer ptr = new RecordPointer(page.getPageNumber(), page.getRecordIndex(record));
+                    insertIntoBxTree(pk, ptr, tableSchema, tree);
+                }
+                if (splitPage != null) { // If we split update stuff as needed
+                    tableSchema.addToIndexList(i + 1, numPages);
+                    // Update all pages in the buffer pool list to have the correct page number
+                    BufferManager.updatePageNumbersOnSplit(tableName, splitPage.getPageNumber());
+                    BufferManager.addPageToBuffer(splitPage);
+                    // Break out of for loop; go to next row to insert
+                    break;
+                }
+                break;
+            }
+        }
+
+        return wasInserted;
+
     }
 
     public static ArrayList<String> parseStringValues(String input) {
@@ -678,7 +743,7 @@ public class DMLParser {
                 String orderByClause = query.split("orderby")[1];
                 String attr = orderByClause.split(";")[0].strip();
 
-                if(!attrs.contains(attr)){
+                if (!attrs.contains(attr)) {
                     System.err.println("Error: orderby attribute is not in table schema");
                     return;
                 }
@@ -763,7 +828,7 @@ public class DMLParser {
             if (query.contains("orderby")) {
                 String orderByClause = query.split("orderby")[1];
                 String attr = orderByClause.split(";")[0].strip();
-                if(!attributes.contains(attr)){
+                if (!attributes.contains(attr)) {
                     System.err.println("Error: orderby attribute is not in table schema");
                     return;
                 }
@@ -785,7 +850,7 @@ public class DMLParser {
      * in given tables.
      * Writes a temporary table 'tempcartesian' to the hardware for later use in
      * SELECT and WHERE.
-     * 
+     *
      * @param tableSchemas a list of tableSchemas to take the cartesian of.
      * @return temporary src.TableSchema with cartesian records
      */
@@ -873,7 +938,7 @@ public class DMLParser {
     }
 
     private static SelectOutput buildAttributeTable(ArrayList<String> attributes, TableSchema tableSchema,
-            String whereClause) {
+                                                    String whereClause) {
 
         ArrayList<Record> recordOutput = new ArrayList<>();
 

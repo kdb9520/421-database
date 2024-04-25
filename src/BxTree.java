@@ -1,4 +1,4 @@
-package src.bplustreedraft;
+package src;
 
 public class BxTree<Key extends Comparable<? super Key>, Value> {
     /**
@@ -6,7 +6,9 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
      * null.
      */
     private Node root;
-    /** the maximum number of keys in the leaf node, M must be > 0 */
+    /**
+     * the maximum number of keys in the leaf node, M must be > 0
+     */
     private final int M;
     /**
      * the maximum number of keys in inner node, the number of pointer is N+1, N
@@ -14,7 +16,11 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
      */
     private final int N;
 
-    /** Create a new empty tree. */
+    private String name;
+
+    /**
+     * Create a new empty tree.
+     */
     public BxTree(int n) {
         this(n, n);
     }
@@ -42,6 +48,7 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
 
     /**
      * Delete a key from the BxTree.
+     *
      * @param key The key to delete.
      * @return The value associated with the deleted key, or null if the key is not found.
      */
@@ -70,7 +77,7 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
      * Looks for the given key. If it is not found, it returns null.
      * If it is found, it returns the associated value.
      */
-    public Value find(Key key) {
+    public RecordPointer find(Key key) {
         Node node = root;
         while (node instanceof BxTree.INode) { // need to traverse down to the leaf
             INode inner = (INode) node;
@@ -82,7 +89,7 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
         LNode leaf = (LNode) node;
         int idx = leaf.getLoc(key);
         if (idx < leaf.num && leaf.keys[idx].equals(key)) {
-            return leaf.values[idx];
+            return (RecordPointer) leaf.values[idx];
         } else {
             return null;
         }
@@ -91,6 +98,10 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
     public void dump() {
         root.dump();
     }
+
+    public String getName() { return this.name; }
+
+    public void setName(String name) { this.name = name; }
 
     public void printTree() {
         root.print("");
@@ -123,6 +134,7 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
         // They work because type erasure will erase the type variables.
         // It will break if we return it and other people try to use it.
         final Value[] values = (Value[]) new Object[M];
+
         {
             keys = (Key[]) new Comparable[M];
         }
@@ -205,6 +217,7 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
 
     class INode extends Node {
         final Node[] children = new BxTree.Node[N + 1];
+
         {
             keys = (Key[]) new Comparable[N];
         }
@@ -254,7 +267,7 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
                 System.arraycopy(this.children, mid, sibling.children, 0, sNum + 1);
 
                 this.num = mid - 1;// this is important, so the middle one elevate to next depth(height), inner
-                                   // node's key don't repeat itself
+                // node's key don't repeat itself
 
                 // Set up the return variable
                 Split result = new Split(this.keys[mid - 1],

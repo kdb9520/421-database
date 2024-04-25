@@ -147,7 +147,7 @@ public class Main {
     }
 
     private static void displayIndexes(String tableName) {
-        BPlusTree indexes = StorageManager.getTree(tableName.substring(0, tableName.length() - 1));
+        BxTree indexes = StorageManager.getTree(tableName.substring(0, tableName.length() - 1));
         indexes.printTree();
     }
 

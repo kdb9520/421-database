@@ -13,7 +13,7 @@ public class DDLParser {
 
     /**
      * creates a table by creating a new schema and inserting into the catalog
-     * 
+     *
      * @param query - the query entered by the user
      */
     public static void createTable(String query) {
@@ -57,7 +57,7 @@ public class DDLParser {
 
         // todo look into format string "create table %s (%s)"
         String[] args = query.substring(startIndex + 1, endIndex).split(","); // each "attribute and its
-                                                                              // type/constraint"
+        // type/constraint"
         boolean typeValid = true;
         boolean constraintsValid = true;
         ArrayList<AttributeSchema> attributes = new ArrayList<>();
@@ -73,7 +73,7 @@ public class DDLParser {
 
             String[] attribute_data = arg.split(" ");
             String attribute = attribute_data[0].trim();
-            if(attributeNames.contains(attribute)){
+            if (attributeNames.contains(attribute)) {
                 System.err.println("Error: Invalid table. May not have multiple columns of same name\n");
                 return;
             }
@@ -98,8 +98,7 @@ public class DDLParser {
             for (String p : constraints) {
                 if (p.equals("primarykey") && !primaryKeyExists) {
                     primaryKeyExists = true;
-                }
-                else if(p.equals("primarykey") && primaryKeyExists){
+                } else if (p.equals("primarykey") && primaryKeyExists) {
                     System.err.println("Can not have two primary keys in a table.");
                     return;
                 }
@@ -136,14 +135,15 @@ public class DDLParser {
         // write the file to the disk
         StorageManager.writeTableToDisk(tableName);
 
-        if(Main.useIndex){
+        if (Main.useIndex) {
             String type = Catalog.getTableSchema(tableName).getPrimaryKeyType();
             int typeSize = 0;
             if (type.equals("integer")) {
                 typeSize = Integer.BYTES;
             } else if (type.startsWith("varchar")) {
                 // Get length of the varchar
-                int numberOfChars = Integer.parseInt(type.substring(type.indexOf("(") + 1, type.indexOf(")")));;
+                int numberOfChars = Integer.parseInt(type.substring(type.indexOf("(") + 1, type.indexOf(")")));
+                ;
                 typeSize = numberOfChars * Character.BYTES; // Size of string of length 'numberOfChars' in bytes
             } else if (type.startsWith("char")) {
                 // Get the size of char
@@ -154,19 +154,21 @@ public class DDLParser {
             } else if (type.equals("boolean")) {
                 typeSize = Byte.BYTES; // Size of boolean in bytes
             }
-            
+
             // Max Degree = pageSize / (sizeOf(recordPtr) + sizeOf(searchKey))
             int maxDegree = Main.pageSize / (Integer.BYTES + Integer.BYTES + typeSize);
 
             // Make the empty B+ tree and store it in storagemanger indexes
-            BPlusTree index = new BPlusTree(maxDegree, tableName);
+            BxTree index = new BxTree(maxDegree);
+            index.setName(tableName);
+
             StorageManager.addIndex(index);
-    }
+        }
     }
 
     /**
      * Checks if a constraint is valid
-     * 
+     *
      * @param params - the list of constraints supplied by the user
      * @return - true if valid; false if not
      */
@@ -184,7 +186,7 @@ public class DDLParser {
 
     /**
      * Checks if type is valid
-     * 
+     *
      * @param param - the type given by the user
      * @return - true if valid; false if not
      */
@@ -192,16 +194,14 @@ public class DDLParser {
         if (param.equals("integer") || param.equals("double") || param.equals("boolean")
                 || param.equals("boolean") || param.startsWith("char") || param.startsWith("varchar")) {
             return true;
-        }
-
-        else {
+        } else {
             return false;
         }
     }
 
     /**
      * Drops a table
-     * 
+     *
      * @param query - query given by user
      */
     public static void dropTable(String query) {
@@ -226,7 +226,7 @@ public class DDLParser {
 
     /**
      * Alter table modifies a table schema
-     * 
+     *
      * @param query - query given by user
      */
     public static void alterTable(String query) {
@@ -336,7 +336,7 @@ public class DDLParser {
                     return;
                 }
                 String value = attributeType.substring(attributeType.indexOf('(') + 1, attributeType.indexOf(')'));
-                attributeType = attributeType.substring(0, attributeType.indexOf(')')+1);
+                attributeType = attributeType.substring(0, attributeType.indexOf(')') + 1);
             }
 
             // if invalid types
