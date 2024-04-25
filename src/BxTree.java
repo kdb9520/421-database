@@ -95,6 +95,28 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
         }
     }
 
+    /**
+     * Looks for the given key. If it is not found, it returns null.
+     * If it is found, it returns the associated value.
+     */
+    public void update(Key key, RecordPointer rp) {
+        Node node = root;
+        while (node instanceof BxTree.INode) { // need to traverse down to the leaf
+            INode inner = (INode) node;
+            int idx = inner.getLoc(key);
+            node = inner.children[idx];
+        }
+
+        // We are @ leaf after while loop
+        LNode leaf = (LNode) node;
+        int idx = leaf.getLoc(key);
+        if (idx < leaf.num && leaf.keys[idx].equals(key)) {
+            leaf.values[idx] = (Value) rp;
+        } else {
+            System.out.println("Test Error: Record Not Found");
+        }
+    }
+
     public void dump() {
         root.dump();
     }
