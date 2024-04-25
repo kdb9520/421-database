@@ -19,7 +19,6 @@ class Node {
     private ArrayList<Node> children;
     private int maxDegree;
     private int minKeys;
-    private boolean wasEdited;
     private String tableName;
     private String type;
     private Node parent;
@@ -202,23 +201,10 @@ class Node {
 
         parent.keys.add(index, newNode.keys.get(0));
         parent.children.add(index + 1, newNode);
-
-        newNode.setEdited();
-        this.setEdited();
-        parent.setEdited();
     }
 
     public void addChild(Node child) {
         children.add(child);
-        wasEdited = true;
-    }
-
-    public void setEdited(){
-        this.wasEdited = true;
-    }
-
-    public boolean wasEdited(){
-        return this.wasEdited;
     }
 
     public boolean isLeaf() {
@@ -327,7 +313,7 @@ class Node {
 
         newIsLeafNode = buffer.get() != 0;
         newNumRecordPointers = buffer.getInt();
-        System.out.println("Num of record pointers: " + newNumRecordPointers);
+        //System.out.println("Num of record pointers: " + newNumRecordPointers);
         for (int i = 0; i < newNumRecordPointers; i++) {
             int newPageNum = buffer.getInt();
             int newIndexNum = buffer.getInt();
@@ -336,7 +322,7 @@ class Node {
         }
 
         int keySize = buffer.getInt();
-        System.out.println("Key size: " + keySize);
+        //System.out.println("Key size: " + keySize);
         for(int i = 0; i < keySize; i++){
             if (type.equals("integer")) {
                 Integer attr = buffer.getInt();
@@ -368,7 +354,7 @@ class Node {
         }
 
         int childrenSize = buffer.getInt();
-        System.out.println("Number of children in node: " + childrenSize);
+       // System.out.println("Number of children in node: " + childrenSize);
         for(int i = 0; i < childrenSize; i++){
             Node childNode = deserialize(buffer, tableName, maxDegree); // Assuming deserialize method returns a Node
             children.add(childNode);
@@ -649,5 +635,4 @@ class Node {
             parent.handleOverflow();
         }
     }
-
 }

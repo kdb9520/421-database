@@ -1,5 +1,10 @@
 package src;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
 public class BxTree<Key extends Comparable<? super Key>, Value> {
     /**
      * Pointer to the root node. It may be a leaf or an inner node, but it is never
@@ -29,6 +34,15 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
         M = m;
         N = n;
         root = new LNode();
+    }
+
+    /**
+     * Create a new empty tree.
+     */
+    public BxTree(int n, Node root) {
+        this.M = n;
+        this.N = n;
+        this.root = root;
     }
 
     public void insert(Key key, Value value) {
@@ -361,4 +375,39 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
             right = r;
         }
     }
+    
+    
+        // Store nodes in following format:
+    // boolean isLeaf, int numRecordPointers, recordPoint1,recordPointer2,....recordPointern
+    // int numKeys, key1...n (size depends on table PK), int numChildren, child1...n (node) (call node.serialize on those) 
+    public byte[] serialize(String tableName) {
+
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                DataOutputStream dataOutputStream = new DataOutputStream(bos);) {
+        
+            dataOutputStream.writeInt(N);
+            byte[] nodeBytes = root.serialize(tableName);
+            dataOutputStream.write(nodeBytes);
+            dataOutputStream.close();
+            return bos.toByteArray();
+    } catch (IOException e) {
+        e.printStackTrace();
+        return null;
+    }
+    }
+
+    public static BxTree deserialize(byte[] data, String tableName) throws IOException {
+        
+        ByteBuffer buffer = ByteBuffer.wrap(data);
+
+
+        // Read number of records
+        int N = buffer.getInt();
+        Node root = Node.deserialize(buffer);
+
+        // Create and return the src.Page object
+        BxTree tree = new BPlusTree(N, root);
+        return tree;
+    }
+
 }
