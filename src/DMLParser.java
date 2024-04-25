@@ -548,29 +548,30 @@ public class DMLParser {
 
     private static void insertIntoBxTree(Object pk, RecordPointer ptr, TableSchema tableSchema, BxTree tree) {
         String type = tableSchema.getPrimaryKeyType();
-        Object rtn;
         try {
             switch (type) {
                 case "integer":
                     tree.insert((int) pk, ptr);
+                    break;
                 case "double":
                     tree.insert((Double) pk, ptr);
+                    break;
                 case "boolean":
                     tree.insert((Boolean) pk, ptr);
+                    break;
                 case "char":
                 case "varchar":
                 default:
                     tree.insert((String) pk, ptr);
+                    break;
             }
         } catch (Exception e) {
-            System.err.println("Error deleting record: " + e.getMessage());
+            System.err.println("Error inserting record: " + e.getMessage());
         }
     }
 
     private static boolean deleteBxNode(Object pk, TableSchema tableSchema, BxTree tree) {
         String type = tableSchema.getPrimaryKeyType();
-        RecordPointer ptr = null;
-        Object rtn;
         try {
             switch (type) {
                 case "integer":
