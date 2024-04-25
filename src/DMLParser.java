@@ -276,10 +276,35 @@ public class DMLParser {
             boolean deleted = deleteBxNode(pk, tableSchema, tree);
 
             // Now get the page we need to delete the record from and delete the record
-            BufferManager.getPage(tableSchema.getTableName(), ptr.getPageNumber()).removeRecord(ptr.getIndexNumber());
+            Page page = BufferManager.getPage(tableSchema.getTableName(), ptr.getPageNumber());
+            page.removeRecord(ptr.getIndexNumber());
 
             // Now from index of search(pk) to the end of page iterate through those records
-            // Then call b+ tree update(pk (of that record), pagenum (doesnt change), recordnum = index - 1);
+            for (int i = ptr.indexNumber; i < page.getPageSize(); i++) {
+                Record r = page.getRecords().get(i);
+                pk = r.getValues().get(tableSchema.findPrimaryKeyColNum());
+                // call b+ tree update(pk (of that record), pagenum (doesnt change), rec
+
+                //tree.update(pk, new RecordPointer(page.pageNumber, i));
+
+                try {
+                    switch (type) {
+                        case "integer":
+                            tree.update((int) pk, new RecordPointer(page.pageNumber, i));
+                        case "double":
+                            tree.update((Double) pk, new RecordPointer(page.pageNumber, i));
+                        case "boolean":
+                            tree.update((Boolean) pk, new RecordPointer(page.pageNumber, i));
+                        case "char":
+                        case "varchar":
+                        default:
+                            tree.update((String) pk, new RecordPointer(page.pageNumber, i));
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error updating records after delete: " + e.getMessage());
+                }
+
+            }
         }
         // Old way of deleting
         else {
