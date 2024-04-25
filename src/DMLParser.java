@@ -269,10 +269,17 @@ public class DMLParser {
                 return;
             }
 
-            // B+ delete on result
+            // First b+tree search(pk) to get the page and record number of the record
+
+
+            // Then call B+ delete on pk
             boolean deleted = deleteBxNode(pk, tableSchema, tree);
 
+            // Now get the page we need to delete the record from and delete the record
             BufferManager.getPage(tableSchema.getTableName(), ptr.getPageNumber()).removeRecord(ptr.getIndexNumber());
+
+            // Now from index of search(pk) to the end of page iterate through those records
+            // Then call b+ tree update(pk (of that record), pagenum (doesnt change), recordnum = index - 1);
         }
         // Old way of deleting
         else {
