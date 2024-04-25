@@ -643,6 +643,19 @@ public class DMLParser {
                     // Update all pages in the buffer pool list to have the correct page number
                     BufferManager.updatePageNumbersOnSplit(tableName, splitPage.getPageNumber());
                     BufferManager.addPageToBuffer(splitPage);
+
+                    // update the RecordPointer in BxTree
+                    if (tree != null) {
+                        RecordPointer p;
+                        int pk_col = tableSchema.findPrimaryKeyColNum();
+
+                        for (Record r : splitPage.getRecords()) {
+                            Object pk = r.getAttribute(pk_col);
+                            deleteBxNode(pk, tableSchema, tree);
+                            p = new RecordPointer(page.getPageNumber(), page.getRecordIndex(r));
+                            insertIntoBxTree(pk, p, tableSchema, tree);
+                        }
+                    }
                     // Break out of for loop; go to next row to insert
                     break;
                 }
