@@ -34,7 +34,7 @@ public class RecordPointer {
         this.indexNumber = indexNumber;
     }
 
-    public byte[] serialize(String tableName) {
+    public byte[] serialize() {
 
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 DataOutputStream dataOutputStream = new DataOutputStream(bos);) {
