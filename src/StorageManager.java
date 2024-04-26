@@ -210,16 +210,17 @@ public class StorageManager {
             }
         }
 
+        for (BxTree bPlusTree : indexes) {
+            if (bPlusTree.getName().equals(tableName)) {
+                indexes.remove(bPlusTree);
+                break;
+            }
+        }
+
         if (indexf.exists() && !indexf.isDirectory()) {
             try {
 
                 Files.delete(indexPath);
-                for (BxTree bPlusTree : indexes) {
-                    if (bPlusTree.getName().equals(tableName)) {
-                        indexes.remove(bPlusTree);
-                        break;
-                    }
-                }
 //                BufferManager.deleteTable(tableName);
             } catch (Exception e) {
                 e.printStackTrace();
