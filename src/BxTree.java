@@ -236,6 +236,9 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
                 if (i < keySize) {
                     keys[i] = keys[i];
                     values[i] = values[i];
+                } else {
+                    keys[i] = null;
+                    values[i] = null;
                 }
             }
 
@@ -384,7 +387,7 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
             ArrayList<Node> newChildren = new ArrayList<>();
 
             int keySize = buffer.getInt();
-            System.out.println("Key size: " + keySize);
+            System.out.println("Number of Keys: " + keySize);
             for (int i = 0; i < keySize; i++) {
                 if (type.equals("integer")) {
                     Integer attr = buffer.getInt();
@@ -417,12 +420,22 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
 
             int childrenSize = buffer.getInt();
             System.out.println("Number of children in node: " + childrenSize);
-            for (int i = 0; i < childrenSize; i++) {
+            for (int i = 0; i < keySize; i++) {
                 Node childNode = deserialize(buffer, tableName, N); // Assuming deserialize method returns a Node
                 newChildren.add(childNode);
             }
 
-            return null; // Here return a new node putting this into constructor
+            for (int i = 0; i < childrenSize; i++) {
+                if (i < keySize) {
+                    keys[i] = keys[i];
+                    children[i] = newChildren.get(i);
+                } else {
+                    keys[i] = null;
+                    children[i] = null;
+                }
+            }
+
+            return this; // Here return a new node putting this into constructor
 
         }
 
