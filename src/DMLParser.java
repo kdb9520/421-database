@@ -721,7 +721,7 @@ public class DMLParser {
                         for (Record r : splitPage.getRecords()) {
                             Object pk = r.getAttribute(pk_col);
                             deleteBxNode(pk, tableSchema, tree);
-                            p = new RecordPointer(page.getPageNumber(), page.getRecordIndex(r));
+                            p = new RecordPointer(splitPage.getPageNumber(), splitPage.getRecordIndex(r));
                             insertIntoBxTree(pk, p, tableSchema, tree);
                         }
                     }
