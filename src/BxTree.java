@@ -232,7 +232,7 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
                 newRecordPointers.add((Value) newRP);
             }
 
-            for (int i = 0; i < newNumRecordPointers; i++) {
+            for (int i = 0; i < newNumRecordPointers - 1; i++) {
                 if (i < keySize) {
                     keys[i] = keys[i];
                     values[i] = values[i];
@@ -473,9 +473,11 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
 
                 //Now lets do it for values
                 for (Node n : children) {
+                    if (n != null) {
                     byte[] nodeBytes = n.serialize(tableName);
                     //dataOutputStream.writeInt(recordBytes.length); // Size of each record, is this needed
                     dataOutputStream.write(nodeBytes);
+                    }
                 }
 
                 return bos.toByteArray();
