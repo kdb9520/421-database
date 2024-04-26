@@ -531,6 +531,30 @@ public class DMLParser {
 
                     boolean wasInserted = insertIntoPage(record, tableName, tree);
 
+                    if (!wasInserted) {
+                        if (!checkUnique(tableName, record, attributeSchemas)) {
+                            System.err.println("\nError: A record with that unique value already exists.");
+                            System.err.println("Tuple " + tuple + " not inserted!\n");
+                            return;
+                        }
+
+
+                        // Insert the record into the last page of the table
+                        Page lastPage = BufferManager.getPage(tableName, numPages - 1);
+                        if (lastPage != null) {
+                            lastPage.addRecord(record);
+
+                            pk = record.getAttribute(primaryKeyCol);
+                            RecordPointer ptr = new RecordPointer(lastPage.getPageNumber(), lastPage.getRecordIndex(record));
+                            insertIntoBxTree(pk, ptr, tableSchema, tree);
+
+                            tableSchema.addToIndexList(numPages);
+                            // Update all pages in the buffer pool list to have the correct page number
+                            BufferManager.updatePageNumbersOnSplit(tableName, lastPage.getPageNumber());
+                            BufferManager.addPageToBuffer(lastPage);
+                        }
+                    }
+
                 } else {
 
 

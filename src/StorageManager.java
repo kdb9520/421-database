@@ -198,7 +198,7 @@ public class StorageManager {
         File f = new File(Main.databaseLocation + File.separator + tableName);
 
         Path indexPath = Paths.get(Main.databaseLocation + "/Indexes", tableName);
-        File indexf = new File(indexPath.toString() + File.separator + tableName);
+        File indexf = new File(indexPath.toString());
 
         if (f.exists() && !f.isDirectory()) {
             try {
@@ -214,6 +214,12 @@ public class StorageManager {
             try {
 
                 Files.delete(indexPath);
+                for (BxTree bPlusTree : indexes) {
+                    if (bPlusTree.getName().equals(tableName)) {
+                        indexes.remove(bPlusTree);
+                        break;
+                    }
+                }
 //                BufferManager.deleteTable(tableName);
             } catch (Exception e) {
                 e.printStackTrace();
