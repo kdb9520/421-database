@@ -257,13 +257,25 @@ public class DMLParser {
         if (useIndex && keyFound && singleClause && tokens.get(1).equals("=")) {
             // check if one clause, equals sign, get the value
 
-            Object pk = tokens.get(2);
-            // B+ search on key value
-            RecordPointer ptr = findRecordPointer(pk, tableSchema, tree);
+            String pk_string = tokens.get(2);
+            // Lets type cast the PK to right type here for them
 
-            if (ptr == null) {
-                return;
-            }
+
+                Object pk = null;
+                if(type.startsWith("integer")){
+                    int intpk = (int) Integer.parseInt(pk_string);
+                    pk = intpk;
+                }
+
+                else if(type.startsWith("double")){
+                    pk = (Double) Double.parseDouble(pk_string);
+                }
+                // B+ search on key value
+                RecordPointer ptr = findRecordPointer(pk, tableSchema, tree);
+
+                if (ptr == null) {
+                    return;
+                }
 
             // First b+tree search(pk) to get the page and record number of the record
 
@@ -916,11 +928,24 @@ public class DMLParser {
             List<String> tokens = WhereParser.tokenize(whereClause);
             if (useIndex && keyFound && singleClause && tokens.get(1).equals("=")) {
                 // check if one clause, equals sign, get the value
-        
-                Object pk = tokens.get(2);
+                String type = tableSchema.getPrimaryKeyType();
+
+                String pk_string = tokens.get(2);
+            // Lets type cast the PK to right type here for them
+
+
+                Object pk = null;
+                if(type.startsWith("integer")){
+                    int intpk = (int) Integer.parseInt(pk_string);
+                    pk = intpk;
+                }
+
+                else if(type.startsWith("double")){
+                    pk = (Double) Double.parseDouble(pk_string);
+                }
                 // B+ search on key value
                 RecordPointer ptr = findRecordPointer(pk, tableSchema, tree);
-        
+
                 if (ptr == null) {
                     return;
                 }
