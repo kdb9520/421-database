@@ -36,7 +36,7 @@ public class SelectTest {
             System.out.println("Testing SELECT * FROM single table.");
             setUp();
 
-            String[] args = { "db", "10000", "10000" };
+            String[] args = { "db", "10000", "10000", "false" };
 
             String input = "CREATE TABLE test1 (foo INTEGER PRIMARYKEY);\nINSERT INTO test1 VALUES (1), (2), (3);\nSELECT * FROM test1;\nDROP TABLE test1;\nQUIT;\n";
             ByteArrayInputStream inputIn = new ByteArrayInputStream(input.getBytes());
@@ -63,7 +63,7 @@ public class SelectTest {
             System.out.println("Testing SELECT * FROM two tables.");
             setUp();
 
-            String[] args = { "db", "10000", "10000" };
+            String[] args = { "db", "10000", "10000", "false" };
 
             String input = "CREATE TABLE test1 (foo INTEGER PRIMARYKEY);\nCREATE TABLE test2 (foo INTEGER PRIMARYKEY);\nINSERT INTO test1 VALUES (1), (2), (3);\nINSERT INTO test2 VALUES (4), (5), (6);\nSELECT * FROM test1, test2;\nDROP TABLE test1;\nDROP TABLE test2;\nQUIT;\n";
             ByteArrayInputStream inputIn = new ByteArrayInputStream(input.getBytes());
@@ -91,7 +91,7 @@ public class SelectTest {
             System.out.println("Testing SELECT * FROM three tables with different number of columns.");
             setUp();
 
-            String[] args = { "db", "10000", "10000" };
+            String[] args = { "db", "10000", "10000", "false" };
 
             String input = "CREATE TABLE test1 (foo INTEGER PRIMARYKEY);\nCREATE TABLE test2 (foo INTEGER PRIMARYKEY, bar INTEGER);\nCREATE TABLE test3 (foo INTEGER PRIMARYKEY, bar INTEGER, baz INTEGER);\nINSERT INTO test1 VALUES (1), (2);\nINSERT INTO test2 VALUES (3 4), (5 6);\nINSERT INTO test3 VALUES (7 8 9), (10 11 12);\nSELECT * FROM test1, test2, test3;\nDROP TABLE test1;\nDROP TABLE test2;\nDROP TABLE test3;\nQUIT;\n";
             ByteArrayInputStream inputIn = new ByteArrayInputStream(input.getBytes());
@@ -118,7 +118,7 @@ public class SelectTest {
             System.out.println("Testing SELECT columns FROM two tables.");
             setUp();
 
-            String[] args = { "db", "10000", "10000" };
+            String[] args = { "db", "10000", "10000", "false" };
 
             String input = "CREATE TABLE test1 (foo INTEGER PRIMARYKEY, bar INTEGER);\nCREATE TABLE test2 (foo INTEGER PRIMARYKEY);\nINSERT INTO test1 VALUES (1 1), (2 2), (3 3);\nINSERT INTO test2 VALUES (4), (5), (6);\nSELECT test1.foo, test2.foo FROM test1, test2;\nDROP TABLE test1;\nDROP TABLE test2;\nQUIT;\n";
             ByteArrayInputStream inputIn = new ByteArrayInputStream(input.getBytes());
@@ -145,7 +145,7 @@ public class SelectTest {
             System.out.println("Testing SELECT attrs FROM two tables with different attr types.");
             setUp();
 
-            String[] args = { "db", "10000", "10000" };
+            String[] args = { "db", "10000", "10000", "false" };
 
             String input = "CREATE TABLE test1 (foo VARCHAR(10) PRIMARYKEY, baz DOUBLE);\nCREATE TABLE test2 (foo INTEGER PRIMARYKEY);\nINSERT INTO test1 VALUES ('Hello' 1.0), ('Bye' 2.1), ('Kellen' 3.0);\nINSERT INTO test2 VALUES (4), (5), (6);\nSELECT test1.foo, test2.foo FROM test1, test2;\nDROP TABLE test1;\nDROP TABLE test2;\nQUIT;\n";
             ByteArrayInputStream inputIn = new ByteArrayInputStream(input.getBytes());
@@ -173,7 +173,7 @@ public class SelectTest {
             System.out.println("Testing SELECT out of order attrs.");
             setUp();
 
-            String[] args = { "db", "10000", "10000" };
+            String[] args = { "db", "10000", "10000", "false" };
 
             String input = "CREATE TABLE foo(baz INTEGER PRIMARYKEY, bar DOUBLE NOTNULL, bazzle CHAR(10) UNIQUE NOTNULL);\n" +
                     "INSERT INTO foo VALUES (1 1 'test');\n" +
@@ -221,7 +221,7 @@ public class SelectTest {
             System.out.println("Testing SELECT *, a1, ..., an FROM table.");
             setUp();
 
-            String[] args = { "db", "10000", "10000" };
+            String[] args = { "db", "10000", "10000", "false" };
 
             String input = "CREATE TABLE test1 (foo VARCHAR(10) PRIMARYKEY, baz DOUBLE);\nINSERT INTO test1 VALUES ('Hello' 1.0), ('Bye' 2.1), ('Kellen' 3.0);\nSELECT *, baz FROM test1;\nDROP TABLE test1;\nQUIT;\n";
             ByteArrayInputStream inputIn = new ByteArrayInputStream(input.getBytes());
@@ -248,7 +248,7 @@ public class SelectTest {
             System.out.println("Testing SELECT * FROM table orderby x.");
             setUp();
 
-            String[] args = { "db", "10000", "10000" };
+            String[] args = { "db", "10000", "10000", "false" };
 
             String input = "CREATE TABLE test1 (foo VARCHAR(10) PRIMARYKEY, baz DOUBLE);\n" +
                     "INSERT INTO test1 VALUES ('A' 5.0), ('Z' 2.1), ('G' 3.0);\n" +
@@ -292,7 +292,7 @@ public class SelectTest {
             System.out.println("Testing SELECT * FROM table where x = y.");
             setUp();
 
-            String[] args = { "db", "10000", "10000" };
+            String[] args = { "db", "10000", "10000", "false" };
 
             String input = "CREATE TABLE test1 (foo VARCHAR(10) PRIMARYKEY, baz DOUBLE);\n" +
                     "INSERT INTO test1 VALUES ('A' 5.0), ('Z' 2.1), ('G' 3.0);\n" +
@@ -334,7 +334,7 @@ public class SelectTest {
             System.out.println("Testing SELECT * FROM table1, table2 where table1.x = table2.y");
             setUp();
 
-            String[] args = { "db", "10000", "10000" };
+            String[] args = { "db", "10000", "10000", "false" };
 
             String input = "CREATE TABLE test1 (foo VARCHAR(10) PRIMARYKEY, baz DOUBLE);\n" +
                     "CREATE TABLE test2 (bar VARCHAR(10) PRIMARYKEY, bazzle DOUBLE);\n" +
@@ -387,7 +387,7 @@ public class SelectTest {
             System.out.println("Testing SELECT * FROM table1, table2 where table1.x = table2.y orderby table2.y");
             setUp();
 
-            String[] args = { "db", "10000", "10000" };
+            String[] args = { "db", "10000", "10000", "false" };
 
             String input = "CREATE TABLE test1 (foo VARCHAR(10) PRIMARYKEY, baz DOUBLE);\n" +
                     "CREATE TABLE test2 (bar VARCHAR(10) PRIMARYKEY, bazzle DOUBLE);\n" +
@@ -440,7 +440,7 @@ public class SelectTest {
             System.out.println("Testing SELECT with columns not in the WHERE");
             setUp();
 
-            String[] args = { "db", "10000", "10000" };
+            String[] args = { "db", "10000", "10000", "false" };
 
             String input = "CREATE TABLE test1 (foo VARCHAR(10) PRIMARYKEY, baz DOUBLE);\n" +
                     "CREATE TABLE test2 (bar VARCHAR(10) PRIMARYKEY, bazzle DOUBLE);\n" +
@@ -492,7 +492,7 @@ public class SelectTest {
             System.out.println("Testing SELECT with columns not in the WHERE");
             setUp();
 
-            String[] args = { "db", "10000", "10000" };
+            String[] args = { "db", "10000", "10000", "false" };
 
             String input = "CREATE TABLE test1 (foo VARCHAR(10) PRIMARYKEY, baz DOUBLE);\n" +
                     "INSERT INTO test1 VALUES ('A' 1.0), ('Z' 3.1), ('G' 3.0);\n" +
