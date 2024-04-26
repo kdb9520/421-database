@@ -165,7 +165,6 @@ public class StorageManager {
             if (bPlusTree.getName().equals(tableName)) {
                 return bPlusTree;
             }
-
         }
         System.err.println("B+ tree for specified index not found");
         return null;
