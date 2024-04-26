@@ -810,30 +810,97 @@ public class DMLParser {
                     attrs.add(a.attrName);
                 }
             }
-
+            
             String whereClause = null;
             if (query.contains("where")) {
                 whereClause = query.split("where")[1].split(";")[0];
                 if (query.contains("orderby")) {
                     whereClause = whereClause.split("orderby")[0];
                 }
-            }
+                else {
+                BxTree tree = StorageManager.getTree(tableSchema.getTableName());
+                WhereParser wp = new WhereParser();
+                WhereNode whereTree = wp.parse(whereClause);
+                boolean keyFound = false;
+                boolean singleClause = true;
+                ArrayList<String> initialVarNames = wp.getVariableNames();
+                String keyName = initialVarNames.get(0);
+                
+                //if (tableSchema.findPrimaryKeyColNum()
 
-            SelectOutput selectOutput = buildAttributeTable(attrs, tableSchema, whereClause);
-            if (query.contains("orderby")) {
-
-                String orderByClause = query.split("orderby")[1];
-                String attr = orderByClause.split(";")[0].strip();
-
-                if (!attrs.contains(attr)) {
-                    System.err.println("Error: orderby attribute is not in table schema");
-                    return;
+                if (initialVarNames.size() != 1) {
+                    singleClause = false;
                 }
-                selectOutput.orderBy(attr, "asc");
+                ArrayList<AttributeSchema> initialSchemas = tableSchema.getAttributeSchema();
+                for (int j = 0; j < initialSchemas.size(); j++) {
+                    if (initialSchemas.get(j).isPrimaryKey && keyName.equals(initialSchemas.get(j).getAttributeName())) {
+                        keyFound = true;
+                        break;
+                    }
+                }
+                
+                List<String> tokens = WhereParser.tokenize(whereClause);
+                if (useIndex && keyFound && singleClause && tokens.get(1).equals("=")) {
+                    // check if one clause, equals sign, get the value
+                    String type = tableSchema.getPrimaryKeyType();
+                    String pk_string = tokens.get(2);
+                    Object pk = null;
+                    if(type.startsWith("integer")){
+                        int intpk = (int) Integer.parseInt(pk_string);
+                        pk = intpk;
+                    }
+                    else if(type.startsWith("double")){
+                        pk = (Double) Double.parseDouble(pk_string);
+                    }
+                    // B+ search on key value
+                    RecordPointer ptr = findRecordPointer(pk, tableSchema, tree);
+                    if (ptr == null) {
+                        return;
+                    }
+                    Page page = BufferManager.getPage(tableSchema.getTableName(), ptr.getPageNumber());
+                    Record r = page.getRecords().get(ptr.getIndexNumber());
+                    // Create the selectOutput for B Tree implementation
+                    System.out.println(r.toString(tableSchema.getTableName()));
+
+                } else {
+                    // print without tree
+                    SelectOutput selectOutput = buildAttributeTable(attrs, tableSchema, whereClause);
+                    if (query.contains("orderby")) {
+
+                        String orderByClause = query.split("orderby")[1];
+                        String attr = orderByClause.split(";")[0].strip();
+
+                        if (!attrs.contains(attr)) {
+                            System.err.println("Error: orderby attribute is not in table schema");
+                            return;
+                        }
+                        selectOutput.orderBy(attr, "asc");
+                    }
+                    if (selectOutput != null) {
+                        printSelectTable(selectOutput);
+                    }
+                }
+                }
             }
-            if (selectOutput != null) {
-                printSelectTable(selectOutput);
-            }
+
+            
+                // print without tree
+                SelectOutput selectOutput = buildAttributeTable(attrs, tableSchema, whereClause);
+                if (query.contains("orderby")) {
+
+                    String orderByClause = query.split("orderby")[1];
+                    String attr = orderByClause.split(";")[0].strip();
+
+                    if (!attrs.contains(attr)) {
+                        System.err.println("Error: orderby attribute is not in table schema");
+                        return;
+                    }
+                    selectOutput.orderBy(attr, "asc");
+                }
+                if (selectOutput != null) {
+                    printSelectTable(selectOutput);
+                }
+            
 
         } else {
 
