@@ -541,17 +541,21 @@ public class DMLParser {
 
                         // Insert the record into the last page of the table
                         Page lastPage = BufferManager.getPage(tableName, numPages - 1);
-                        if (lastPage != null) {
-                            lastPage.addRecord(record);
+                        Page newPage = lastPage.addRecord(record);
 
+                        if (newPage != null) {
                             pk = record.getAttribute(primaryKeyCol);
-                            RecordPointer ptr = new RecordPointer(lastPage.getPageNumber(), lastPage.getRecordIndex(record));
+                            RecordPointer ptr = new RecordPointer(newPage.getPageNumber(), newPage.getRecordIndex(record));
                             insertIntoBxTree(pk, ptr, tableSchema, tree);
 
                             tableSchema.addToIndexList(numPages);
                             // Update all pages in the buffer pool list to have the correct page number
-                            BufferManager.updatePageNumbersOnSplit(tableName, lastPage.getPageNumber());
-                            BufferManager.addPageToBuffer(lastPage);
+                            BufferManager.updatePageNumbersOnSplit(tableName, newPage.getPageNumber());
+                            BufferManager.addPageToBuffer(newPage);
+                        } else {
+                            pk = record.getAttribute(primaryKeyCol);
+                            RecordPointer ptr = new RecordPointer(lastPage.getPageNumber(), lastPage.getRecordIndex(record));
+                            insertIntoBxTree(pk, ptr, tableSchema, tree);
                         }
                     }
 
