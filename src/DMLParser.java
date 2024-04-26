@@ -954,7 +954,8 @@ public class DMLParser {
                 Record r = page.getRecords().get(ptr.getIndexNumber());
                     
                 // Create the selectOutput for B Tree implementation
-                ArrayList<Record> recordOutput = new ArrayList<>();
+                System.out.println(r.toString(tableSchema.getTableName()));
+                /*ArrayList<Record> recordOutput = new ArrayList<>();
                 recordOutput.add(r);
                 ArrayList<AttributeSchema> attributeSchemas = new ArrayList<>();
                 ArrayList<Integer> indices = new ArrayList<>();
@@ -968,7 +969,7 @@ public class DMLParser {
                         return;
                     }
                 }
-                selectOutput = new SelectOutput(recordOutput, attributeSchemas);
+                selectOutput = new SelectOutput(recordOutput, attributeSchemas);*/
             }
             else {
                 selectOutput = buildAttributeTable(attributes, tableSchema, whereClause);
@@ -981,10 +982,9 @@ public class DMLParser {
                     }
                     selectOutput.orderBy(attr, "asc");
                 }
-            }
-
-            if (selectOutput != null) {
-                printSelectTable(selectOutput);
+                if (selectOutput != null) {
+                    printSelectTable(selectOutput);
+                }
             }
         }
 
