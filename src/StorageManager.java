@@ -166,7 +166,7 @@ public class StorageManager {
                 return bPlusTree;
             }
         }
-        System.err.println("B+ tree for specified index not found");
+        if (Main.useIndex) System.err.println("B+ tree for specified index not found");
         return null;
     }
 
