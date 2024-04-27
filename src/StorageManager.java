@@ -365,6 +365,8 @@ public class StorageManager {
                 // Serialize the src.TableSchema to obtain a byte array
                 byte[] serializedData = index.serialize(index.getName());
 
+                index.printTree();
+
                 // Write the byte array to the file
                 fileOutputStream.write(serializedData);
                 System.out.println("src.Index written to: " + filename);

@@ -31,6 +31,14 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
         this(n, n);
     }
 
+    // tree with root being interior
+    public BxTree(int n, boolean i) {
+        M = n;
+        N = n;
+        if (i) root = new INode();
+        else root = new LNode();
+    }
+
     public BxTree(int m, int n) {
         M = m;
         N = n;
@@ -169,6 +177,8 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
         abstract public byte[] serialize(String tableName);
 
         abstract public Node deserialize(ByteBuffer buffer, String tableName, int N);
+
+        abstract public int getNumberOfEntries();
     }
 
     class LNode extends Node {
@@ -190,7 +200,7 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
             ArrayList<Object> newKeys = new ArrayList<>();
             ArrayList<Value> newRecordPointers = new ArrayList<>();
 
-
+//            int entries = buffer.getInt();
             int keySize = buffer.getInt();
             System.out.println("Number of Keys: " + keySize);
             for (int i = 0; i < keySize; i++) {
@@ -237,7 +247,7 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
                 newRecordPointers.add((Value) newRP);
             }
 
-            for (int i = 0; i < newNumRecordPointers - 1; i++) {
+            for (int i = 0; i < newNumRecordPointers; i++) {
                 if (i < keySize) {
                     values[i] = newRecordPointers.get(i);
                 } else {
@@ -259,6 +269,9 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
 
             try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
                  DataOutputStream dataOutputStream = new DataOutputStream(bos);) {
+
+                int accum = this.getNumberOfEntries();
+                dataOutputStream.writeInt(accum);
 
                 // Write number of keys
                 dataOutputStream.writeInt(num);
@@ -288,7 +301,7 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
                 dataOutputStream.writeInt(values.length);
 
                 //Now let's do it for values
-                for (int i = 0; i < values.length; i++) {
+                for (int i = 0; i < num; i++) {
                     if (values[i] != null) {
                         RecordPointer rec = (RecordPointer) values[i];
 
@@ -377,6 +390,16 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
                 System.out.println(keys[i]);
             }
         }
+
+        public int getNumberOfEntries() {
+//            int accum = 0;
+//            for (Key key : keys) {
+//                if (key != null) {
+//                    accum++;
+//                }
+//            }
+            return num;
+        }
     }
 
     class INode extends Node {
@@ -392,6 +415,8 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
             ArrayList<Object> newKeys = new ArrayList<>();
             ArrayList<Node> newChildren = new ArrayList<>();
 
+            int entries = buffer.getInt();
+            int numChildren = buffer.getInt();
             int keySize = buffer.getInt();
             System.out.println("Number of Keys: " + keySize);
             for (int i = 0; i < keySize; i++) {
@@ -424,21 +449,22 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
                 }
             }
 
-            int childrenSize = buffer.getInt();
-            System.out.println("Number of children in node: " + childrenSize);
-            for (int i = 0; i < keySize; i++) {
-                Node childNode = deserialize(buffer, tableName, N); // Assuming deserialize method returns a Node
+            System.out.println("Number of children in node: " + keySize);
+            for (int i = 0; i < numChildren; i++) {
+                int childSize = buffer.getInt();
+                Node childNode = null;
+                if (childSize > N) childNode = new INode();
+                else childNode = new LNode();
+                childNode = childNode.deserialize(buffer, tableName, N);   // Assuming deserialize method returns a Node
                 newChildren.add(childNode);
             }
 
-            for (int i = 0; i < childrenSize; i++) {
-                if (i < keySize) {
-                    keys[i] = keys[i];
-                    children[i] = newChildren.get(i);
-                } else {
-                    keys[i] = null;
-                    children[i] = null;
-                }
+            for (int i = 0; i < keySize; i++) {
+                keys[i] = (Key) newKeys.get(i);
+            }
+
+            for (int i = 0; i < numChildren; i++) {
+                children[i] = newChildren.get(i);
             }
 
             num = keySize;
@@ -451,6 +477,18 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
 
             try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
                  DataOutputStream dataOutputStream = new DataOutputStream(bos);) {
+
+                // Write number of things belows
+                int accum = this.getNumberOfEntries();
+                dataOutputStream.writeInt(accum);
+
+                int childNum = 0;
+                for (Node child : children) {
+                    if (child != null) {
+                        childNum++;
+                    }
+                }
+                dataOutputStream.writeInt(childNum);
 
                 // Write number of keys
                 dataOutputStream.writeInt(num);
@@ -476,15 +514,12 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
                     }
                 }
 
-                // Write number of children (Nodes)
-                dataOutputStream.writeInt(children.length);
-
                 //Now lets do it for values
                 for (Node n : children) {
                     if (n != null) {
-                    byte[] nodeBytes = n.serialize(tableName);
-                    //dataOutputStream.writeInt(recordBytes.length); // Size of each record, is this needed
-                    dataOutputStream.write(nodeBytes);
+                        byte[] nodeBytes = n.serialize(tableName);
+                        //dataOutputStream.writeInt(recordBytes.length); // Size of each record, is this needed
+                        dataOutputStream.write(nodeBytes);
                     }
                 }
 
@@ -600,6 +635,14 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
             }
             children[num].dump();
         }
+
+        public int getNumberOfEntries() {
+            int accum = 0;
+            for (Node n : children) {
+                if (n != null) accum += n.getNumberOfEntries();
+            }
+            return accum;
+        }
     }
 
     class Split {
@@ -614,6 +657,10 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
         }
     }
 
+    public int getNumberOfEntries() {
+        return this.root.getNumberOfEntries();
+    }
+
 
     // Store nodes in following format:
     // boolean isLeaf, int numRecordPointers, recordPoint1,recordPointer2,....recordPointer
@@ -624,6 +671,7 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
              DataOutputStream dataOutputStream = new DataOutputStream(bos);) {
 
             dataOutputStream.writeInt(N);
+            dataOutputStream.writeInt(this.root.getNumberOfEntries());
             byte[] nodeBytes = root.serialize(tableName);
             dataOutputStream.write(nodeBytes);
             dataOutputStream.close();
@@ -638,13 +686,17 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
 
         ByteBuffer buffer = ByteBuffer.wrap(data);
 
-
         // Read number of records
         int N = buffer.getInt();
-        BxTree tree = new BxTree(N);
+        int entries = buffer.getInt();
+        BxTree tree = null;
+        if (entries > N) tree = new BxTree(N, true);
+        else tree = new BxTree(N);
         tree.setName(tableName);
 
         tree.root = tree.root.deserialize(buffer, tableName, N);
+
+        tree.printTree();
 
         return tree;
     }
