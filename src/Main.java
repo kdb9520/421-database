@@ -31,7 +31,7 @@ public class Main {
             // restart / create the database
             // Jaron Handling start up of dbint started = src.DatabaseStart.initiateDatabase(dbLoc, pageSize, bufferSize);
             // This will override pageSize command arg if DB exists already
-            boolean started = DatabaseStart.initiateDatabase(databaseLocation, pageSize, bufferSize, useIndex);
+            boolean started = DatabaseStart.initiateDatabase(databaseLocation, pageSize, bufferSize);
 
             Catalog.readCatalog(databaseLocation);
             

@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 // Creates directory at location if it does not exist. Stores the pageSize info in page_size file
 public class DatabaseStart {
     
-    public static boolean initiateDatabase (String databaseLocation, int pageSize, int bufferSize, boolean useIndex) {
+    public static boolean initiateDatabase (String databaseLocation, int pageSize, int bufferSize) {
         // Restart the database; ignoring the provided page size, using the new buffer size
         // Create a new database at that location using the provided page and buffer size
 
@@ -20,17 +20,17 @@ public class DatabaseStart {
 
         boolean success = false;
         if (exists) {
-            success = startDatabase(databaseLocation, pageSize, bufferSize, useIndex);
+            success = startDatabase(databaseLocation, pageSize, bufferSize);
         
         }
         else {
-            success = createDatabase(databaseLocation, pageSize, bufferSize, useIndex);
+            success = createDatabase(databaseLocation, pageSize, bufferSize);
         }
 
         return success;
     }
 
-    private static boolean startDatabase (String databaseLocation, int pageSize, int bufferSize, boolean useIndex) {
+    private static boolean startDatabase (String databaseLocation, int pageSize, int bufferSize) {
 
         boolean success = false;
         try {
@@ -55,7 +55,7 @@ public class DatabaseStart {
                 success = true;
             }
             else {
-                success = createDatabase(databaseLocation, pageSize, bufferSize, useIndex);
+                success = createDatabase(databaseLocation, pageSize, bufferSize);
             }
         } catch (IOException e) {
             System.err.println("An error occurred: " + e.getMessage());
@@ -63,7 +63,7 @@ public class DatabaseStart {
         return success;
     }
 
-    private static boolean createDatabase (String databaseLocation, int pageSize, int bufferSize, boolean useIndex) {
+    private static boolean createDatabase (String databaseLocation, int pageSize, int bufferSize) {
         
         boolean success = false;
         try {
@@ -77,12 +77,6 @@ public class DatabaseStart {
             Path filePath = folder.resolve("page_size");
             String content = String.valueOf(pageSize);
             Files.write(filePath, content.getBytes());
-
-            // Create the index file
-            Path indexPath = folder.resolve("index");
-            String indexVal = String.valueOf(useIndex);
-            Files.write(indexPath, indexVal.getBytes());
-            Main.useIndex = useIndex;
 
             success = true;
             

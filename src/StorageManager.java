@@ -165,9 +165,8 @@ public class StorageManager {
             if (bPlusTree.getName().equals(tableName)) {
                 return bPlusTree;
             }
-
         }
-        System.err.println("B+ tree for specified index not found");
+        if (Main.useIndex) System.err.println("B+ tree for specified index not found");
         return null;
     }
 
@@ -199,7 +198,7 @@ public class StorageManager {
         File f = new File(Main.databaseLocation + File.separator + tableName);
 
         Path indexPath = Paths.get(Main.databaseLocation + "/Indexes", tableName);
-        File indexf = new File(indexPath.toString() + File.separator + tableName);
+        File indexf = new File(indexPath.toString());
 
         if (f.exists() && !f.isDirectory()) {
             try {
@@ -208,6 +207,13 @@ public class StorageManager {
                 BufferManager.deleteTable(tableName);
             } catch (Exception e) {
                 e.printStackTrace();
+            }
+        }
+
+        for (BxTree bPlusTree : indexes) {
+            if (bPlusTree.getName().equals(tableName)) {
+                indexes.remove(bPlusTree);
+                break;
             }
         }
 
@@ -358,6 +364,8 @@ public class StorageManager {
             try (FileOutputStream fileOutputStream = new FileOutputStream(filename)) {
                 // Serialize the src.TableSchema to obtain a byte array
                 byte[] serializedData = index.serialize(index.getName());
+
+                index.printTree();
 
                 // Write the byte array to the file
                 fileOutputStream.write(serializedData);

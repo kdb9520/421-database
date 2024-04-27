@@ -31,6 +31,14 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
         this(n, n);
     }
 
+    // tree with root being interior
+    public BxTree(int n, boolean i) {
+        M = n;
+        N = n;
+        if (i) root = new INode();
+        else root = new LNode();
+    }
+
     public BxTree(int m, int n) {
         M = m;
         N = n;
@@ -136,9 +144,13 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
         root.dump();
     }
 
-    public String getName() { return this.name; }
+    public String getName() {
+        return this.name;
+    }
 
-    public void setName(String name) { this.name = name; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public void printTree() {
         root.print("");
@@ -165,6 +177,8 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
         abstract public byte[] serialize(String tableName);
 
         abstract public Node deserialize(ByteBuffer buffer, String tableName, int N);
+
+        abstract public int getNumberOfEntries();
     }
 
     class LNode extends Node {
@@ -174,79 +188,98 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
         // by allowing us to pretend we have arrays of certain types.
         // They work because type erasure will erase the type variables.
         // It will break if we return it and other people try to use it.
-        final Value[] values = (Value[]) new Object[M];
+        Value[] values = (Value[]) new Object[M];
 
         {
             keys = (Key[]) new Comparable[M];
         }
 
-            // Deserialize a byte array into a record object
-            public Node deserialize(ByteBuffer buffer, String tableName, int N) {
-                String type = Catalog.getTableSchema(tableName).getPrimaryKeyType();
-                ArrayList<Object> newKeys = new ArrayList<>();
-                ArrayList<Value> newRecordPointers = new ArrayList<>();
+        // Deserialize a byte array into a record object
+        public Node deserialize(ByteBuffer buffer, String tableName, int N) {
+            String type = Catalog.getTableSchema(tableName).getPrimaryKeyType();
+            ArrayList<Object> newKeys = new ArrayList<>();
+            ArrayList<Value> newRecordPointers = new ArrayList<>();
 
-    
-                int keySize = buffer.getInt();
-                System.out.println("Key size: " + keySize);
-                for(int i = 0; i < keySize; i++){
-                    if (type.equals("integer")) {
-                        Integer attr = buffer.getInt();
-                        newKeys.add(attr);
-                    } else if (type.startsWith("varchar")) {
-                        // Get length of the varchar
-                        int length = buffer.getInt();
-                        // Read the varchar in
-                        byte[] stringBytes = new byte[length];
-                        buffer.get(stringBytes);
-                        // Make it a string
-                        String attr = new String(stringBytes);
-                        newKeys.add(attr);
-                    } else if (type.startsWith("char")) {
-                        // Get the size of char
-                        int numberOfChars = Integer.parseInt(type.substring(type.indexOf("(") + 1, type.indexOf(")")));
-                        byte[] stringBytes = new byte[numberOfChars];
-                        buffer.get(stringBytes);
-                        // Get the string
-                        String attr = new String(stringBytes);
-                        newKeys.add(attr);
-                    } else if (type.equals("double")) {
-                        Double attr = buffer.getDouble();
-                        newKeys.add(attr);
-                    } else if (type.equals("boolean")) {
-                        boolean attr = buffer.get() != 0;
-                        newKeys.add(attr);
-                    }
+//            int entries = buffer.getInt();
+            int keySize = buffer.getInt();
+            System.out.println("Number of Keys: " + keySize);
+            for (int i = 0; i < keySize; i++) {
+                if (type.equals("integer")) {
+                    Integer attr = buffer.getInt();
+                    newKeys.add(attr);
+                    keys[i] = (Key) attr;
+                } else if (type.startsWith("varchar")) {
+                    // Get length of the varchar
+                    int length = buffer.getInt();
+                    // Read the varchar in
+                    byte[] stringBytes = new byte[length];
+                    buffer.get(stringBytes);
+                    // Make it a string
+                    String attr = new String(stringBytes);
+                    newKeys.add(attr);
+                    keys[i] = (Key) attr;
+                } else if (type.startsWith("char")) {
+                    // Get the size of char
+                    int numberOfChars = Integer.parseInt(type.substring(type.indexOf("(") + 1, type.indexOf(")")));
+                    byte[] stringBytes = new byte[numberOfChars];
+                    buffer.get(stringBytes);
+                    // Get the string
+                    String attr = new String(stringBytes);
+                    newKeys.add(attr);
+                    keys[i] = (Key) attr;
+                } else if (type.equals("double")) {
+                    Double attr = buffer.getDouble();
+                    newKeys.add(attr);
+                    keys[i] = (Key) attr;
+                } else if (type.equals("boolean")) {
+                    Boolean attr = buffer.get() != 0;
+                    newKeys.add(attr);
+                    keys[i] = (Key) attr;
                 }
-    
-                int newNumRecordPointers = buffer.getInt();
-                System.out.println("Num of record pointers: " + newNumRecordPointers);
-                for (int i = 0; i < newNumRecordPointers; i++) {
-                    int newPageNum = buffer.getInt();
-                    int newIndexNum = buffer.getInt();
-                    RecordPointer newRP = new RecordPointer(newPageNum, newIndexNum);
-                    newRecordPointers.add((Value) newRP);
-                }
-    
-                return null; // Here return a new node putting this into constructor
-    
             }
 
+            int newNumRecordPointers = buffer.getInt();
+            System.out.println("Num of record pointers: " + newNumRecordPointers);
+            for (int i = 0; i < keySize; i++) {
+                int newPageNum = buffer.getInt();
+                int newIndexNum = buffer.getInt();
+                RecordPointer newRP = new RecordPointer(newPageNum, newIndexNum);
+                newRecordPointers.add((Value) newRP);
+            }
+
+            for (int i = 0; i < newNumRecordPointers; i++) {
+                if (i < keySize) {
+                    values[i] = newRecordPointers.get(i);
+                } else {
+                    keys[i] = null;
+                    values[i] = null;
+                }
+            }
+
+            num = keySize;
+
+            return this;
+
+        }
+
         // Store nodes in following format:
-    // boolean isLeaf, int numRecordPointers, recordPoint1,recordPointer2,....recordPointern
-    // int numKeys, key1...n (size depends on table PK), int numChildren, child1...n (node) (call node.serialize on those) 
-    public byte[] serialize(String tableName) {
+        // boolean isLeaf, int numRecordPointers, recordPoint1,recordPointer2,....recordPointern
+        // int numKeys, key1...n (size depends on table PK), int numChildren, child1...n (node) (call node.serialize on those)
+        public byte[] serialize(String tableName) {
 
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                DataOutputStream dataOutputStream = new DataOutputStream(bos);) {
-        
-            // Write number of keys
-            dataOutputStream.writeInt(num);
+            try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                 DataOutputStream dataOutputStream = new DataOutputStream(bos);) {
 
-            // Get type of the primary key
-            String type = Catalog.getTableSchema(tableName).getPrimaryKeyType();
-                    // Now write the bytes depending on what the type is
-                for(int i = 0; i < num; i++){
+                int accum = this.getNumberOfEntries();
+                dataOutputStream.writeInt(accum);
+
+                // Write number of keys
+                dataOutputStream.writeInt(num);
+
+                // Get type of the primary key
+                String type = Catalog.getTableSchema(tableName).getPrimaryKeyType();
+                // Now write the bytes depending on what the type is
+                for (int i = 0; i < num; i++) {
                     if (type.startsWith("integer")) {
                         dataOutputStream.writeInt((Integer) keys[i]);
                     } else if (type.startsWith("varchar")) {
@@ -260,28 +293,28 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
                     } else if (type.equals("double")) {
                         dataOutputStream.writeDouble((Double) keys[i]);
                     } else if (type.equals("boolean")) {
-                        dataOutputStream.writeBoolean((boolean) keys[i]);
+                        dataOutputStream.writeBoolean((Boolean) keys[i]);
                     }
                 }
 
-            // Write number of values (Record Pointers)
-            dataOutputStream.writeInt(values.length);
+                // Write number of values (Record Pointers)
+                dataOutputStream.writeInt(values.length);
 
-            //Now lets do it for values
-            for(Value r : values){
-                RecordPointer rec = (RecordPointer) r;
+                //Now let's do it for values
+                for (int i = 0; i < num; i++) {
+                    if (values[i] != null) {
+                        RecordPointer rec = (RecordPointer) values[i];
 
-                byte[] recordBytes = rec.serialize();
-                //dataOutputStream.writeInt(recordBytes.length); // Size of each record, is this needed
-                dataOutputStream.write(recordBytes);
+                        dataOutputStream.write(rec.serialize());
+                    }
+                }
+
+                return bos.toByteArray();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
             }
-            
-            return bos.toByteArray();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
         }
-    }
 
         /**
          * Returns the position where 'key' should be inserted in a leaf node
@@ -357,24 +390,36 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
                 System.out.println(keys[i]);
             }
         }
+
+        public int getNumberOfEntries() {
+//            int accum = 0;
+//            for (Key key : keys) {
+//                if (key != null) {
+//                    accum++;
+//                }
+//            }
+            return num;
+        }
     }
 
     class INode extends Node {
-        final Node[] children = new BxTree.Node[N + 1];
+        Node[] children = new BxTree.Node[N + 1];
 
         {
             keys = (Key[]) new Comparable[N];
         }
 
-            // Deserialize a byte array into a record object
+        // Deserialize a byte array into a record object
         public Node deserialize(ByteBuffer buffer, String tableName, int N) {
             String type = Catalog.getTableSchema(tableName).getPrimaryKeyType();
             ArrayList<Object> newKeys = new ArrayList<>();
             ArrayList<Node> newChildren = new ArrayList<>();
 
+            int entries = buffer.getInt();
+            int numChildren = buffer.getInt();
             int keySize = buffer.getInt();
-            System.out.println("Key size: " + keySize);
-            for(int i = 0; i < keySize; i++){
+            System.out.println("Number of Keys: " + keySize);
+            for (int i = 0; i < keySize; i++) {
                 if (type.equals("integer")) {
                     Integer attr = buffer.getInt();
                     newKeys.add(attr);
@@ -404,65 +449,91 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
                 }
             }
 
-            int childrenSize = buffer.getInt();
-            System.out.println("Number of children in node: " + childrenSize);
-            for(int i = 0; i < childrenSize; i++){
-                Node childNode = deserialize(buffer, tableName, N); // Assuming deserialize method returns a Node
+            System.out.println("Number of children in node: " + keySize);
+            for (int i = 0; i < numChildren; i++) {
+                int childSize = buffer.getInt();
+                Node childNode = null;
+                if (childSize > N) childNode = new INode();
+                else childNode = new LNode();
+                childNode = childNode.deserialize(buffer, tableName, N);   // Assuming deserialize method returns a Node
                 newChildren.add(childNode);
             }
 
-            return null; // Here return a new node putting this into constructor
+            for (int i = 0; i < keySize; i++) {
+                if (i < keys.length) {
+                    keys[i] = (Key) newKeys.get(i);
+                }
+            }
+
+            for (int i = 0; i < numChildren; i++) {
+                if (i < children.length) {
+                    children[i] = newChildren.get(i);
+                }
+            }
+
+            num = keySize;
+
+            return this; // Here return a new node putting this into constructor
 
         }
 
         public byte[] serialize(String tableName) {
 
             try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                    DataOutputStream dataOutputStream = new DataOutputStream(bos);) {
-            
+                 DataOutputStream dataOutputStream = new DataOutputStream(bos);) {
+
+                // Write number of things belows
+                int accum = this.getNumberOfEntries();
+                dataOutputStream.writeInt(accum);
+
+                int childNum = 0;
+                for (Node child : children) {
+                    if (child != null) {
+                        childNum++;
+                    }
+                }
+                dataOutputStream.writeInt(childNum);
+
                 // Write number of keys
                 dataOutputStream.writeInt(num);
-    
+
                 // Get type of the primary key
                 String type = Catalog.getTableSchema(tableName).getPrimaryKeyType();
-                        // Now write the bytes depending on what the type is
-                    for(int i = 0; i < num; i++){
-                        if (type.startsWith("integer")) {
-                            dataOutputStream.writeInt((Integer) keys[i]);
-                        } else if (type.startsWith("varchar")) {
-                            // Convert object to string, write how many bytes it is and write the string
-                            String value = (String) keys[i];
-                            dataOutputStream.writeInt(value.length());
-                            dataOutputStream.write(value.getBytes("UTF-8"));
-                        } else if (type.startsWith("char")) {
-                            String value = (String) keys[i];
-                            dataOutputStream.write(value.getBytes("UTF-8"));
-                        } else if (type.equals("double")) {
-                            dataOutputStream.writeDouble((Double) keys[i]);
-                        } else if (type.equals("boolean")) {
-                            dataOutputStream.writeBoolean((boolean) keys[i]);
-                        }
+                // Now write the bytes depending on what the type is
+                for (int i = 0; i < num; i++) {
+                    if (type.startsWith("integer")) {
+                        dataOutputStream.writeInt((Integer) keys[i]);
+                    } else if (type.startsWith("varchar")) {
+                        // Convert object to string, write how many bytes it is and write the string
+                        String value = (String) keys[i];
+                        dataOutputStream.writeInt(value.length());
+                        dataOutputStream.write(value.getBytes("UTF-8"));
+                    } else if (type.startsWith("char")) {
+                        String value = (String) keys[i];
+                        dataOutputStream.write(value.getBytes("UTF-8"));
+                    } else if (type.equals("double")) {
+                        dataOutputStream.writeDouble((Double) keys[i]);
+                    } else if (type.equals("boolean")) {
+                        dataOutputStream.writeBoolean((Boolean) keys[i]);
                     }
-    
-                // Write number of children (Nodes)
-                dataOutputStream.writeInt(children.length);
-    
-                //Now lets do it for values
-                for(Node n : children){
-                    byte[] nodeBytes = n.serialize(tableName);
-                    //dataOutputStream.writeInt(recordBytes.length); // Size of each record, is this needed
-                    dataOutputStream.write(nodeBytes);
                 }
-                
+
+                //Now lets do it for values
+                for (Node n : children) {
+                    if (n != null) {
+                        byte[] nodeBytes = n.serialize(tableName);
+                        //dataOutputStream.writeInt(recordBytes.length); // Size of each record, is this needed
+                        dataOutputStream.write(nodeBytes);
+                    }
+                }
+
                 return bos.toByteArray();
             } catch (IOException e) {
                 e.printStackTrace();
                 return null;
             }
         }
-    
 
-        
 
         /**
          * Returns the position where 'key' should be inserted in an inner node
@@ -568,6 +639,14 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
             }
             children[num].dump();
         }
+
+        public int getNumberOfEntries() {
+            int accum = 0;
+            for (Node n : children) {
+                if (n != null) accum += n.getNumberOfEntries();
+            }
+            return accum;
+        }
     }
 
     class Split {
@@ -581,38 +660,48 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
             right = r;
         }
     }
-    
-    
-        // Store nodes in following format:
-    // boolean isLeaf, int numRecordPointers, recordPoint1,recordPointer2,....recordPointern
+
+    public int getNumberOfEntries() {
+        return this.root.getNumberOfEntries();
+    }
+
+
+    // Store nodes in following format:
+    // boolean isLeaf, int numRecordPointers, recordPoint1,recordPointer2,....recordPointer
     // int numKeys, key1...n (size depends on table PK), int numChildren, child1...n (node) (call node.serialize on those) 
     public byte[] serialize(String tableName) {
 
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                DataOutputStream dataOutputStream = new DataOutputStream(bos);) {
-        
+             DataOutputStream dataOutputStream = new DataOutputStream(bos);) {
+
             dataOutputStream.writeInt(N);
+            dataOutputStream.writeInt(this.root.getNumberOfEntries());
             byte[] nodeBytes = root.serialize(tableName);
             dataOutputStream.write(nodeBytes);
             dataOutputStream.close();
             return bos.toByteArray();
-    } catch (IOException e) {
-        e.printStackTrace();
-        return null;
-    }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public static BxTree deserialize(byte[] data, String tableName) throws IOException {
-        
-        ByteBuffer buffer = ByteBuffer.wrap(data);
 
+        ByteBuffer buffer = ByteBuffer.wrap(data);
 
         // Read number of records
         int N = buffer.getInt();
-        Node root = Node.deserialize(buffer);
+        int entries = buffer.getInt();
+        BxTree tree = null;
+        if (entries > N) tree = new BxTree(N, true);
+        else tree = new BxTree(N);
+        tree.setName(tableName);
 
-        // Create and return the src.Page object
-        BxTree tree = new BxTree(N, root);
+        tree.root = tree.root.deserialize(buffer, tableName, N);
+
+        tree.printTree();
+
         return tree;
     }
 

@@ -20,7 +20,7 @@ public class DMLParser {
         } else if (query.startsWith("display info ")) {
             displayInfo(query.substring(13));
         } else if (query.startsWith("select")) {
-            select(query.substring(6));
+            select(query.substring(6), useIndex);
         }
     }
 
@@ -253,21 +253,29 @@ public class DMLParser {
         // Use B+ tree if indexing is on and the value was found to be primary key
         // B+ tree delete is only going to be used if pimrary key = value, everything else use the old way
         BxTree tree = StorageManager.getTree(tableSchema.getTableName());
-        if (useIndex && keyFound && singleClause) {
-            List<String> tokens = WhereParser.tokenize(whereClause);
-
-            if (tokens.get(1).equals("=")) {
-
-            }
+        List<String> tokens = WhereParser.tokenize(whereClause);
+        if (useIndex && keyFound && singleClause && tokens.get(1).equals("=")) {
             // check if one clause, equals sign, get the value
 
-            Object pk = tokens.get(2);
-            // B+ search on key value
-            RecordPointer ptr = findRecordPointer(pk, tableSchema, tree);
+            String pk_string = tokens.get(2);
+            // Lets type cast the PK to right type here for them
 
-            if (ptr == null) {
-                return;
-            }
+
+                Object pk = null;
+                if(type.startsWith("integer")){
+                    int intpk = (int) Integer.parseInt(pk_string);
+                    pk = intpk;
+                }
+
+                else if(type.startsWith("double")){
+                    pk = (Double) Double.parseDouble(pk_string);
+                }
+                // B+ search on key value
+                RecordPointer ptr = findRecordPointer(pk, tableSchema, tree);
+
+                if (ptr == null) {
+                    return;
+                }
 
             // First b+tree search(pk) to get the page and record number of the record
 
@@ -531,6 +539,34 @@ public class DMLParser {
 
                     boolean wasInserted = insertIntoPage(record, tableName, tree);
 
+                    if (!wasInserted) {
+                        if (!checkUnique(tableName, record, attributeSchemas)) {
+                            System.err.println("\nError: A record with that unique value already exists.");
+                            System.err.println("Tuple " + tuple + " not inserted!\n");
+                            return;
+                        }
+
+
+                        // Insert the record into the last page of the table
+                        Page lastPage = BufferManager.getPage(tableName, numPages - 1);
+                        Page newPage = lastPage.addRecord(record);
+
+                        if (newPage != null) {
+                            pk = record.getAttribute(primaryKeyCol);
+                            RecordPointer ptr = new RecordPointer(newPage.getPageNumber(), newPage.getRecordIndex(record));
+                            insertIntoBxTree(pk, ptr, tableSchema, tree);
+
+                            tableSchema.addToIndexList(numPages);
+                            // Update all pages in the buffer pool list to have the correct page number
+                            BufferManager.updatePageNumbersOnSplit(tableName, newPage.getPageNumber());
+                            BufferManager.addPageToBuffer(newPage);
+                        } else {
+                            pk = record.getAttribute(primaryKeyCol);
+                            RecordPointer ptr = new RecordPointer(lastPage.getPageNumber(), lastPage.getRecordIndex(record));
+                            insertIntoBxTree(pk, ptr, tableSchema, tree);
+                        }
+                    }
+
                 } else {
 
 
@@ -685,7 +721,7 @@ public class DMLParser {
                         for (Record r : splitPage.getRecords()) {
                             Object pk = r.getAttribute(pk_col);
                             deleteBxNode(pk, tableSchema, tree);
-                            p = new RecordPointer(page.getPageNumber(), page.getRecordIndex(r));
+                            p = new RecordPointer(splitPage.getPageNumber(), splitPage.getRecordIndex(r));
                             insertIntoBxTree(pk, p, tableSchema, tree);
                         }
                     }
@@ -742,7 +778,7 @@ public class DMLParser {
         return values;
     }
 
-    public static void select(String query) {
+    public static void select(String query, Boolean useIndex) {
         String[] splitQuery = query.strip().split(" ");
         String[] tableNames = QueryHandler.getTableNamesFromSelect(query);
         ArrayList<TableSchema> tableSchemas = new ArrayList<>();
@@ -774,30 +810,97 @@ public class DMLParser {
                     attrs.add(a.attrName);
                 }
             }
-
+            
             String whereClause = null;
             if (query.contains("where")) {
                 whereClause = query.split("where")[1].split(";")[0];
                 if (query.contains("orderby")) {
                     whereClause = whereClause.split("orderby")[0];
                 }
-            }
+                else {
+                BxTree tree = StorageManager.getTree(tableSchema.getTableName());
+                WhereParser wp = new WhereParser();
+                WhereNode whereTree = wp.parse(whereClause);
+                boolean keyFound = false;
+                boolean singleClause = true;
+                ArrayList<String> initialVarNames = wp.getVariableNames();
+                String keyName = initialVarNames.get(0);
+                
+                //if (tableSchema.findPrimaryKeyColNum()
 
-            SelectOutput selectOutput = buildAttributeTable(attrs, tableSchema, whereClause);
-            if (query.contains("orderby")) {
-
-                String orderByClause = query.split("orderby")[1];
-                String attr = orderByClause.split(";")[0].strip();
-
-                if (!attrs.contains(attr)) {
-                    System.err.println("Error: orderby attribute is not in table schema");
-                    return;
+                if (initialVarNames.size() != 1) {
+                    singleClause = false;
                 }
-                selectOutput.orderBy(attr, "asc");
+                ArrayList<AttributeSchema> initialSchemas = tableSchema.getAttributeSchema();
+                for (int j = 0; j < initialSchemas.size(); j++) {
+                    if (initialSchemas.get(j).isPrimaryKey && keyName.equals(initialSchemas.get(j).getAttributeName())) {
+                        keyFound = true;
+                        break;
+                    }
+                }
+                
+                List<String> tokens = WhereParser.tokenize(whereClause);
+                if (useIndex && keyFound && singleClause && tokens.get(1).equals("=")) {
+                    // check if one clause, equals sign, get the value
+                    String type = tableSchema.getPrimaryKeyType();
+                    String pk_string = tokens.get(2);
+                    Object pk = null;
+                    if(type.startsWith("integer")){
+                        int intpk = (int) Integer.parseInt(pk_string);
+                        pk = intpk;
+                    }
+                    else if(type.startsWith("double")){
+                        pk = (Double) Double.parseDouble(pk_string);
+                    }
+                    // B+ search on key value
+                    RecordPointer ptr = findRecordPointer(pk, tableSchema, tree);
+                    if (ptr == null) {
+                        return;
+                    }
+                    Page page = BufferManager.getPage(tableSchema.getTableName(), ptr.getPageNumber());
+                    Record r = page.getRecords().get(ptr.getIndexNumber());
+                    // Create the selectOutput for B Tree implementation
+                    System.out.println(r.toString(tableSchema.getTableName()));
+
+                } else {
+                    // print without tree
+                    SelectOutput selectOutput = buildAttributeTable(attrs, tableSchema, whereClause);
+                    if (query.contains("orderby")) {
+
+                        String orderByClause = query.split("orderby")[1];
+                        String attr = orderByClause.split(";")[0].strip();
+
+                        if (!attrs.contains(attr)) {
+                            System.err.println("Error: orderby attribute is not in table schema");
+                            return;
+                        }
+                        selectOutput.orderBy(attr, "asc");
+                    }
+                    if (selectOutput != null) {
+                        printSelectTable(selectOutput);
+                    }
+                }
+                }
             }
-            if (selectOutput != null) {
-                printSelectTable(selectOutput);
-            }
+
+            
+                // print without tree
+                SelectOutput selectOutput = buildAttributeTable(attrs, tableSchema, whereClause);
+                if (query.contains("orderby")) {
+
+                    String orderByClause = query.split("orderby")[1];
+                    String attr = orderByClause.split(";")[0].strip();
+
+                    if (!attrs.contains(attr)) {
+                        System.err.println("Error: orderby attribute is not in table schema");
+                        return;
+                    }
+                    selectOutput.orderBy(attr, "asc");
+                }
+                if (selectOutput != null) {
+                    printSelectTable(selectOutput);
+                }
+            
 
         } else {
 
@@ -869,19 +972,86 @@ public class DMLParser {
                 System.err.println("Error: No tables found.");
                 return;
             }
+            SelectOutput selectOutput = null;
+            
+            BxTree tree = StorageManager.getTree(tableSchema.getTableName());
+            WhereParser wp = new WhereParser();
+            WhereNode whereTree = wp.parse(whereClause);
+            boolean keyFound = false;
+            boolean singleClause = true;
+            ArrayList<String> initialVarNames = wp.getVariableNames();
+            String keyName = initialVarNames.get(0);
+            if (initialVarNames.size() != 1) {
+                singleClause = false;
+            }
+            ArrayList<AttributeSchema> initialSchemas = tableSchema.getAttributeSchema();
+            for (int j = 0; j < initialSchemas.size(); j++) {
+                if (initialSchemas.get(j).isPrimaryKey && keyName.equals(initialSchemas.get(j).getAttributeName())) {
+                    keyFound = true;
+                    break;
+                }
+            }
+                
+            List<String> tokens = WhereParser.tokenize(whereClause);
+            if (useIndex && keyFound && singleClause && tokens.get(1).equals("=")) {
+                // check if one clause, equals sign, get the value
+                String type = tableSchema.getPrimaryKeyType();
 
-            SelectOutput selectOutput = buildAttributeTable(attributes, tableSchema, whereClause);
-            if (query.contains("orderby")) {
-                String orderByClause = query.split("orderby")[1];
-                String attr = orderByClause.split(";")[0].strip();
-                if (!attributes.contains(attr)) {
-                    System.err.println("Error: orderby attribute is not in table schema");
+                String pk_string = tokens.get(2);
+            // Lets type cast the PK to right type here for them
+
+
+                Object pk = null;
+                if(type.startsWith("integer")){
+                    int intpk = (int) Integer.parseInt(pk_string);
+                    pk = intpk;
+                }
+
+                else if(type.startsWith("double")){
+                    pk = (Double) Double.parseDouble(pk_string);
+                }
+                // B+ search on key value
+                RecordPointer ptr = findRecordPointer(pk, tableSchema, tree);
+
+                if (ptr == null) {
                     return;
                 }
-                selectOutput.orderBy(attr, "asc");
+        
+                Page page = BufferManager.getPage(tableSchema.getTableName(), ptr.getPageNumber());
+                Record r = page.getRecords().get(ptr.getIndexNumber());
+                    
+                // Create the selectOutput for B Tree implementation
+                System.out.println(r.toString(tableSchema.getTableName()));
+                /*ArrayList<Record> recordOutput = new ArrayList<>();
+                recordOutput.add(r);
+                ArrayList<AttributeSchema> attributeSchemas = new ArrayList<>();
+                ArrayList<Integer> indices = new ArrayList<>();
+                for (String attr : attributes) {
+                    if (tableSchema.getAttributeNames().contains(attr)) {
+                        int attrIndex = tableSchema.findAttribute(attr);
+                        indices.add(attrIndex);
+                        attributeSchemas.add(tableSchema.findAttributeSchema(attrIndex));
+                    } else {
+                        System.err.println("Error: Attribute '" + attr + "' is not present in any table!");
+                        return;
+                    }
+                }
+                selectOutput = new SelectOutput(recordOutput, attributeSchemas);*/
             }
-            if (selectOutput != null) {
-                printSelectTable(selectOutput);
+            else {
+                selectOutput = buildAttributeTable(attributes, tableSchema, whereClause);
+                if (query.contains("orderby")) {
+                    String orderByClause = query.split("orderby")[1];
+                    String attr = orderByClause.split(";")[0].strip();
+                    if (!attributes.contains(attr)) {
+                        System.err.println("Error: orderby attribute is not in table schema");
+                        return;
+                    }
+                    selectOutput.orderBy(attr, "asc");
+                }
+                if (selectOutput != null) {
+                    printSelectTable(selectOutput);
+                }
             }
         }
 
