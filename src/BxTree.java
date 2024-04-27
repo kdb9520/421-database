@@ -178,7 +178,7 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
         // by allowing us to pretend we have arrays of certain types.
         // They work because type erasure will erase the type variables.
         // It will break if we return it and other people try to use it.
-        final Value[] values = (Value[]) new Object[M];
+        Value[] values = (Value[]) new Object[M];
 
         {
             keys = (Key[]) new Comparable[M];
@@ -197,6 +197,7 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
                 if (type.equals("integer")) {
                     Integer attr = buffer.getInt();
                     newKeys.add(attr);
+                    keys[i] = (Key) attr;
                 } else if (type.startsWith("varchar")) {
                     // Get length of the varchar
                     int length = buffer.getInt();
@@ -206,6 +207,7 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
                     // Make it a string
                     String attr = new String(stringBytes);
                     newKeys.add(attr);
+                    keys[i] = (Key) attr;
                 } else if (type.startsWith("char")) {
                     // Get the size of char
                     int numberOfChars = Integer.parseInt(type.substring(type.indexOf("(") + 1, type.indexOf(")")));
@@ -214,12 +216,15 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
                     // Get the string
                     String attr = new String(stringBytes);
                     newKeys.add(attr);
+                    keys[i] = (Key) attr;
                 } else if (type.equals("double")) {
                     Double attr = buffer.getDouble();
                     newKeys.add(attr);
+                    keys[i] = (Key) attr;
                 } else if (type.equals("boolean")) {
-                    boolean attr = buffer.get() != 0;
+                    Boolean attr = buffer.get() != 0;
                     newKeys.add(attr);
+                    keys[i] = (Key) attr;
                 }
             }
 
@@ -234,13 +239,14 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
 
             for (int i = 0; i < newNumRecordPointers - 1; i++) {
                 if (i < keySize) {
-                    keys[i] = keys[i];
-                    values[i] = values[i];
+                    values[i] = newRecordPointers.get(i);
                 } else {
                     keys[i] = null;
                     values[i] = null;
                 }
             }
+
+            num = keySize;
 
             return this;
 
@@ -374,7 +380,7 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
     }
 
     class INode extends Node {
-        final Node[] children = new BxTree.Node[N + 1];
+        Node[] children = new BxTree.Node[N + 1];
 
         {
             keys = (Key[]) new Comparable[N];
@@ -434,6 +440,8 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
                     children[i] = null;
                 }
             }
+
+            num = keySize;
 
             return this; // Here return a new node putting this into constructor
 
