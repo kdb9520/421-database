@@ -460,11 +460,15 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
             }
 
             for (int i = 0; i < keySize; i++) {
-                keys[i] = (Key) newKeys.get(i);
+                if (i < keys.length) {
+                    keys[i] = (Key) newKeys.get(i);
+                }
             }
 
             for (int i = 0; i < numChildren; i++) {
-                children[i] = newChildren.get(i);
+                if (i < children.length) {
+                    children[i] = newChildren.get(i);
+                }
             }
 
             num = keySize;
