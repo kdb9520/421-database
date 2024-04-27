@@ -270,12 +270,6 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
             try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
                  DataOutputStream dataOutputStream = new DataOutputStream(bos);) {
 
-                int accum = this.getNumberOfEntries();
-                dataOutputStream.writeInt(accum);
-
-                // Write number of keys
-                dataOutputStream.writeInt(num);
-
                 // Get type of the primary key
                 String type = Catalog.getTableSchema(tableName).getPrimaryKeyType();
                 // Now write the bytes depending on what the type is
@@ -296,9 +290,6 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
                         dataOutputStream.writeBoolean((Boolean) keys[i]);
                     }
                 }
-
-                // Write number of values (Record Pointers)
-                dataOutputStream.writeInt(values.length);
 
                 //Now let's do it for values
                 for (int i = 0; i < num; i++) {
@@ -482,43 +473,7 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
             try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
                  DataOutputStream dataOutputStream = new DataOutputStream(bos);) {
 
-                // Write number of things belows
-                int accum = this.getNumberOfEntries();
-                dataOutputStream.writeInt(accum);
 
-                int childNum = 0;
-                for (Node child : children) {
-                    if (child != null) {
-                        childNum++;
-                    }
-                }
-                dataOutputStream.writeInt(childNum);
-
-                // Write number of keys
-                dataOutputStream.writeInt(num);
-
-                // Get type of the primary key
-                String type = Catalog.getTableSchema(tableName).getPrimaryKeyType();
-                // Now write the bytes depending on what the type is
-                for (int i = 0; i < num; i++) {
-                    if (type.startsWith("integer")) {
-                        dataOutputStream.writeInt((Integer) keys[i]);
-                    } else if (type.startsWith("varchar")) {
-                        // Convert object to string, write how many bytes it is and write the string
-                        String value = (String) keys[i];
-                        dataOutputStream.writeInt(value.length());
-                        dataOutputStream.write(value.getBytes("UTF-8"));
-                    } else if (type.startsWith("char")) {
-                        String value = (String) keys[i];
-                        dataOutputStream.write(value.getBytes("UTF-8"));
-                    } else if (type.equals("double")) {
-                        dataOutputStream.writeDouble((Double) keys[i]);
-                    } else if (type.equals("boolean")) {
-                        dataOutputStream.writeBoolean((Boolean) keys[i]);
-                    }
-                }
-
-                //Now lets do it for values
                 for (Node n : children) {
                     if (n != null) {
                         byte[] nodeBytes = n.serialize(tableName);
@@ -693,12 +648,46 @@ public class BxTree<Key extends Comparable<? super Key>, Value> {
         // Read number of records
         int N = buffer.getInt();
         int entries = buffer.getInt();
-        BxTree tree = null;
-        if (entries > N) tree = new BxTree(N, true);
-        else tree = new BxTree(N);
+        BxTree tree = new BxTree(N);
         tree.setName(tableName);
 
-        tree.root = tree.root.deserialize(buffer, tableName, N);
+        String type = Catalog.getTableSchema(tableName).getPrimaryKeyType();
+        Object attr = null;
+        int pageNum = 0;
+        int index = 0;
+
+        for (int i = 0; i < entries*3; i++) {
+            if (i % 3 == 0) {
+                if (type.equals("integer")) {
+                    attr = buffer.getInt();
+                } else if (type.startsWith("varchar")) {
+                    // Get length of the varchar
+                    int length = buffer.getInt();
+                    // Read the varchar in
+                    byte[] stringBytes = new byte[length];
+                    buffer.get(stringBytes);
+                    // Make it a string
+                    attr = new String(stringBytes);
+                } else if (type.startsWith("char")) {
+                    // Get the size of char
+                    int numberOfChars = Integer.parseInt(type.substring(type.indexOf("(") + 1, type.indexOf(")")));
+                    byte[] stringBytes = new byte[numberOfChars];
+                    buffer.get(stringBytes);
+                    // Get the string
+                    attr = new String(stringBytes);
+                } else if (type.equals("double")) {
+                    attr = buffer.getDouble();
+                } else if (type.equals("boolean")) {
+                    attr = buffer.get() != 0;
+                }
+            } else if (i % 3 == 1) {
+                pageNum = buffer.getInt();
+            } else {
+                index = buffer.getInt();
+
+                tree.insert((Comparable) attr, new RecordPointer(pageNum, index));
+            }
+        }
 
         tree.printTree();
 
